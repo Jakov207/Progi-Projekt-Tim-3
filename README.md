@@ -24,7 +24,7 @@ Ovaj repozitorij sadrži otvoreni obrazovni sadržaj (eng. Open Educational Reso
 **Napomena:**
 Svi paketi distribuiraju se pod vlastitim licencama. Svi upotrijebljeni materijali (slike, modeli, animacije, ...) distribuiraju se pod vlastitim licencama.
 
-[![CC BY-NC-SA 4.0][cc-by-nc-sa-image]][cc-by-nc-sa]
+[![CC BY-NC-SA 4.0][cc-by-nc-sa-image]][cc-by-nc-sa].
 
 [cc-by-nc-sa]: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.hr
 [cc-by-nc-sa-image]: https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png
