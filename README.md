@@ -7,7 +7,7 @@ Ovo je repozitorij za projekt iz kolegija Programsko inženjerstvo (ak. god. 202
 ## Članovi Tima
 
 *   **[Jakov Mršić](https://github.com/Jakov207)** - *Uloga* - [Kontakt](mailto:jakov.mrsic@fer.unizg.hr)
-*   **[Fran Kovačević]()** - *Uloga* - [Kontakt](mailto:fran.kovacevic@fer.unizg.hr)
+*   **[Fran Kovačević](https://github.com/FranKovacevic)** - *Uloga* - [Kontakt](mailto:fran.kovacevic@fer.unizg.hr)
 *   **[Stjepan Martinović](https://github.com/stjepanmmm)** - *Uloga* - [Kontakt](mailto:stjepan.martinovic@fer.unizg.hr)
 *   **[Mihael Grgurić]()** - *Uloga* - [Kontakt](mailto:mihael.grguric@fer.unizg.hr)
 *   **[Jure Šestić]()** - *Uloga* - [Kontakt](mailto:jure.sestic@fer.unizg.hr)
