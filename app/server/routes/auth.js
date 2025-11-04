@@ -18,13 +18,42 @@ const generateToken = (id) => {
     })
 }
 
+//provjerava ispravan unos emaila
+function isEmail(email) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+}
+
+//provjera ispravnog unosa lozinke
+function isPassword(password) {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,32}$/;
+    return passwordRegex.test(password);
+}
+
 //registriranje novog korisnika 1.korak (email, password)
 router.post('/register', async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, passwordCheck, termsAndConditions } = req.body;
 
     if (!email || !password) {
         return res.status(400).json({ message: 'Molimo upišite podatke u sva polja' });
     }
+
+    if (!isEmail(email)) {
+        return res.status(400).json({ message: 'Molimo upišite ispravan email' });
+    }
+
+    if(password !== passwordCheck) {
+        return res.status(400).json({ message: 'Lozinke se ne podudaraju' });
+    }
+
+    if (!isPassword(password)) {
+        return res.status(400).json({ message: 'Molimo upišite lozinku u ispravnom formatu' });
+    }
+
+    if (!termsAndConditions) {
+        return res.status(400).json({ message: 'Morate se složiti sa uvjetima korištenja za registraciju' });
+    }
+
 
     const userExists = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
@@ -34,8 +63,6 @@ router.post('/register', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    console.log("ovdhe smo");
-
     req.session.userData = {
         email: email,
         password: hashedPassword
@@ -43,7 +70,7 @@ router.post('/register', async (req, res) => {
 
     return res.status(200).json({ message: 'Usprešan prvi dio registracije'});
 
-    //redirect to /register2
+    //dodati redirect to /register2
 })
 
 //registriranje novog korisnika 2.korak
@@ -71,12 +98,14 @@ router.post('/register2', async (req, res) => {
     res.cookie('token', token, cookieOptions);
 
     return res.status(201).json({ user: newUser.rows[0] });
+
+    //redirect negdje
 })
 
 
-//login, neradi ima neki error
+//login
 router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, saveLogin } = req.body;
 
     if (!email || !password) {
         return res.status(400).json({message: 'Molimo upišite podatke u sva polja'});
@@ -90,7 +119,7 @@ router.post('/login', async (req, res) => {
 
     const userData = user.rows[0];
 
-    const isMatch = await bcrypt.compare(password, userData.password);
+    const isMatch = await bcrypt.compare(password, userData.password_hash);
 
     if (!isMatch) {
         return res.status(400).json({message: 'Krivi podaci za login'});
@@ -100,16 +129,20 @@ router.post('/login', async (req, res) => {
 
     res.cookie('token', token, cookieOptions);
 
-    res.json({user: {id: userData.id, name: userData.name, surname: userData.surname, email: userData.email}});
+    //res.json({user: {id: userData.id, name: userData.name, surname: userData.surname, email: userData.email}});
 
     return res.status(201).json({ message: 'Uspješan login'});
+
+    //redirect negdje
 })
 
 
-//logout, nez jel radi nisam isprobo
+//logout
 router.post('/logout',  (req, res) => {
     res.cookie('token', '', {...cookieOptions, maxAge: 1});
     res.json({ message: 'Logged out'});
+
+    //redirect na homepage
 })
 
 module.exports = router;
