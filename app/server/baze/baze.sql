@@ -5,8 +5,8 @@ CREATE TABLE users (
                        is_professor BOOLEAN NOT NULL,
                        name VARCHAR(100) NOT NULL,
                        surname VARCHAR(100) NOT NULL,
-                       created_at TIMESTAMP DEFAULT CURRENTTIMESTAMP,
-                       CHECK (email ~* '^[A-Za-z0-9.%+-]+@[A-Za-z0-9.-]+.[A-Za-z]{2,}$'),
+                       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                       CHECK (email ~* '^[A-Za-z0-9.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
 );
 
 CREATE TABLE students (

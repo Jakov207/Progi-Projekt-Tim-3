@@ -38,10 +38,10 @@ router.post('/register', async (req, res) => {
 
     req.session.userData = {
         email: email,
-        password: hashedPassword
+        password_hash: hashedPassword
     };
 
-    return res.status(200).json({ message: 'Usprešan prvi dio registracije'});
+    return res.status(200).json({ message: 'Uspješan prvi dio registracije'});
 
     //redirect to /register2
 })
@@ -61,7 +61,7 @@ router.post('/register2', async (req, res) => {
 
     const newUser = await pool.query(
         'INSERT INTO users (email, password_hash, name, surname, is_professor) VALUES ($1, $2, $3, $4, $5) RETURNING name, surname, email, is_professor',
-        [userData.email, userData.password, name, surname, is_professor]
+        [userData.email, userData.password_hash, name, surname, is_professor]
     )
 
     req.session.userData = null;
@@ -90,7 +90,7 @@ router.post('/login', async (req, res) => {
 
     const userData = user.rows[0];
 
-    const isMatch = await bcrypt.compare(password, userData.password);
+    const isMatch = await bcrypt.compare(password, userData.password_hash);
 
     if (!isMatch) {
         return res.status(400).json({message: 'Krivi podaci za login'});
