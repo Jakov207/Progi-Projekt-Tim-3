@@ -85,7 +85,7 @@ router.post('/login', async (req, res) => {
     const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
     if (user.rows.length === 0) {
-        return res.status(400).json({message: 'Krivi podaci za login'});
+        return res.status(400).json({message: 'ne postoji korisnik s tim emailom'});
     }
 
     const userData = user.rows[0];
@@ -100,10 +100,14 @@ router.post('/login', async (req, res) => {
 
     res.cookie('token', token, cookieOptions);
 
-    res.json({user: {id: userData.id, name: userData.name, surname: userData.surname, email: userData.email}});
-
-    return res.status(201).json({ message: 'Uspješan login'});
-})
+    return res.status(200).json({
+        message: 'uspjesan login',
+    user: {id: userData.id,
+        name: userData.name,
+        surname: userData.surname,
+        email: userData.email}
+    })
+})//mora biti jedan odgovor u expressu
 
 
 //logout, nez jel radi nisam isprobo
