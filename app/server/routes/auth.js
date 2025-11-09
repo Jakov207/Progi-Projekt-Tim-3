@@ -5,11 +5,19 @@ const bcrypt = require('bcryptjs');
 
 const router = express.Router();
 
-const cookieOptions = {
+//CookieOptions kada korisnik stisne zapamti me kod login-a
+const cookieOptionsRemember = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'Strict',
     maxAge: 30 * 24 * 60 * 60 * 1000, //30 dana
+}
+
+//CookieOptions kada korisnike ne zeli zapamceni login
+const cookieOptionsNoRemember = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict',
 }
 
 const generateToken = (id) => {
@@ -95,7 +103,7 @@ router.post('/register2', async (req, res) => {
 
     const token = generateToken(newUser.rows[0].id);
 
-    res.cookie('token', token, cookieOptions);
+    res.cookie('token', token, cookieOptionsNoRemember);
 
     return res.status(201).json({ user: newUser.rows[0] });
 
@@ -105,7 +113,7 @@ router.post('/register2', async (req, res) => {
 
 //login
 router.post('/login', async (req, res) => {
-    const { email, password, saveLogin } = req.body;
+    const { email, password, rememberLogin } = req.body;
 
     if (!email || !password) {
         return res.status(400).json({message: 'Molimo upišite podatke u sva polja'});
@@ -127,7 +135,13 @@ router.post('/login', async (req, res) => {
 
     const token = generateToken(userData.id);
 
-    res.cookie('token', token, cookieOptions);
+    if (!rememberLogin) {
+        res.cookie('token', token, cookieOptionsNoRemember);
+    }
+    else {
+        res.cookie('token', token, cookieOptionsRemember);
+    }
+
 
     //res.json({user: {id: userData.id, name: userData.name, surname: userData.surname, email: userData.email}});
 
