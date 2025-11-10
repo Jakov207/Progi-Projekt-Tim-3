@@ -2,9 +2,15 @@ CREATE TABLE users (
                        id SERIAL PRIMARY KEY,
                        email VARCHAR(255) UNIQUE NOT NULL,
                        password_hash VARCHAR(255) NOT NULL,
-                       is_professor BOOLEAN NOT NULL,
                        name VARCHAR(100) NOT NULL,
                        surname VARCHAR(100) NOT NULL,
+                       is_professor BOOLEAN NOT NULL,
+                       is_verified BOOLEAN DEFAULT FALSE NOT NULL,
+                       verification_token VARCHAR(255),
+                       token_expiry TIMESTAMP WITHOUT TIME ZONE,
+                       created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                       updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                        CHECK (email ~* '^[A-Za-z0-9.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
 );
