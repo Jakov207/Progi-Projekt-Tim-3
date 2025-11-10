@@ -1,4 +1,4 @@
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
                        id SERIAL PRIMARY KEY,
                        email VARCHAR(255) UNIQUE NOT NULL,
                        password_hash VARCHAR(255) NOT NULL,
@@ -11,11 +11,8 @@ CREATE TABLE users (
                        created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                        updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-                       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                       CHECK (email ~* '^[A-Za-z0-9.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
-);
 
-CREATE TABLE students (
+CREATE TABLE IF NOT EXISTS students (
                           user_id INT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
                           sex CHAR(1),
                           city VARCHAR(100),
@@ -25,7 +22,7 @@ CREATE TABLE students (
                           CHECK (date_of_birth <= CURRENT_DATE)
 );
 
-CREATE TABLE professors (
+CREATE TABLE IF NOT EXISTS professors (
                             user_id INT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
                             sex CHAR(1),
                             city VARCHAR(100),

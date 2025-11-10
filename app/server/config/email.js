@@ -16,10 +16,10 @@ const transporter = nodemailer.createTransport({
 const sendEmail = async (mailOptions) => {
     try {
         const info = await transporter.sendMail(mailOptions);
-        // console.log("Message sent: %s", info.messageId); // Logiranje za debugging
+        console.log("Message sent: %s", info.messageId); // Logiranje za debugging
         return true;
     } catch (error) {
-        // console.error("Error sending email:", error); // Logirajte detaljnu grešku
+        console.error("Error sending email:", error); // Logirajte detaljnu grešku
         return false;
     }
 };

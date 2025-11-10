@@ -18,15 +18,6 @@ try {
     console.error('FATALNA GREŠKA: Ne mogu učitati email predložak:', TEMPLATE_PATH);
 }
 
-
-const cookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'Strict',
-    maxAge: 30 * 24 * 60 * 60 * 1000,
-
-const router = express.Router();
-
 //CookieOptions kada korisnik stisne zapamti me kod login-a
 const cookieOptionsRemember = {
     httpOnly: true,
@@ -67,33 +58,34 @@ function isPassword(password) {
 
 // RUTA 1: UNOS EMAILA I SLANJE POTVRDE
 router.post('/register/email', async (req, res) => {
-    const { email } = req.body;
+    const { email, name, surname,  is_professor, password} = req.body;
 
     if (!email || !isEmail(email)) {
         return res.status(400).json({ message: 'Molimo unesite ispravnu email adresu.' });
     }
+    if(!password || !isPassword(password)) {
+        return res.status(400).json({message: "Lozinka mora imati 8-32 znakova, veliko i malo slovo, broj i specijalni znak."});
+    }
+    if(!name ||!surname || typeof is_professor === 'undefined') {
+        return res.status(400).json({message: "nedostaju podaci"})
+    }
 
     try {
-        const userExists = await pool.query('SELECT is_verified FROM users WHERE email = $1', [email]);
+        const userExists = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
 
-        if (userExists.rows.length > 0 && userExists.rows[0].is_verified) {
-            return res.status(400).json({ message: 'Korisnik s ovim emailom već postoji i potvrđen je.' });
+        if (userExists.rows.length > 0 ) {
+            return res.status(400).json({ message: 'Korisnik s ovim emailom već postoji.' });
         }
+
+        const password_hash = await bcrypt.hash(password, 12);
 
         const verificationToken = crypto.randomBytes(32).toString('hex');
         const tokenExpiry = getTokenExpiry();
 
-        if (userExists.rows.length === 0) {
-            await pool.query(
-                'INSERT INTO users (email, is_verified, verification_token, token_expiry) VALUES ($1, FALSE, $2, $3)',
-                [email, verificationToken, tokenExpiry]
+        await pool.query(
+                'INSERT INTO users (email, is_verified, verification_token, token_expiry, name, surname, is_professor, password_hash) VALUES ($1, FALSE, $2, $3, $4, $5, $6, $7)',
+                [email, verificationToken, tokenExpiry, name, surname, is_professor, password_hash]
             );
-        } else {
-            await pool.query(
-                'UPDATE users SET verification_token = $1, token_expiry = $2 WHERE email = $3',
-                [verificationToken, tokenExpiry, email]
-            );
-        }
 
         const verificationLink = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
         const emailHtml = verificationTemplate.replace(/{{verificationLink}}/g, verificationLink);
@@ -115,8 +107,8 @@ router.post('/register/email', async (req, res) => {
 
 
 // RUTA 2: PROVJERA TOKENA I POTVRDA EMAILA
-router.post('/verify-token', async (req, res) => {
-    const { token } = req.body;
+router.get('/verify-token', async (req, res) => {
+    const { token } = req.query;
 
     if (!token) {
         return res.status(400).json({ message: 'Token nije pronađen.' });
@@ -161,7 +153,7 @@ router.post('/finish-register', async (req, res) => {
     // Koristimo is_student flag
     const { email, password, passwordCheck, name, surname, is_student, termsAndConditions } = req.body;
 
-    if (!email || !password || !name || surname === undefined || is_student === undefined || !termsAndConditions) {
+    if (!email || !password || !name || !surname || is_student === undefined || !termsAndConditions) {
         return res.status(400).json({ message: 'Molimo upišite podatke u sva obavezna polja i prihvatite uvjete.' });
     }
     if (!isPassword(password) || password !== passwordCheck) {
@@ -197,7 +189,7 @@ router.post('/finish-register', async (req, res) => {
 
         const token = generateToken(userId);
 
-        res.cookie('token', token, cookieOptions);
+        res.cookie('token', token, cookieOptionsNoRemember);
 
         return res.status(201).json({
             message: 'Račun je uspješno kreiran i prijavljeni ste.',
@@ -209,101 +201,6 @@ router.post('/finish-register', async (req, res) => {
         return res.status(500).json({ message: 'Interna greška servera.' });
     }
 });
-
-//registriranje novog korisnika 1.korak (email, password)
-router.post('/register', async (req, res) => {
-    const { email, password, passwordCheck, termsAndConditions } = req.body;
-
-    if (!email || !password) {
-        return res.status(400).json({ message: 'Molimo upišite podatke u sva polja' });
-    }
-
-    if (!isEmail(email)) {
-        return res.status(400).json({ message: 'Molimo upišite ispravan email' });
-    }
-
-    if(password !== passwordCheck) {
-        return res.status(400).json({ message: 'Lozinke se ne podudaraju' });
-    }
-
-    if (!isPassword(password)) {
-        return res.status(400).json({ message: 'Molimo upišite lozinku u ispravnom formatu' });
-    }
-
-    if (!termsAndConditions) {
-        return res.status(400).json({ message: 'Morate se složiti sa uvjetima korištenja za registraciju' });
-    }
-
-
-    const userExists = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-
-    if (userExists.rows.length > 0) {
-        return res.status(400).json({ message: 'Korisnik već postoji'});
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    req.session.userData = {
-        email: email,
-        password_hash: hashedPassword
-    };
-
-    return res.status(200).json({ message: 'Uspješan prvi dio registracije'});
-
-    //dodati redirect to /register2
-})
-
-//registriranje novog korisnika 2.korak
-router.post('/register2', async (req, res) => {
-    const { name, surname, date_of_birth, sex, is_professor, city, teaching, education } = req.body;
-
-    const userData = req.session.userData;
-    if (!userData) {
-        return res.status(400).json({ message: 'Sesija je istekla ponovite registraciju'})
-    }
-
-    if (!name || !surname || is_professor === undefined) {
-        return res.status(400).json({message: 'Molimo upišite podatke u obavezna polja'})
-    }
-
-    const newUser = await pool.query(
-        'INSERT INTO users (email, password_hash, name, surname, is_professor) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, surname, email, is_professor',
-        [userData.email, userData.password_hash, name, surname, is_professor]
-    )
-
-    const newuserId = newUser.rows[0].id;
-    let profile = {};
-
-    if(is_professor){
-        const res = await pool.query(
-            'INSERT INTO professors (user_id, teaching, date_of_birth, sex, city) VALUES ($1, $2, $3, $4, $5) RETURNING teaching, date_of_birth, sex, city',
-            [newuserId, teaching, date_of_birth,sex, city]
-        )
-        profile = res.rows[0];
-
-        }
-    else{
-        const res = await pool.query(
-            'INSERT INTO students (user_id, date_of_birth, sex, city, education) VALUES ($1, $2, $3, $4, $5) RETURNING date_of_birth, sex, city, education',
-            [newuserId, date_of_birth, sex, city, education]
-        )
-        profile = res.rows[0];
-    }
-    console.log(profile);
-
-    req.session.userData = null;
-
-    const token = generateToken(newUser.rows[0].id);
-
-    res.cookie('token', token, cookieOptionsNoRemember);
-
-    return res.status(201).json({
-        user: newUser.rows[0],
-        profile: profile
-    });
-});
-
-
 //login
 router.post('/login', async (req, res) => {
     const { email, password, rememberLogin } = req.body;
