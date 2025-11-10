@@ -24,6 +24,22 @@ const cookieOptions = {
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'Strict',
     maxAge: 30 * 24 * 60 * 60 * 1000,
+
+const router = express.Router();
+
+//CookieOptions kada korisnik stisne zapamti me kod login-a
+const cookieOptionsRemember = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict',
+    maxAge: 30 * 24 * 60 * 60 * 1000, //30 dana
+}
+
+//CookieOptions kada korisnike ne zeli zapamceni login
+const cookieOptionsNoRemember = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict',
 }
 
 const generateToken = (id) => {
@@ -36,11 +52,13 @@ const getTokenExpiry = () => {
     return new Date(Date.now() + 10 * 60 * 1000).toISOString();
 }
 
+//provjerava ispravan unos emaila
 function isEmail(email) {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
 }
 
+//provjera ispravnog unosa lozinke
 function isPassword(password) {
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,32}$/;
     return passwordRegex.test(password);
@@ -192,19 +210,112 @@ router.post('/finish-register', async (req, res) => {
     }
 });
 
+//registriranje novog korisnika 1.korak (email, password)
+router.post('/register', async (req, res) => {
+    const { email, password, passwordCheck, termsAndConditions } = req.body;
 
-// LOGIN RUTA
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Molimo upišite podatke u sva polja' });
+    }
+
+    if (!isEmail(email)) {
+        return res.status(400).json({ message: 'Molimo upišite ispravan email' });
+    }
+
+    if(password !== passwordCheck) {
+        return res.status(400).json({ message: 'Lozinke se ne podudaraju' });
+    }
+
+    if (!isPassword(password)) {
+        return res.status(400).json({ message: 'Molimo upišite lozinku u ispravnom formatu' });
+    }
+
+    if (!termsAndConditions) {
+        return res.status(400).json({ message: 'Morate se složiti sa uvjetima korištenja za registraciju' });
+    }
+
+
+    const userExists = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+
+    if (userExists.rows.length > 0) {
+        return res.status(400).json({ message: 'Korisnik već postoji'});
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    req.session.userData = {
+        email: email,
+        password_hash: hashedPassword
+    };
+
+    return res.status(200).json({ message: 'Uspješan prvi dio registracije'});
+
+    //dodati redirect to /register2
+})
+
+//registriranje novog korisnika 2.korak
+router.post('/register2', async (req, res) => {
+    const { name, surname, date_of_birth, sex, is_professor, city, teaching, education } = req.body;
+
+    const userData = req.session.userData;
+    if (!userData) {
+        return res.status(400).json({ message: 'Sesija je istekla ponovite registraciju'})
+    }
+
+    if (!name || !surname || is_professor === undefined) {
+        return res.status(400).json({message: 'Molimo upišite podatke u obavezna polja'})
+    }
+
+    const newUser = await pool.query(
+        'INSERT INTO users (email, password_hash, name, surname, is_professor) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, surname, email, is_professor',
+        [userData.email, userData.password_hash, name, surname, is_professor]
+    )
+
+    const newuserId = newUser.rows[0].id;
+    let profile = {};
+
+    if(is_professor){
+        const res = await pool.query(
+            'INSERT INTO professors (user_id, teaching, date_of_birth, sex, city) VALUES ($1, $2, $3, $4, $5) RETURNING teaching, date_of_birth, sex, city',
+            [newuserId, teaching, date_of_birth,sex, city]
+        )
+        profile = res.rows[0];
+
+        }
+    else{
+        const res = await pool.query(
+            'INSERT INTO students (user_id, date_of_birth, sex, city, education) VALUES ($1, $2, $3, $4, $5) RETURNING date_of_birth, sex, city, education',
+            [newuserId, date_of_birth, sex, city, education]
+        )
+        profile = res.rows[0];
+    }
+    console.log(profile);
+
+    req.session.userData = null;
+
+    const token = generateToken(newUser.rows[0].id);
+
+    res.cookie('token', token, cookieOptionsNoRemember);
+
+    return res.status(201).json({
+        user: newUser.rows[0],
+        profile: profile
+    });
+});
+
+
+//login
 router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, rememberLogin } = req.body;
 
     if (!email || !password) {
         return res.status(400).json({message: 'Molimo upišite podatke u sva polja'});
     }
 
-    const user = await pool.query('SELECT id, password_hash, is_verified FROM users WHERE email = $1', [email]);
+    const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
     if (user.rows.length === 0) {
-        return res.status(400).json({message: 'Krivi podaci za login'});
+        return res.status(400).json({message: 'ne postoji korisnik s tim emailom'});
     }
 
     const userData = user.rows[0];
@@ -221,16 +332,30 @@ router.post('/login', async (req, res) => {
 
     const token = generateToken(userData.id);
 
-    res.cookie('token', token, cookieOptions);
+    if (!rememberLogin) {
+        res.cookie('token', token, cookieOptionsNoRemember);
+    }
+    else {
+        res.cookie('token', token, cookieOptionsRemember);
+    }
 
-    return res.status(201).json({ message: 'Uspješan login'});
-})
+
+    return res.status(200).json({
+        message: 'uspjesan login',
+        user: user
+    });
+})//mora biti jedan odgovor u expressu
 
 
-// LOGOUT RUTA
-router.post('/logout',  (req, res) => {
-    res.cookie('token', '', {...cookieOptions, maxAge: 1});
-    res.json({ message: 'Logged out'});
-})
+//logout
+router.post('/logout',  (req, res) => {
+    req.session?.destroy(()=> {});
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+    });
+    return res.json({ message: 'Uspjesan logout' });
+});
 
 module.exports = router;
