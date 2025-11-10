@@ -166,7 +166,7 @@ router.post('/login', async (req, res) => {
 
     return res.status(200).json({
         message: 'uspjesan login',
-        user: user
+        user:user
     });
 })//mora biti jedan odgovor u expressu
 
