@@ -29,6 +29,9 @@ app.use(session({
 const authRoutes = require('./routes/auth');
 app.use("/auth", authRoutes);
 
+const profRoutes = require('./routes/profile');
+app.use('/profile', profRoutes);
+
 //pali server na portu 8080
 const PORT = process.env.PORT || 8080;
 
