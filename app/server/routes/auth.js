@@ -40,7 +40,7 @@ const generateToken = (id) => {
 }
 
 const getTokenExpiry = () => {
-    return new Date(Date.now() + 10 * 60 * 1000).toISOString();
+    return new Date(Date.now() + 10 * 60 * 1000);
 }
 
 //provjerava ispravan unos emaila
@@ -113,7 +113,7 @@ router.post('/register/email', async (req, res) => {
 router.get('/verify-token', async (req, res) => {
     const { token } = req.query;
 
-    console.log(req.query);
+    console.log("token: ", token);
 
     if (!token) {
         return res.status(400).json({ message: 'Token nije pronađen.' });
@@ -131,7 +131,8 @@ router.get('/verify-token', async (req, res) => {
 
         const user = userResult.rows[0];
 
-        if (new Date(user.token_expiry) < new Date()) {
+
+        if (user.token_expiry < new Date()) {
             await pool.query('DELETE FROM users WHERE id = $1', [user.id]);
             return res.status(400).json({ message: 'Token je istekao. Molimo ponovno se registrirajte.' });
         }

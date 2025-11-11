@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
                        is_professor BOOLEAN NOT NULL,
                        is_verified BOOLEAN DEFAULT FALSE NOT NULL,
                        verification_token VARCHAR(255),
-                       token_expiry TIMESTAMP WITHOUT TIME ZONE,
+                       token_expiry TIMESTAMPTZ,
                        created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                        updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
