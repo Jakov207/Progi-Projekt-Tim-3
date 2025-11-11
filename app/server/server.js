@@ -1,4 +1,5 @@
 const dotenv = require('dotenv');
+const path = require('path');
 dotenv.config();
 const express = require('express');
 const cors = require('cors');
@@ -31,6 +32,12 @@ app.use("/auth", authRoutes);
 
 const profRoutes = require('./routes/profile');
 app.use('/profile', profRoutes);
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public/index.html"));
+});
 
 //pali server na portu 8080
 const PORT = process.env.PORT || 8080;

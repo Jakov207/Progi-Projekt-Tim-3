@@ -78,24 +78,27 @@ router.post('/register/email', async (req, res) => {
         }
 
         const password_hash = await bcrypt.hash(password, 12);
-
         const verificationToken = crypto.randomBytes(32).toString('hex');
         const tokenExpiry = getTokenExpiry();
 
         await pool.query(
-                'INSERT INTO users (email, is_verified, verification_token, token_expiry, name, surname, is_professor, password_hash) VALUES ($1, FALSE, $2, $3, $4, $5, $6, $7)',
-                [email, verificationToken, tokenExpiry, name, surname, is_professor, password_hash]
+                'INSERT INTO users (email, is_verified, token_expiry, verification_token, name, surname, is_professor, password_hash) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+                [email, false, tokenExpiry, verificationToken, name, surname, is_professor, password_hash]
             );
 
-        const verificationLink = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
+        const verificationLink = `${process.env.SERVER_URL}/auth/verify-token?token=${verificationToken}`;
         const emailHtml = verificationTemplate.replace(/{{verificationLink}}/g, verificationLink);
 
-        await sendEmail({
+        const sent = await sendEmail({
             from: process.env.EMAIL_FROM,
             to: email,
             subject: 'Potvrda Registracije | Fertutor.xyz',
-            html: emailHtml,
+            html: emailHtml
         });
+        console.log("mail je poslan? ", sent);
+        if(!sent) {
+            return res.status(500).json({message: "slanje emaila neuspjesno"});
+        }
 
         return res.status(202).json({ message: 'Link za potvrdu poslan je na vaš email. Molimo provjerite sandučić.' });
 
@@ -109,6 +112,8 @@ router.post('/register/email', async (req, res) => {
 // RUTA 2: PROVJERA TOKENA I POTVRDA EMAILA
 router.get('/verify-token', async (req, res) => {
     const { token } = req.query;
+
+    console.log(req.query);
 
     if (!token) {
         return res.status(400).json({ message: 'Token nije pronađen.' });
@@ -136,10 +141,9 @@ router.get('/verify-token', async (req, res) => {
             [user.id]
         );
 
-        return res.status(200).json({
-            message: 'Email uspješno potvrđen.',
-            email: user.email
-        });
+        return res.redirect(
+            `${process.env.SERVER_URL}/finish-register?email=${user.email}`
+        );
 
     } catch (error) {
         console.error('Greška kod potvrde tokena:', error);
