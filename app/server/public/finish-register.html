@@ -18,11 +18,23 @@
     <input type="checkbox" id="is_student" /><br>
 
     <div id="studentFields" style="display:none;">
+        <select id="sex" required>
+            <option value="">Select sex</option>
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+        </select><br>
+        <input type="date" id="date_of_birth" required /><br>
         <input type="text" id="education" placeholder="Education" /><br>
         <input type="text" id="city" placeholder="City" /><br>
     </div>
 
     <div id="professorFields" style="display:none;">
+        <select id="sex2" required>
+            <option value="">Select sex</option>
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+        </select><br>
+        <input type="date" id="date_of_birth2" required /><br>
         <input type="text" id="teaching" placeholder="Teaching field" /><br>
         <input type="text" id="city2" placeholder="City" /><br>
     </div>
@@ -65,14 +77,21 @@
         e.preventDefault();
 
         const payload = {
-            email: document.getElementById("email").value,
+            email: email,
             password: document.getElementById("password").value,
             passwordCheck: document.getElementById("passwordCheck").value,
             name: document.getElementById("name").value,
             surname: document.getElementById("surname").value,
             is_student: isStudent.checked,
-            termsAndConditions: document.getElementById("terms").checked
+            termsAndConditions: document.getElementById("terms").checked,
+            sex: isStudent.checked ? document.getElementById("sex").value : document.getElementById("sex2").value,
+            date_of_birth: isStudent.checked ? document.getElementById("date_of_birth").value : document.getElementById("date_of_birth2").value,
+            city: isStudent.checked ? document.getElementById("city").value : document.getElementById("city2").value,
+            education: isStudent.checked ? document.getElementById("education").value : undefined,
+            teaching: !isStudent.checked ? document.getElementById("teaching").value : undefined
         };
+        console.log("email from URL: ", email);
+        console.log("full payload: ", payload);
 
         const res = await fetch(`${BASE_URL}/finish-register`, {
             method: "POST",

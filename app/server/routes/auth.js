@@ -160,21 +160,38 @@ router.post('/finish-register', async (req, res) => {
         const {sex, city, teaching, education, date_of_birth, termsAndConditions} = req.body;
 
         const email = req.body.email || req.query.email;
-        console.log("email: ", email);
 
-        const user = await pool.query('SELECT * FROM users  WHERE email = $1', [email]);
+        console.log("=== FINISH REGISTER DEBUG ===");
+        console.log("req.body.email:", req.body.email);
+        console.log("req.query.email:", req.query.email);
+        console.log("Final email:", email);
+
+        if(!email){
+            return res.status(400).json({message: 'Email obvezan'});
+        }
 
         if (!termsAndConditions) {
             return res.status(400).json({message: "moras prihvatiti TaC"});
         }
-        console.log(user.rows[0]);
+
+        const user = await pool.query('SELECT id, password_hash, is_professor FROM users  WHERE email=$1', [email]);
+
+        if (user.rows.length === 0) {
+            return res.status(404).json({ message: "User not found" });
+        }
 
         if (user.rows[0].is_professor) {
-            await pool.query('INSERT INTO  professors (sex, city, teaching, date_of_birth) VALUES ($1, $2, $3, $4)',
-                [sex, city, teaching, date_of_birth]);
+            if(!teaching){
+                return res.status(400).json({message: 'sto ucis druge'});
+            }
+            await pool.query('INSERT INTO  professors (user_id, sex, city, teaching, date_of_birth) VALUES ($1, $2, $3, $4, $5)',
+                [user.rows[0].id, sex, city, teaching, date_of_birth]);
         } else {
-            await pool.query('INSERT INTO  students (sex, city, education, date_of_birth) VALUES ($1, $2, $3, $4)',
-                [sex, city, teaching, date_of_birth]);
+            if(!education){
+                return res.status(400).json({message: "dosadasnje obrazovanje"});
+            }
+            await pool.query('INSERT INTO  students (user_id, sex, city, education, date_of_birth) VALUES ($1, $2, $3, $4, $5)',
+                [user.rows[0].id, sex, city, education, date_of_birth]);
         }
 
         return res.status(200).json({ message: "Profil uspješno dovršen." });
