@@ -12,6 +12,8 @@ app.use(cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true
 }));
+
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -33,11 +35,12 @@ app.use("/auth", authRoutes);
 const profRoutes = require('./routes/profile');
 app.use('/profile', profRoutes);
 
-app.use(express.static(path.join(__dirname, 'public')));
-
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public/index.html"));
 });
+app.get("/finish-register", (req, res) => {
+    res.sendFile(path.join(__dirname, "public/finish-register.html"));
+})
 
 //pali server na portu 8080
 const PORT = process.env.PORT || 8080;

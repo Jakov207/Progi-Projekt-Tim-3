@@ -86,7 +86,7 @@ router.post('/register/email', async (req, res) => {
                 [email, false, tokenExpiry, verificationToken, name, surname, is_professor, password_hash]
             );
 
-        const verificationLink = `${process.env.SERVER_URL}/auth/verify-token?token=${verificationToken}`;
+        const verificationLink = `${process.env.FRONTEND_URL}/auth/verify-token?token=${verificationToken}`;
         const emailHtml = verificationTemplate.replace(/{{verificationLink}}/g, verificationLink);
 
         const sent = await sendEmail({
@@ -143,7 +143,7 @@ router.get('/verify-token', async (req, res) => {
         );
 
         return res.redirect(
-            `${process.env.SERVER_URL}/finish-register?email=${user.email}`
+            `${process.env.FRONTEND_URL}/finish-register?email=${user.email}`
         );
 
     } catch (error) {
@@ -156,56 +156,39 @@ router.get('/verify-token', async (req, res) => {
 // RUTA 3: FINALIZACIJA REGISTRACIJE (POSTAVLJANJE LOZINKE I DETALJA)
 router.post('/finish-register', async (req, res) => {
     // Koristimo is_student flag
-    const { email, password, passwordCheck, name, surname, is_student, termsAndConditions } = req.body;
-
-    if (!email || !password || !name || !surname || is_student === undefined || !termsAndConditions) {
-        return res.status(400).json({ message: 'Molimo upišite podatke u sva obavezna polja i prihvatite uvjete.' });
-    }
-    if (!isPassword(password) || password !== passwordCheck) {
-        return res.status(400).json({ message: 'Lozinka je neispravnog formata ili se lozinke ne podudaraju.' });
-    }
-
     try {
-        const userResult = await pool.query(
-            'SELECT id, is_verified, password_hash FROM users WHERE email = $1',
-            [email]
-        );
+        const {sex, city, teaching, education, date_of_birth, termsAndConditions} = req.body;
 
-        if (userResult.rows.length === 0 || !userResult.rows[0].is_verified) {
-            return res.status(403).json({ message: 'Email nije potvrđen ili ne postoji. Ponovite prvi korak registracije.' });
+        const email = req.body.email || req.query.email;
+        console.log("email: ", email);
+
+        const user = await pool.query('SELECT * FROM users  WHERE email = $1', [email]);
+
+        if (!termsAndConditions) {
+            return res.status(400).json({message: "moras prihvatiti TaC"});
+        }
+        console.log(user.rows[0]);
+
+        if (user.rows[0].is_professor) {
+            await pool.query('INSERT INTO  professors (sex, city, teaching, date_of_birth) VALUES ($1, $2, $3, $4)',
+                [sex, city, teaching, date_of_birth]);
+        } else {
+            await pool.query('INSERT INTO  students (sex, city, education, date_of_birth) VALUES ($1, $2, $3, $4)',
+                [sex, city, teaching, date_of_birth]);
         }
 
-        if (userResult.rows[0].password_hash) {
-            return res.status(400).json({ message: 'Račun je već kompletiran. Nastavite na prijavu.' });
-        }
-
-        const userId = userResult.rows[0].id;
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // IZRAČUN is_professor: Ako NIJE student, onda JE profesor
-        const isProfessor = !is_student;
-
-        // Ažuriraj redak s finalnim obaveznim podacima
-        // Baza očekuje is_professor (Boolean)
-        const updatedUser = await pool.query(
-            'UPDATE users SET password_hash = $1, name = $2, surname = $3, is_professor = $4, updated_at = NOW() WHERE id = $5 RETURNING id, name, surname, email, is_professor',
-            [hashedPassword, name, surname, isProfessor, userId]
-        );
-
-        const token = generateToken(userId);
-
-        res.cookie('token', token, cookieOptionsNoRemember);
-
-        return res.status(201).json({
-            message: 'Račun je uspješno kreiran i prijavljeni ste.',
-            user: updatedUser.rows[0]
-        });
-
-    } catch (error) {
-        console.error('Greška kod finalizacije registracije:', error);
-        return res.status(500).json({ message: 'Interna greška servera.' });
+        return res.status(200).json({ message: "Profil uspješno dovršen." });
     }
+ catch (err) {
+    console.error("finish-register ERROR:", err);
+    return res.status(500).json({ message: "Server error" });
+}
 });
+
+
+
+
+
 //login
 router.post('/login', async (req, res) => {
     const { email, password, rememberLogin } = req.body;
