@@ -9,7 +9,7 @@ const session = require('express-session');
 const app = express();
 
 app.use(cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
     credentials: true
 }));
 
@@ -18,6 +18,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 //cookie
+/* mozda ipak netreba al cu ostavit tu ak ce nam trebat
 app.use(session({
     secret: process.env.SESSION_SECRET || "secret",
     resave: false,
@@ -28,6 +29,7 @@ app.use(session({
         maxAge: 15 * 60 * 1000 // 15 min
     }
 }))
+*/
 
 const authRoutes = require('./routes/auth');
 app.use("/auth", authRoutes);
@@ -38,6 +40,7 @@ app.use('/profile', profRoutes);
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public/index.html"));
 });
+
 app.get("/finish-register", (req, res) => {
     res.sendFile(path.join(__dirname, "public/finish-register.html"));
 })
