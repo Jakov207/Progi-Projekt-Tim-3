@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const sendEmail = require('../config/email');
 const fs = require('fs');
 const path = require('path');
+const verifyToken = require("../middleware/verifyToken");
 
 const router = express.Router();
 
@@ -33,15 +34,21 @@ const cookieOptionsNoRemember = {
     sameSite: 'Strict',
 }
 
-const generateToken = (id) => {
+//generira JWT token za login
+const generateLoginToken = (id) => {
     return jwt.sign({ id: id }, process.env.JWT_SECRET, {
         expiresIn: '30d'
     })
 }
 
-const getTokenExpiry = () => {
-    return new Date(Date.now() + 10 * 60 * 1000).toISOString();
-}
+//generira JWT token za privremeno spremanje email i password_hash
+const generateVerifyToken = (email, password_hash) => {
+    return jwt.sign(
+        { email, password_hash },
+        process.env.VERIFY_SECRET,
+        { expiresIn: '10m' }
+    );
+};
 
 //provjerava ispravan unos emaila
 function isEmail(email) {
@@ -56,53 +63,57 @@ function isPassword(password) {
 }
 
 
-// RUTA 1: UNOS EMAILA I SLANJE POTVRDE
-router.post('/register/email', async (req, res) => {
-    const { email, name, surname,  is_professor, password} = req.body;
+// RUTA 1: UNOS EMAILA I LOZINKE, SLANJE EMAIL VERIFIKACIJE
+router.post('/register', async (req, res) => {
+    const { email, password, passwordCheck, termsAndConditions} = req.body;
 
     if (!email || !isEmail(email)) {
         return res.status(400).json({ message: 'Molimo unesite ispravnu email adresu.' });
     }
+
     if(!password || !isPassword(password)) {
         return res.status(400).json({message: "Lozinka mora imati 8-32 znakova, veliko i malo slovo, broj i specijalni znak."});
     }
-    if(!name ||!surname || typeof is_professor === 'undefined') {
-        return res.status(400).json({message: "nedostaju podaci"})
+
+    if (!passwordCheck || password !== passwordCheck) {
+        return res.status(400).json({ message: 'Lozinke se ne podudaraju.' });
     }
 
-    try {
-        const userExists = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
-
-        if (userExists.rows.length > 0 ) {
-            return res.status(400).json({ message: 'Korisnik s ovim emailom već postoji.' });
-        }
-
-        const password_hash = await bcrypt.hash(password, 12);
-
-        const verificationToken = crypto.randomBytes(32).toString('hex');
-        const tokenExpiry = getTokenExpiry();
-
-        await pool.query(
-                'INSERT INTO users (email, is_verified, verification_token, token_expiry, name, surname, is_professor, password_hash) VALUES ($1, FALSE, $2, $3, $4, $5, $6, $7)',
-                [email, verificationToken, tokenExpiry, name, surname, is_professor, password_hash]
-            );
-
-        const verificationLink = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
-        const emailHtml = verificationTemplate.replace(/{{verificationLink}}/g, verificationLink);
-
-        await sendEmail({
-            from: process.env.EMAIL_FROM,
-            to: email,
-            subject: 'Potvrda Registracije | Fertutor.xyz',
-            html: emailHtml,
-        });
-
-        return res.status(202).json({ message: 'Link za potvrdu poslan je na vaš email. Molimo provjerite sandučić.' });
-
-    } catch (error) {
-        console.error('Greška kod registracije (Korak 1):', error);
-        return res.status(500).json({ message: 'Interna greška servera.' });
+    if (!termsAndConditions) {
+        return res.status(400).json({message: "moras prihvatiti TaC"});
     }
+
+    //provjera postoji li email u users
+    const userExists = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+
+    if (userExists.rows.length > 0 ) {
+        return res.status(400).json({ message: 'Korisnik s ovim emailom već postoji.' });
+    }
+
+    //password hash
+    const password_hash = await bcrypt.hash(password, 12);
+
+    //token za verifikaciju maila i spremanje emaila i passworda privremeno
+    const token = generateVerifyToken(email, password_hash);
+
+    //link za verifikaciju
+    const verificationLink = `${process.env.FRONTEND_URL}/auth/verify-token?token=${token}`;
+    const emailHtml = verificationTemplate.replace(/{{verificationLink}}/g, verificationLink);
+
+    //saljemo email
+    const sent = await sendEmail({
+        from: process.env.EMAIL_FROM,
+        to: email,
+        subject: 'Potvrda Registracije | Fertutor.xyz',
+        html: emailHtml
+    });
+
+    //provjera slanja emaila
+    if(!sent) {
+        return res.status(500).json({message: "slanje emaila neuspjesno"});
+    }
+
+    return res.status(202).json({ message: 'Link za potvrdu poslan je na vaš email. Molimo provjerite sandučić.' });
 });
 
 
@@ -110,97 +121,61 @@ router.post('/register/email', async (req, res) => {
 router.get('/verify-token', async (req, res) => {
     const { token } = req.query;
 
+    console.log("token: ", token); //console.log
+
     if (!token) {
         return res.status(400).json({ message: 'Token nije pronađen.' });
     }
 
+    //provjera token, ako je token dobar idemo na zadnji dio registracije
     try {
-        const userResult = await pool.query(
-            'SELECT id, email, is_verified, token_expiry FROM users WHERE verification_token = $1',
-            [token]
-        );
-
-        if (userResult.rows.length === 0) {
-            return res.status(404).json({ message: 'Nevažeći token.' });
-        }
-
-        const user = userResult.rows[0];
-
-        if (new Date(user.token_expiry) < new Date()) {
-            await pool.query('DELETE FROM users WHERE id = $1', [user.id]);
-            return res.status(400).json({ message: 'Token je istekao. Molimo ponovno se registrirajte.' });
-        }
-
-        await pool.query(
-            'UPDATE users SET is_verified = TRUE, verification_token = NULL, token_expiry = NULL WHERE id = $1',
-            [user.id]
-        );
-
-        return res.status(200).json({
-            message: 'Email uspješno potvrđen.',
-            email: user.email
-        });
-
-    } catch (error) {
-        console.error('Greška kod potvrde tokena:', error);
-        return res.status(500).json({ message: 'Interna greška servera.' });
+        jwt.verify(token, process.env.VERIFY_SECRET);
+        return res.redirect(`${process.env.FRONTEND_URL}/finish-register?token=${token}`);
+    } catch (err) {
+        return res.status(400).json({ message: 'Invalid or expired token.' });
     }
 });
 
 
 // RUTA 3: FINALIZACIJA REGISTRACIJE (POSTAVLJANJE LOZINKE I DETALJA)
 router.post('/finish-register', async (req, res) => {
-    // Koristimo is_student flag
-    const { email, password, passwordCheck, name, surname, is_student, termsAndConditions } = req.body;
+    const { token, name, surname, date_of_birth, sex, is_professor, city, education } = req.body; //RIJESITI TOKEN!!!
 
-    if (!email || !password || !name || !surname || is_student === undefined || !termsAndConditions) {
-        return res.status(400).json({ message: 'Molimo upišite podatke u sva obavezna polja i prihvatite uvjete.' });
-    }
-    if (!isPassword(password) || password !== passwordCheck) {
-        return res.status(400).json({ message: 'Lozinka je neispravnog formata ili se lozinke ne podudaraju.' });
+    if (!token) return res.status(400).json({message: "Istekao token"});
+    if (!name || !surname || !date_of_birth || !sex || typeof is_professor === "undefined" || !city || !education) {
+        return res.status(400).json({ message: 'Molimo unesite podatke u sva polja.' });
     }
 
+    //dohvacanje podataka emaila i hash passworda
+    let parsed;
     try {
-        const userResult = await pool.query(
-            'SELECT id, is_verified, password_hash FROM users WHERE email = $1',
-            [email]
-        );
-
-        if (userResult.rows.length === 0 || !userResult.rows[0].is_verified) {
-            return res.status(403).json({ message: 'Email nije potvrđen ili ne postoji. Ponovite prvi korak registracije.' });
-        }
-
-        if (userResult.rows[0].password_hash) {
-            return res.status(400).json({ message: 'Račun je već kompletiran. Nastavite na prijavu.' });
-        }
-
-        const userId = userResult.rows[0].id;
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // IZRAČUN is_professor: Ako NIJE student, onda JE profesor
-        const isProfessor = !is_student;
-
-        // Ažuriraj redak s finalnim obaveznim podacima
-        // Baza očekuje is_professor (Boolean)
-        const updatedUser = await pool.query(
-            'UPDATE users SET password_hash = $1, name = $2, surname = $3, is_professor = $4, updated_at = NOW() WHERE id = $5 RETURNING id, name, surname, email, is_professor',
-            [hashedPassword, name, surname, isProfessor, userId]
-        );
-
-        const token = generateToken(userId);
-
-        res.cookie('token', token, cookieOptionsNoRemember);
-
-        return res.status(201).json({
-            message: 'Račun je uspješno kreiran i prijavljeni ste.',
-            user: updatedUser.rows[0]
-        });
-
-    } catch (error) {
-        console.error('Greška kod finalizacije registracije:', error);
-        return res.status(500).json({ message: 'Interna greška servera.' });
+        parsed = jwt.verify(token, process.env.VERIFY_SECRET);
     }
+    catch (err) {
+        return res.status(400).json({ message: 'Invalid or expired token.' });
+    }
+
+    //upis u bazu users
+    await pool.query('INSERT INTO  users (email, password_hash, is_professor, name, surname) VALUES ($1, $2, $3, $4, $5)',
+        [parsed.email, parsed.password_hash, is_professor, name, surname]);
+
+    //id novog usera
+    const id = await pool.query('SELECT id FROM users WHERE email = $1', [parsed.email]);
+    const user_id = id.rows[0].id;
+
+    //upis u baze professors ili students
+    if (is_professor) {
+        await pool.query('INSERT INTO  professors (user_id, sex, city, teaching, date_of_birth) VALUES ($1, $2, $3, $4, $5)',
+            [user_id, sex, city, education, date_of_birth]);
+    } else if (!is_professor) {
+        await pool.query('INSERT INTO  students (user_id, sex, city, education, date_of_birth) VALUES ($1, $2, $3, $4, $5)',
+            [user_id, sex, city, education, date_of_birth]);
+    }
+
+    //jos treba: dat tu noRemember login token i redirect na home page ili negdje
+    return res.status(200).json({ message: "Profil uspješno dovršen." });
 });
+
 //login
 router.post('/login', async (req, res) => {
     const { email, password, rememberLogin } = req.body;
@@ -209,48 +184,48 @@ router.post('/login', async (req, res) => {
         return res.status(400).json({message: 'Molimo upišite podatke u sva polja'});
     }
 
+    //provjera postoji li korisnik
     const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-
     if (user.rows.length === 0) {
         return res.status(400).json({message: 'ne postoji korisnik s tim emailom'});
     }
 
+    //podaci o useru
     const userData = user.rows[0];
 
-    if (!userData.is_verified) {
-        return res.status(403).json({message: 'Vaš račun nije potvrđen. Molimo provjerite email.'});
-    }
-
+    //provjera jeli upisana lozinka tocna
     const isMatch = await bcrypt.compare(password, userData.password_hash);
-
     if (!isMatch) {
         return res.status(400).json({message: 'Krivi podaci za login'});
     }
 
-    const token = generateToken(userData.id);
-
-    if (!rememberLogin) {
-        res.cookie('token', token, cookieOptionsNoRemember);
-    }
-    else {
+    //generiramo token da user ostane loginan
+    const token = generateLoginToken(userData.id);
+    if (rememberLogin) {
         res.cookie('token', token, cookieOptionsRemember);
     }
-
+    else {
+        res.cookie('token', token, cookieOptionsNoRemember);
+    }
 
     return res.status(200).json({
         message: 'uspjesan login',
-        user:user
+        user: {
+            email: userData.email,
+            name: userData.name,
+            surname: userData.surname,
+            is_professor: userData.is_professor
+        }
     });
-})//mora biti jedan odgovor u expressu
 
+});
 
 //logout
 router.post('/logout',  (req, res) => {
-    req.session?.destroy(()=> {});
     res.clearCookie('token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
+        sameSite: 'Strict'
     });
     return res.json({ message: 'Uspjesan logout' });
 });
