@@ -5,7 +5,8 @@ import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import RegisterEmail from './pages/RegisterEmail';
-import FinishRegister from './pages/FinishRegister';
+import FinishRegister from "./pages/FinishRegister.jsx";
+
 // ... ostale
 
 // Uvezi layout
@@ -18,6 +19,7 @@ function App() {
             {/* Rute koje NE koriste layout (full-screen) */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<RegisterEmail />} />
+            <Route path="/finish-register" element={<FinishRegister />} />
 
             {/* Rute koje KORISTE MainLayout (s navigacijom) */}
             <Route element={<MainLayout />}>
