@@ -97,7 +97,7 @@ router.post('/register', async (req, res) => {
     const token = generateVerifyToken(email, password_hash);
 
     //link za verifikaciju
-    const verificationLink = `${process.env.FRONTEND_URL}/auth/verify-token?token=${token}`;
+    const verificationLink = `${process.env.FRONTEND_URL}/api/auth/verify-token?token=${token}`;
     const emailHtml = verificationTemplate.replace(/{{verificationLink}}/g, verificationLink);
 
     //saljemo email
