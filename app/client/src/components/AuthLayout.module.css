@@ -1,0 +1,83 @@
+/* Svi stilovi za layout su sada ovdje */
+.container {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+}
+
+/* --- Lijevi panel --- */
+.infoPanel {
+    flex-basis: 50%;
+    background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 40px;
+    box-sizing: border-box;
+    text-align: center;
+    overflow: hidden;
+}
+
+.infoContent {
+    max-width: 450px;
+    margin-top: 20px;
+    z-index: 2;
+    position: relative;
+}
+
+.infoContent p {
+    font-size: 1.6rem;
+    color: #333;
+    line-height: 1.8;
+    padding: 0 20px;
+}
+
+.infoImage {
+    display: block;
+    margin-top: auto;
+    width: 650px;
+    max-width: 90%;
+    height: auto;
+    max-height: 80%;
+    object-fit: contain;
+    z-index: 1;
+}
+
+/* --- Desni panel --- */
+.formPanel {
+    flex-basis: 50%;
+    background-color: #e0f3ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+/* --- Responzivnost --- */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        height: auto;
+        overflow: auto;
+    }
+    .infoPanel {
+        flex-basis: auto;
+        padding: 40px 20px;
+        min-height: 400px;
+    }
+    .formPanel {
+        flex-basis: auto;
+        padding: 40px 20px;
+    }
+    .infoImage {
+        position: static;
+        width: 80%;
+        max-width: none;
+        height: auto;
+        max-height: 25vh;
+        margin: 20px auto 0 auto;
+        transform: none;
+    }
+}

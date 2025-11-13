@@ -1,43 +1,14 @@
 /* src/index.css */
-body {
-    font-family: Arial, sans-serif;
-    padding: 20px;
-    background: #f4f4f4;
+
+/* OVO JE ZA LOGIN/REGISTER STRANICE */
+body, html, #root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overflow: hidden;
 }
-nav {
-    background: #fff;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-}
-nav a {
-    margin: 0 10px;
-    text-decoration: none;
-    font-weight: bold;
-}
-input[type="email"],
-input[type="password"],
-input[type="text"] {
-    display: block;
-    width: 300px;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-button {
-    padding: 10px 15px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-button:hover {
-    background-color: #0056b3;
-}
-div {
-    background: #fff;
-    padding: 20px;
-    border-radius: 5px;
-}
+
+/* OVO JE ZA OSTALE STRANICE (HOME ITD.) */
+/* Stilovi za MainLayout će se primijeniti kroz CSS module */

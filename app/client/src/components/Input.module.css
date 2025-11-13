@@ -1,0 +1,31 @@
+/* src/components/Input.module.css */
+
+.inputGroup {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.inputIcon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-55%);
+    color: #888;
+    font-size: 1.1rem;
+    z-index: 2; /* Da je ikona iznad inputa */
+}
+
+/* Osnovni stil za input */
+.inputGroup input {
+    width: 100%;
+    padding: 15px 15px 15px 15px; /* Bez lijevog paddinga po defaultu */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+/* Dodatna klasa koja se doda ako ikona postoji */
+.inputGroup input.withIcon {
+    padding-left: 45px; /* Dodaj mjesta za ikonu */
+}

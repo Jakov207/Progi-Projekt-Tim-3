@@ -1,96 +1,174 @@
 // src/pages/FinishRegister.jsx
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+
+import React, { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
+import AuthLayout from '../components/AuthLayout';
+import Input from '../components/Input';
+import styles from './FinishRegister.module.css'; // Koristi kopirani CSS
+
+import slikaRegistracija from '../assets/images/slikaRegistracija.png';
 
 function FinishRegister() {
     const [formData, setFormData] = useState({
-        password: '',
-        passwordCheck: '',
         name: '',
         surname: '',
-        is_student: true, // Pretpostavljamo da je student
-        termsAndConditions: false,
+        date_of_birth: '',
+        sex: 'M', // Default 'Muški'
+        is_professor: false, // Default 'Student'
+        city: '',
+        education: ''
     });
-    const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const navigate = useNavigate();
 
-    // Dohvaćamo email koji smo spremili nakon verifikacije
-    useEffect(() => {
-        const regEmail = localStorage.getItem('registrationEmail');
-        if (!regEmail) {
-            setError('Sesija registracije nije pronađena. Molimo krenite ispočetka.');
-            navigate('/register');
-        } else {
-            setEmail(regEmail);
-        }
-    }, [navigate]);
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const token = searchParams.get('token'); // Čitamo token iz URL-a
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value,
-        }));
+
+        // Posebno rukovanje za 'is_professor' radio gumbe
+        if (name === "is_professor") {
+            setFormData(prev => ({ ...prev, is_professor: value === 'true' }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: type === 'checkbox' ? checked : value
+            }));
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
-        if (formData.password !== formData.passwordCheck) {
-            setError('Lozinke se ne podudaraju.');
+        if (!token) {
+            setError("Token za registraciju nije pronađen. Molimo krenite ispočetka.");
             return;
         }
-        if (!formData.termsAndConditions) {
-            setError('Morate prihvatiti uvjete korištenja.');
-            return;
-        }
+
+        setLoading(true);
 
         try {
-            // Šaljemo sve podatke, UKLJUČUJUĆI email
-            const response = await api.post('/auth/finish-register', {
-                email: email,
-                ...formData,
+            await api.post('/auth/finish-register', {
+                token: token,
+                ...formData
             });
 
-            // Backend nas je prijavio (postavio kolačić)
-            localStorage.removeItem('registrationEmail'); // Čistimo
-            navigate('/'); // Idemo na početnu stranicu kao prijavljeni korisnik
-
+            navigate('/login');
         } catch (err) {
             setError(err.response?.data?.message || 'Greška pri završetku registracije.');
+        } finally {
+            setLoading(false);
         }
     };
 
+    const registerInfoText = "Registrirajte se kako biste pristupili rezervacijama, instruktorima i personaliziranom učenju.";
+
     return (
-        <div>
-            <h2>Korak 2: Završite Registraciju</h2>
-            <p>Potvrdili ste email: **{email}**</p>
-            <form onSubmit={handleSubmit}>
-                <input name="name" onChange={handleChange} placeholder="Ime" required />
-                <input name="surname" onChange={handleChange} placeholder="Prezime" required />
-                <input name="password" type="password" onChange={handleChange} placeholder="Lozinka" required />
-                <input name="passwordCheck" type="password" onChange={handleChange} placeholder="Ponovi lozinku" required />
+        <AuthLayout
+            infoText={registerInfoText}
+            infoImage={slikaRegistracija}
+        >
+            <div className={styles.formContainer}>
+                <h2>Osnovni osobni podaci</h2>
+                <form onSubmit={handleSubmit}>
 
-                <div>
-                    <label>
-                        <input name="is_student" type="checkbox" checked={formData.is_student} onChange={handleChange} />
-                        Student sam
-                    </label>
-                </div>
-                <div>
-                    <label>
-                        <input name="termsAndConditions" type="checkbox" checked={formData.termsAndConditions} onChange={handleChange} />
-                        Prihvaćam uvjete korištenja
-                    </label>
-                </div>
+                    <Input
+                        icon="👤"
+                        name="name"
+                        placeholder="Ime*"
+                        value={formData.name}
+                        onChange={handleChange}
+                        required
+                    />
+                    <Input
+                        icon="👤"
+                        name="surname"
+                        placeholder="Prezime*"
+                        value={formData.surname}
+                        onChange={handleChange}
+                        required
+                    />
+                    <Input
+                        icon="📅"
+                        type="date"
+                        name="date_of_birth"
+                        placeholder="Datum rođenja" // Placeholder se možda neće vidjeti
+                        value={formData.date_of_birth}
+                        onChange={handleChange}
+                        required
+                    />
 
-                <button type="submit">Završi registraciju</button>
-            </form>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-        </div>
+                    {/* --- NOVI KOD ZA SPOL --- */}
+                    <div className={styles.selectGroup}>
+                        <label htmlFor="sex">Spol*</label>
+                        <select id="sex" name="sex" value={formData.sex} onChange={handleChange} required>
+                            <option value="M">Muški</option>
+                            <option value="F">Ženski</option>
+                            <option value="O">Ostalo / Ne želim reći</option>
+                        </select>
+                    </div>
+
+                    {/* --- NOVI KOD ZA TIP KORISNIKA --- */}
+                    <div className={styles.radioGroup}>
+                        <p>Tip Korisnika*</p>
+                        <label>
+                            <input
+                                type="radio"
+                                name="is_professor"
+                                value="false" // Student (false)
+                                checked={formData.is_professor === false}
+                                onChange={handleChange}
+                            />
+                            Student
+                        </label>
+                        <label>
+                            <input
+                                type="radio"
+                                name="is_professor"
+                                value="true" // Profesor (true)
+                                checked={formData.is_professor === true}
+                                onChange={handleChange}
+                            />
+                            Profesor
+                        </label>
+                    </div>
+
+                    {/* Polja koja si imao u backendu ali ne na slici */}
+                    <Input
+                        icon="🏙️"
+                        name="city"
+                        placeholder="Grad*"
+                        value={formData.city}
+                        onChange={handleChange}
+                        required
+                    />
+                    <Input
+                        icon="🎓"
+                        name="education"
+                        placeholder="Edukacija (npr. FER)*"
+                        value={formData.education}
+                        onChange={handleChange}
+                        required
+                    />
+
+                    <p className={styles.obaveznoPolje}>Sa znakom * označena obavezna polja.</p>
+
+                    {error && <p className={styles.errorMessage}>{error}</p>}
+
+                    <button
+                        type="submit"
+                        className={`${styles.btn} ${styles.btnPrimary}`}
+                        disabled={loading}
+                    >
+                        {loading ? 'Spremanje...' : 'Završi registraciju'}
+                    </button>
+                </form>
+            </div>
+        </AuthLayout>
     );
 }
 

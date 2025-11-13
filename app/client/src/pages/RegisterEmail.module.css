@@ -1,0 +1,167 @@
+/* --- Kontejner forme --- */
+.formContainer {
+    width: 100%;
+    max-width: 400px;
+}
+
+.formContainer h2 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+/* --- Opcije (Zapamti me / Zaboravljena lozinka) --- */
+.formOptions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    font-size: 0.9rem;
+}
+
+.rememberMe {
+    display: flex;
+    align-items: center;
+    color: #555;
+}
+
+.rememberMe input {
+    margin-right: 8px; /* Razmak između kućice i teksta */
+}
+
+.forgotPassword {
+    color: #555;
+    text-decoration: none;
+}
+.forgotPassword:hover {
+    text-decoration: underline;
+}
+
+/* --- Stilovi za gumbe (dijele se) --- */
+.btn {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+    transition: background-color 0.3s ease;
+}
+
+.btnPrimary {
+    background-color: #6c9cff;
+    color: white;
+}
+.btnPrimary:hover {
+    background-color: #5a8aff;
+}
+
+/* Stil za onemogućeni gumb */
+.btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.btnGoogle {
+    background-color: #ffffff;
+    color: #333;
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btnGoogle:hover {
+    background-color: #f9f9f9;
+}
+.btnGoogle i {
+    /* Ovo ostavljamo za Font Awesome ako ga Google gumb koristi */
+    color: #db4437;
+    margin-right: 10px;
+    font-size: 1.2rem;
+}
+
+/* --- Link za registraciju --- */
+.signupLink {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.signupLink p {
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.btnSecondary {
+    background-color: #b0c4ff;
+    color: #333;
+}
+.btnSecondary:hover {
+    background-color: #a0b4ef;
+}
+
+/* --- Poruka o grešci --- */
+.errorMessage {
+    color: #d93025;
+    background-color: #fdd;
+    border: 1px solid #d93025;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.termsCheckbox {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.termsCheckbox input {
+    margin-right: 10px;
+}
+
+.loginLink {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.loginLink p {
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Za poruku "Provjerite email" */
+.successMessage {
+    text-align: center;
+    padding: 20px;
+    background-color: #e6ffed;
+    border: 1px solid #b7ebc2;
+    border-radius: 8px;
+    color: #25602e;
+}
+
+.successMessage h3 {
+    margin-top: 0;
+}
+
+/* --- Responzivnost (samo za elemente u formi) --- */
+@media (max-width: 768px) {
+    .formContainer h2 {
+        text-align: center;
+    }
+}
