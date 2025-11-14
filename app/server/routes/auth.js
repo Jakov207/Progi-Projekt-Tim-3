@@ -173,12 +173,7 @@ router.post('/finish-register', async (req, res) => {
     }
 
 
-    //generiramo token da user ostane loginan
-    const token2 = generateLoginToken(name);
-    res.cookie('token', token2, cookieOptionsNoRemember);
-
-    //vraća te na home page
-    return res.redirect(`${process.env.FRONTEND_URL}/`);
+    return res.status(200).json({message: 'Profil dovršen'});
 });
 
 //login
