@@ -172,8 +172,7 @@ router.post('/finish-register', async (req, res) => {
             [user_id, sex, city, education, date_of_birth]);
     }
 
-
-    return res.status(200).json({message: 'Profil dovršen'});
+    return res.status(200).json({message: "Profil je dovršen!"});
 });
 
 //login
