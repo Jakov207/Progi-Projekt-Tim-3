@@ -1,6 +1,6 @@
 # Platforma za Online Instrukcije
 
-Ovo je repozitorij za projekt iz kolegija Programsko inženjerstvo (ak. god. 2025./2026.).
+Ovo je repozitorij za projekt iz kolegija Programsko inženjerstvo (ak. god. 2025./2026.).<br>
 Link: fertutor.xyz
 
 ## Opis Projekta
