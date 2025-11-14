@@ -229,4 +229,16 @@ router.post('/logout',  (req, res) => {
     return res.json({ message: 'Uspjesan logout' });
 });
 
+//me
+router.get('/me', verifyToken, async (req, res) => {
+    try {
+        const user = await pool.query('SELECT id, email, name, surname, is_professor FROM users WHERE id = $1', [req.user.id]);
+        if (user.rows.length === 0) return res.status(404).json({ message: 'Korisnik nije pronađen' });
+        res.json({ user: user.rows[0] });
+    } catch (err) {
+        res.status(500).json({ message: 'Greška na serveru' });
+    }
+});
+
+
 module.exports = router;

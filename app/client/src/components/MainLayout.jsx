@@ -1,19 +1,20 @@
-import React from "react";
-import { Link, Outlet } from "react-router-dom";
+// src/components/MainLayout.jsx
+import React, { useContext } from "react";
+import { Link, Outlet } from "react-router-dom"; // <--- Outlet je ključan
 import styles from "./MainLayout.module.css";
 import logo from "../assets/images/logo.png";
+import { AuthContext } from "../context/AuthContext";
 
 function MainLayout() {
+    const { user, logout } = useContext(AuthContext);
+
     return (
         <>
             <header className={styles.navbar}>
-
-                {/* LOGO */}
                 <Link to="/" className={styles.logoWrapper}>
                     <img src={logo} alt="Logo" className={styles.logo} />
                 </Link>
 
-                {/* NAV LINKS */}
                 <nav className={styles.navLinks}>
                     <Link to="/">Početna</Link>
                     <Link to="/instructors">Instruktori</Link>
@@ -21,16 +22,23 @@ function MainLayout() {
                     <Link to="/profile">Profil</Link>
                 </nav>
 
-                {/* RIGHT SIDE BUTTONS */}
                 <div className={styles.rightSide}>
-                    <Link to="/register" className={styles.registerBtn}>Registracija</Link>
-                    <Link to="/login" className={styles.loginBtn}>Prijava</Link>
+                    {!user ? (
+                        <>
+                            <Link to="/register" className={styles.registerBtn}>Registracija</Link>
+                            <Link to="/login" className={styles.loginBtn}>Prijava</Link>
+                        </>
+                    ) : (
+                        <button onClick={logout} className={styles.loginBtn}>
+                            Odjava
+                        </button>
+                    )}
                 </div>
             </header>
 
-            {/* CONTENT */}
+            {/* GLAVNI SADRŽAJ STRANICE */}
             <main className={styles.pageContent}>
-                <Outlet />
+                <Outlet /> {/* <-- React Router ovdje ubacuje Home, Profile itd */}
             </main>
         </>
     );
