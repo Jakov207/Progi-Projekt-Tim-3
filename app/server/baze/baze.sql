@@ -25,6 +25,6 @@ CREATE TABLE professors (
         city VARCHAR(100),
         teaching VARCHAR(255),
         date_of_birth DATE,
-        CHECK (sex IN ('M', 'F')),
+        CHECK (sex IN ('M', 'F', 'X')),
         CHECK (date_of_birth <= CURRENT_DATE)
 );
