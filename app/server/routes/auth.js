@@ -172,7 +172,10 @@ router.post('/finish-register', async (req, res) => {
             [user_id, sex, city, education, date_of_birth]);
     }
 
-    //jos treba: dat tu noRemember login token i redirect na home page ili negdje
+    //generiramo token da user ostane loginan
+    const token2 = generateLoginToken(userData.id);
+    res.cookie('token', token2, cookieOptionsNoRemember);
+
     return res.status(200).json({ message: "Profil uspješno dovršen." });
 });
 

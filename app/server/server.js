@@ -32,10 +32,10 @@ app.use(session({
 */
 
 const authRoutes = require('./routes/auth');
-app.use("/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 
 const profRoutes = require('./routes/profile');
-app.use('/profile', profRoutes);
+app.use('/api/profile', profRoutes);
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public/index.html"));

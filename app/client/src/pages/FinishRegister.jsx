@@ -108,7 +108,7 @@ function FinishRegister() {
                         <select id="sex" name="sex" value={formData.sex} onChange={handleChange} required>
                             <option value="M">Muški</option>
                             <option value="F">Ženski</option>
-                            <option value="O">Ostalo / Ne želim reći</option>
+                            <option value="X">Ostalo / Ne želim reći</option>
                         </select>
                     </div>
 

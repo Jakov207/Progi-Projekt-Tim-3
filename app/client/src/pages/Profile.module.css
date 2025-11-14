@@ -1,0 +1,93 @@
+.profile-page {
+    display: flex;
+    height: calc(100vh - 64px);
+    background: #bfeefc;
+}
+
+/* Lijevi sidebar 40% */
+.sidebar {
+    width: 40%;
+    background: #9fd6e6;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Sidebar user */
+.sidebar-user {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.sidebar-avatar {
+    width: 56px;
+    height: 56px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Sidebar buttons */
+.nav-btn {
+    padding: 10px;
+    border: none;
+    background: rgba(255,255,255,0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.nav-btn.active {
+    background: white;
+}
+
+/* Content */
+.content {
+    flex: 60%;
+    padding: 40px;
+}
+
+.form-section {
+    display: flex;
+    gap: 40px;
+}
+
+.form-fields {
+    width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-fields input {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    background: #eef9fb;
+}
+
+/* Profile picture */
+.circle-photo {
+    width: 190px;
+    height: 190px;
+    background: #8ccff0;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.save-btn {
+    margin-top: 20px;
+    padding: 12px 20px;
+    background: #0a5773;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+.error { color: red; margin-top: 10px; }
+.success { color: green; margin-top: 10px; }

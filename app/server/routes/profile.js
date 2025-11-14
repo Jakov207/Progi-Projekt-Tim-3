@@ -1,9 +1,8 @@
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/db');
 const verifyToken = require('../middleware/verifyToken');
-const resP = require("pg/lib/query");
-
 
 router.get('/', verifyToken, async (req, res) => {
     try{
@@ -21,15 +20,17 @@ router.get('/', verifyToken, async (req, res) => {
         console.log(user.is_professor);
 
         if(user.is_professor){
-             const resP = await pool.query(
-                'SELECT sex, city, teaching FROM professors where professors.user_id = $1', [req.user.id]
-             );
-             console.log(resP);
+            const resP = await pool.query(
+                'SELECT sex, city, teaching, date_of_birth FROM professors WHERE user_id = $1',
+                [req.user.id]
+            );
+            console.log(resP);
             profile = resP.rows[0] ?? {};
         }
         else{
             const resS = await pool.query(
-                'SELECT sex, city, education FROM students where students.user_id = $1', [req.user.id]
+                'SELECT sex, city, education, date_of_birth FROM students WHERE user_id = $1',
+                [req.user.id]
             );
             console.log(resS);
             profile = resS.rows[0] ?? {};

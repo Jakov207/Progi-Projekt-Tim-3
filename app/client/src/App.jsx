@@ -10,6 +10,9 @@ import FinishRegister from './pages/FinishRegister';
 
 // Uvezi layout
 import MainLayout from './components/MainLayout';
+import Profile from "./pages/Profile.jsx";
+
+
 
 function App() {
     return (
@@ -19,9 +22,11 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<RegisterEmail />} />
             <Route path="/finish-register" element={<FinishRegister />} />
+
             {/* Rute koje KORISTE MainLayout (s navigacijom) */}
             <Route element={<MainLayout />}>
                 <Route path="/" element={<Home />} />
+                <Route path="/profile" element={<Profile />} />
                 {/* ... stavi ovdje sve ostale rute koje trebaju header ... */}
             </Route>
 
