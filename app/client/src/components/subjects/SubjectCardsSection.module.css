@@ -1,0 +1,14 @@
+/* client/src/components/subjects/SubjectCardsSection.module.css */
+.section {
+    background-color: #f9fafb; /* Vrlo svijetlo siva pozadina */
+    padding: 4rem 2rem;
+    width: 100%;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto; /* Centriranje kontejnera */
+    display: flex;
+    justify-content: center; /* Centriranje kartica */
+    gap: 2rem; /* Razmak između kartica */
+}

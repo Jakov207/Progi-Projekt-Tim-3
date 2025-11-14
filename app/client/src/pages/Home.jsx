@@ -1,25 +1,31 @@
-// src/pages/Home.jsx
+// client/src/pages/Home.jsx
 import React from 'react';
-import api from '../api';
+import styles from './Home.module.css'; // NAJVAŽNIJA LINIJA - uvozimo stilove
+import SubjectCardsSection from '../components/subjects/SubjectCardsSection';
 
-function Home() {
-    const handleLogout = async () => {
-        try {
-            await api.post('/auth/logout');
-            // Osvježavamo stranicu da backend obriše kolačić
-            window.location.reload();
-        } catch (err) {
-            console.error('Greška pri odjavi', err);
-        }
-    };
-
+const Home = () => {
     return (
-        <div>
-            <h1>Dobrodošli na Fertutor</h1>
-            <p>Ovo je vaša početna stranica.</p>
-            <button onClick={handleLogout}>Odjava</button>
-        </div>
+        // Koristimo React Fragment <> da grupiramo više elemenata
+        <>
+            <main className={styles.heroSection}>
+                <div className={styles.heroContent}>
+                    <div className={styles.heroText}>
+                        <h1>Uči pametnije, postiži više – pronađi instruktora koji ti odgovara.</h1>
+                        <div className={styles.searchBar}>
+                            <input type="text" placeholder="Pretraži instruktora, predmet..." />
+                            <button>Pretraži</button>
+                        </div>
+                    </div>
+                    <div className={styles.heroImageContainer}>
+                        <div className={styles.videoPlaceholderGraphic}></div>
+                    </div>
+                </div>
+            </main>
+
+            {/* OVDJE DODAJEMO NOVU SEKCIJU */}
+            <SubjectCardsSection />
+        </>
     );
-}
+};
 
 export default Home;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 
-
+import './App.css';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import RegisterEmail from './pages/RegisterEmail';
@@ -9,7 +9,7 @@ import FinishRegister from './pages/FinishRegister';
 // ... ostale
 
 // Uvezi layout
-import MainLayout from './components/MainLayout';
+import MainLayout from './components/layout/MainLayout.jsx';
 
 function App() {
     return (

@@ -1,0 +1,40 @@
+/* client/src/components/subjects/SubjectCard.module.css */
+.card {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    width: 300px; /* Možemo prilagoditi širinu */
+    text-align: left;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    color: #333; /* Tamna boja teksta za kontrast s bijelom pozadinom */
+}
+
+.cardTitle {
+    font-size: 1.25rem;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+.cardDescription {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    color: #666;
+}
+
+.cardButton {
+    background-color: transparent;
+    color: #007BFF;
+    border: 1px solid #007BFF;
+    border-radius: 5px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease-in-out;
+}
+
+.cardButton:hover {
+    background-color: #007BFF;
+    color: #ffffff;
+}
