@@ -97,7 +97,7 @@ router.post('/register', async (req, res) => {
     const token = generateVerifyToken(email, password_hash);
 
     //link za verifikaciju
-    const verificationLink = `${process.env.FRONTEND_URL}/auth/verify-token?token=${token}`;
+    const verificationLink = `${process.env.FRONTEND_URL}/api/auth/verify-token?token=${token}`;
     const emailHtml = verificationTemplate.replace(/{{verificationLink}}/g, verificationLink);
 
     //saljemo email
@@ -172,8 +172,7 @@ router.post('/finish-register', async (req, res) => {
             [user_id, sex, city, education, date_of_birth]);
     }
 
-    //jos treba: dat tu noRemember login token i redirect na home page ili negdje
-    return res.status(200).json({ message: "Profil uspješno dovršen." });
+    return res.status(200).json({message: "Profil je dovršen!"});
 });
 
 //login
@@ -229,5 +228,17 @@ router.post('/logout',  (req, res) => {
     });
     return res.json({ message: 'Uspjesan logout' });
 });
+
+//me
+router.get('/me', verifyToken, async (req, res) => {
+    try {
+        const user = await pool.query('SELECT id, email, name, surname, is_professor FROM users WHERE id = $1', [req.user.id]);
+        if (user.rows.length === 0) return res.status(404).json({ message: 'Korisnik nije pronađen' });
+        res.json({ user: user.rows[0] });
+    } catch (err) {
+        res.status(500).json({ message: 'Greška na serveru' });
+    }
+});
+
 
 module.exports = router;

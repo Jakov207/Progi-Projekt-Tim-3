@@ -1,0 +1,100 @@
+.heroSection {
+    width: 100%;
+    min-height: calc(100vh - 90px);
+    background: linear-gradient(to bottom, #031819, #0e3436);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px;
+}
+
+/* Layout */
+.heroContent {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    width: 100%;
+    gap: 60px;
+}
+
+/* Tekst */
+.leftSide {
+    max-width: 550px;
+}
+
+.leftSide h1 {
+    color: white;
+    font-size: 36px;
+    font-weight: bold;
+    line-height: 1.4;
+    margin-bottom: 30px;
+}
+
+/* Search bar */
+.searchContainer {
+    display: flex;
+    align-items: center;
+    width: 350px;
+    height: 45px;
+    background: #ffffff20;
+    border-radius: 25px;
+    padding: 0 10px;
+    border: 1.5px solid #ffffff40;
+}
+
+.searchContainer input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 15px;
+    color: white;
+    outline: none;
+    padding: 10px 12px;
+}
+
+.searchContainer input::placeholder {
+    color: #d7d7d7;
+}
+
+.searchContainer button {
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.searchContainer button:hover {
+    transform: scale(1.1);
+}
+
+/* Slika */
+.rightSide {
+    max-width: 500px;
+}
+
+.heroImg {
+    width: 100%;
+    max-width: 450px;
+    object-fit: contain;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .heroContent {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .searchContainer {
+        margin: 0 auto;
+    }
+
+    .rightSide {
+        margin-top: 20px;
+    }
+}

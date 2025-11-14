@@ -5,8 +5,8 @@ CREATE TABLE users (
         is_professor BOOLEAN NOT NULL,
         name VARCHAR(100) NOT NULL,
         surname VARCHAR(100) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENTTIMESTAMP,
-        CHECK (email ~* '^[A-Za-z0-9.%+-]+@[A-Za-z0-9.-]+.[A-Za-z]{2,}$'),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CHECK (email ~* '^[A-Za-z0-9.%+-]+@[A-Za-z0-9.-]+.[A-Za-z]{2,}$')
 );
 
 CREATE TABLE students (
@@ -15,7 +15,7 @@ CREATE TABLE students (
         city VARCHAR(100),
         education VARCHAR(255),
         date_of_birth DATE,
-        CHECK (sex IN ('M', 'F')),
+        CHECK (sex IN ('M', 'F', 'X')),
         CHECK (date_of_birth <= CURRENT_DATE)
 );
 
@@ -25,6 +25,6 @@ CREATE TABLE professors (
         city VARCHAR(100),
         teaching VARCHAR(255),
         date_of_birth DATE,
-        CHECK (sex IN ('M', 'F')),
+        CHECK (sex IN ('M', 'F', 'X')),
         CHECK (date_of_birth <= CURRENT_DATE)
 );

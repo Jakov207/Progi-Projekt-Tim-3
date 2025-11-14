@@ -1,25 +1,35 @@
-// src/pages/Home.jsx
-import React from 'react';
-import api from '../api';
+import React from "react";
+import styles from "./Home.module.css";
+import heroImage from "../assets/images/slikaProfesora.png"; // <-- SLIKA IZ ASSETS
 
-function Home() {
-    const handleLogout = async () => {
-        try {
-            await api.post('/auth/logout');
-            // Osvježavamo stranicu da backend obriše kolačić
-            window.location.reload();
-        } catch (err) {
-            console.error('Greška pri odjavi', err);
-        }
-    };
-
+const Home = () => {
     return (
-        <div>
-            <h1>Dobrodošli na Fertutor</h1>
-            <p>Ovo je vaša početna stranica.</p>
-            <button onClick={handleLogout}>Odjava</button>
-        </div>
+        <main className={styles.heroSection}>
+            <div className={styles.heroContent}>
+
+                {/* Lijevi dio: tekst + search */}
+                <div className={styles.leftSide}>
+                    <h1>
+                        Uči pametnije, postiži više — <br />
+                        pronađi instruktora koji ti odgovara.
+                    </h1>
+
+                    <div className={styles.searchContainer}>
+                        <input
+                            type="text"
+                            placeholder="Pretraži instruktora, predmet..."
+                        />
+                        <button>🔍</button>
+                    </div>
+                </div>
+
+                {/* Desni dio: slika */}
+                <div className={styles.rightSide}>
+                    <img src={heroImage} alt="Instruktor" className={styles.heroImg} />
+                </div>
+            </div>
+        </main>
     );
-}
+};
 
 export default Home;
