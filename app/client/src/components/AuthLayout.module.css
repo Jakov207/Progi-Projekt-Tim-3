@@ -1,53 +1,70 @@
-/* Svi stilovi za layout su sada ovdje */
+/* src/components/AuthLayout.module.css */
+
 .container {
     display: flex;
     width: 100%;
-    height: 100vh;
+    min-height: 100vh;
 }
 
-/* --- Lijevi panel --- */
+/* --- Left panel --- */
 .infoPanel {
     flex-basis: 50%;
-    background-color: #f8f9fa;
+    background-color: #d8d8d8;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     justify-content: flex-start;
-    padding: 40px;
+    padding: 80px 40px 0 40px;
     box-sizing: border-box;
-    text-align: center;
+    position: relative;
     overflow: hidden;
 }
 
+/* Blur effect for FinishRegister page */
+.infoPanel.blurred {
+    filter: blur(3px);
+}
+
+.infoPanel.blurred .infoContent,
+.infoPanel.blurred .infoImage {
+    opacity: 0.6;
+}
+
 .infoContent {
-    max-width: 450px;
-    margin-top: 20px;
+    max-width: 380px;
     z-index: 2;
     position: relative;
+    padding-left: 10px;
+    margin-top: 20px;
 }
 
 .infoContent p {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
+    font-style: italic;
     color: #333;
-    line-height: 1.8;
-    padding: 0 20px;
+    line-height: 1.5;
+    margin: 0;
 }
 
+/* Image takes up most of the panel, positioned at bottom, extending beyond */
 .infoImage {
-    display: block;
-    margin-top: auto;
-    width: 650px;
-    max-width: 90%;
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 110%;
+    max-width: 700px;
     height: auto;
-    max-height: 80%;
+    min-height: 70%;
     object-fit: contain;
+    object-position: bottom center;
     z-index: 1;
 }
 
-/* --- Desni panel --- */
+/* --- Right panel --- */
 .formPanel {
     flex-basis: 50%;
-    background-color: #e0f3ff;
+    background-color: #c9eef9;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -55,29 +72,39 @@
     box-sizing: border-box;
 }
 
-/* --- Responzivnost --- */
-@media (max-width: 768px) {
+/* --- Responsive design --- */
+@media (max-width: 900px) {
     .container {
         flex-direction: column;
-        height: auto;
-        overflow: auto;
+        min-height: auto;
     }
+
     .infoPanel {
         flex-basis: auto;
-        padding: 40px 20px;
-        min-height: 400px;
+        padding: 30px 20px;
+        min-height: 300px;
+        align-items: center;
     }
+
+    .infoContent {
+        text-align: center;
+        max-width: 100%;
+        padding-left: 0;
+    }
+
+    .infoImage {
+        position: relative;
+        left: auto;
+        transform: none;
+        width: 90%;
+        max-width: 350px;
+        min-height: auto;
+        bottom: auto;
+        margin-top: auto;
+    }
+
     .formPanel {
         flex-basis: auto;
         padding: 40px 20px;
-    }
-    .infoImage {
-        position: static;
-        width: 80%;
-        max-width: none;
-        height: auto;
-        max-height: 25vh;
-        margin: 20px auto 0 auto;
-        transform: none;
     }
 }
