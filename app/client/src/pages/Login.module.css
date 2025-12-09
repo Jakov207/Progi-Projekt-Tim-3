@@ -1,70 +1,84 @@
-/* --- Kontejner forme --- */
+/* src/pages/Login.module.css */
+
+/* --- Form Container --- */
 .formContainer {
     width: 100%;
-    max-width: 400px;
+    max-width: 340px;
 }
 
 .formContainer h2 {
-    font-size: 2.5rem;
-    color: #333;
+    font-size: 2rem;
+    font-weight: 600;
+    color: #1a1a2e;
     margin-bottom: 30px;
-    text-align: left;
+    text-align: center;
 }
 
-/* --- Opcije (Zapamti me / Zaboravljena lozinka) --- */
+/* --- Form Options (Remember me / Forgot password) --- */
 .formOptions {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
-    font-size: 0.9rem;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
 }
 
 .rememberMe {
     display: flex;
     align-items: center;
-    color: #555;
+    color: #333;
 }
 
 .rememberMe input {
-    margin-right: 8px; /* Razmak između kućice i teksta */
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.rememberMe label {
+    cursor: pointer;
 }
 
 .forgotPassword {
-    color: #555;
+    color: #333;
     text-decoration: none;
+    font-size: 0.85rem;
 }
+
 .forgotPassword:hover {
     text-decoration: underline;
 }
 
-/* --- Stilovi za gumbe (dijele se) --- */
+/* --- Button Styles --- */
 .btn {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
-    padding: 15px;
+    padding: 14px 20px;
     border: none;
     border-radius: 8px;
     font-size: 1rem;
-    font-weight: bold;
+    font-weight: 500;
     cursor: pointer;
     text-align: center;
     text-decoration: none;
     box-sizing: border-box;
-    margin-bottom: 15px;
-    transition: background-color 0.3s ease;
+    margin-bottom: 12px;
+    transition: all 0.2s ease;
 }
 
 .btnPrimary {
-    background-color: #6c9cff;
-    color: white;
-}
-.btnPrimary:hover {
-    background-color: #5a8aff;
+    background-color: #a8c5d8;
+    color: #1a1a2e;
 }
 
-/* Stil za onemogućeni gumb */
-.btn:disabled {
+.btnPrimary:hover {
+    background-color: #96b5c9;
+}
+
+.btnPrimary:disabled {
     background-color: #ccc;
     cursor: not-allowed;
 }
@@ -73,40 +87,49 @@
     background-color: #ffffff;
     color: #333;
     border: 1px solid #ddd;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    gap: 10px;
 }
+
 .btnGoogle:hover {
-    background-color: #f9f9f9;
-}
-.btnGoogle i {
-    /* Ovo ostavljamo za Font Awesome ako ga Google gumb koristi */
-    color: #db4437;
-    margin-right: 10px;
-    font-size: 1.2rem;
-}
-
-/* --- Link za registraciju --- */
-.signupLink {
-    text-align: center;
-    margin-top: 30px;
-}
-
-.signupLink p {
-    margin-bottom: 10px;
-    color: #555;
+    background-color: #f8f8f8;
 }
 
 .btnSecondary {
-    background-color: #b0c4ff;
-    color: #333;
-}
-.btnSecondary:hover {
-    background-color: #a0b4ef;
+    background-color: #7ab8d0;
+    color: #1a1a2e;
 }
 
-/* --- Poruka o grešci --- */
+.btnSecondary:hover {
+    background-color: #6aa8c0;
+}
+
+/* --- Divider --- */
+.divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 15px 0;
+}
+
+.divider span {
+    width: 60%;
+    height: 1px;
+    background-color: #999;
+}
+
+/* --- Signup Link Section --- */
+.signupLink {
+    text-align: center;
+    margin-top: 25px;
+}
+
+.signupLink p {
+    margin-bottom: 12px;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+/* --- Error Message --- */
 .errorMessage {
     color: #d93025;
     background-color: #fdd;
@@ -118,10 +141,15 @@
     text-align: center;
 }
 
-
-/* --- Responzivnost (samo za elemente u formi) --- */
+/* --- Responsive Design --- */
 @media (max-width: 768px) {
     .formContainer h2 {
         text-align: center;
+    }
+
+    .formOptions {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
     }
 }
