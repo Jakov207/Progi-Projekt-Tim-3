@@ -40,7 +40,7 @@ export default function Profile() {
             });
 
         } catch (err) {
-            setError("Greška pri učitavanju profila.");
+            setError("Greška pri učitavanju profila." + err);
         } finally {
             setLoading(false);
         }
@@ -64,7 +64,7 @@ export default function Profile() {
             await axios.post("/profile/update", form);
             setMessage("Promjene su uspješno spremljene!");
         } catch (err) {
-            setError("Greška pri spremanju.");
+            setError("Greška pri spremanju." + err);
         }
     }
 
