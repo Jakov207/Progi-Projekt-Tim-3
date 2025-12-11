@@ -50,6 +50,15 @@ const generateVerifyToken = (email, password_hash) => {
     );
 };
 
+//generira JWT token za reset password
+const generateResetPassToken = (id, email) => {
+    return jwt.sign(
+        { id, email },
+        process.env.RESET_SECRET,
+        { expiresIn: '10m' }
+    );
+};
+
 //provjerava ispravan unos emaila
 function isEmail(email) {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -120,8 +129,6 @@ router.post('/register', async (req, res) => {
 // RUTA 2: PROVJERA TOKENA I POTVRDA EMAILA
 router.get('/verify-token', async (req, res) => {
     const { token } = req.query;
-
-    console.log("token: ", token); //console.log
 
     if (!token) {
         return res.status(400).json({ message: 'Token nije pronađen.' });
@@ -238,6 +245,97 @@ router.get('/me', verifyToken, async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: 'Greška na serveru' });
     }
+});
+
+//slanje maila za forgot password korisniku na email
+router.post('/forgotpassword', async (req, res) => {
+    const { email } = req.body;
+
+    //provjera ispravnosti emaila
+    if (!email || !isEmail(email)) {
+        return res.status(400).json({ message: 'Unesite ispravnu email adresu.' });
+    }
+
+    //provjera postoji li korisnik
+    const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    if (user.rows.length === 0) {
+        return res.status(200).json({message: 'Ako postoji korisnik, poslan je email'});
+    }
+
+    //podaci o useru
+    const userData = user.rows[0];
+
+    //generiramo token i link
+    const resetPassToken = generateResetPassToken(userData.id, email);
+    const resetLink = `${process.env.FRONTEND_URL}/api/auth/reset-password?token=${resetPassToken}`;
+
+    //ucitava html template
+    const resetTemplatePath = path.join(__dirname, '..', 'templates', 'reset_password.html');
+    let resetHtml = fs.readFileSync(resetTemplatePath, 'utf8');
+    resetHtml = resetHtml.replace(/{{resetLink}}/g, resetLink);
+
+    //slanje emaila
+    const sent = await sendEmail({
+        from: process.env.EMAIL_FROM,
+        to: email,
+        subject: "Resetiranje lozinke | Fertutor.xyz",
+        html: resetHtml
+    });
+
+    //provjera greške pri slanju
+    if (!sent) {
+        return res.status(500).json({ message: "Greška pri slanju emaila." });
+    }
+
+    return res.status(200).json({
+        message: "Ako postoji korisnik, poslan je email"
+    });
+})
+
+//verifikacija tokena za reset password email
+router.get('/verify-reset-token', async (req, res) => {
+    const { token } = req.query;
+
+    if (!token) return res.status(400).json({ message: "Token nije pronađen." });
+
+    //ako je token ispravan onda redirecta na /reset-password
+    try {
+        const decoded = jwt.verify(token, process.env.RESET_SECRET);
+        return res.redirect(`${process.env.FRONTEND_URL}/reset-password?token=${token}`);
+    } catch (err) {
+        return res.status(400).json({ valid: false, message: "Token istekao ili neispravan." });
+    }
+});
+
+//resetiranje passworda
+router.post('/reset-password', async (req, res) => {
+    const { token, password, passwordCheck } = req.body;
+
+    //provjera jeli token dobar
+    if (!token) return res.status(400).json({ message: "Token nedostaje." });
+    let decoded;
+    try {
+        decoded = jwt.verify(token, process.env.RESET_SECRET);
+    } catch (err) {
+        return res.status(400).json({ message: "Token istekao ili neispravan." });
+    }
+
+    //provjera ispravnosti unesenih lozinka
+    if(!password || !isPassword(password)) {
+        return res.status(400).json({message: "Lozinka mora imati 8-32 znakova, veliko i malo slovo, broj i specijalni znak."});
+    }
+    if (!passwordCheck || password !== passwordCheck) {
+        return res.status(400).json({ message: 'Lozinke se ne podudaraju.' });
+    }
+
+    //mijenjamo novi password u bazi
+    const hashed = await bcrypt.hash(password, 12);
+    await pool.query(
+        "UPDATE users SET password_hash = $1 WHERE id = $2",
+        [hashed, decoded.id]
+    );
+
+    return res.status(200).json({ message: "Lozinka uspješno promijenjena." });
 });
 
 
