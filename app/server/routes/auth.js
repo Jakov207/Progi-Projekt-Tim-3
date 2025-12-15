@@ -7,6 +7,8 @@ const sendEmail = require('../config/email');
 const fs = require('fs');
 const path = require('path');
 const verifyToken = require("../middleware/verifyToken");
+const { OAuth2Client } = require("google-auth-library");
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const router = express.Router();
 
@@ -338,5 +340,63 @@ router.post('/reset-password', async (req, res) => {
     return res.status(200).json({ message: "Lozinka uspješno promijenjena." });
 });
 
+//GOOGLE LOGIN
+router.post('/google-login', async (req, res) => {
+    const { idToken } = req.body;
+
+    //provjera postoji li idToken
+    if(!idToken) return res.status(400).json({message: "idToken nedostaje"});
+
+
+    try {
+        //verifikacija tokena
+        const ticket = await googleClient.verifyIdToken({
+            idToken,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+
+        const payload = ticket.getPayload();
+        const email = payload.email;
+        const name = payload.given_name || 'Google Name';
+        const surname = payload.family_name || 'Google Surname';
+        const profilePic = payload.picture;
+
+        //provjera postoji li korisnik
+        let user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+
+        //ako korisnik ne postoji, registriraj ga
+        if (user.rows.length === 0) {
+            //random password
+            const tempPassword = crypto.randomBytes(16).toString('hex');
+            const password_hash = await bcrypt.hash(tempPassword, 12);
+
+            //token za spremanje emaila i passworda privremeno
+            const token = generateVerifyToken(email, password_hash);
+
+            //preusmjeravanje na zadnji dio registracije
+            return res.redirect(`${process.env.FRONTEND_URL}/finish-register?token=${token}`);
+        }
+
+        //dohvacamo podatke o useru
+        const userData = user.rows[0];
+
+        //generiramo token za login
+        const token = generateLoginToken(userData.id);
+        res.cookie('token', token, cookieOptionsRemember);
+
+        return res.status(200).json({
+            message: 'Uspješan login putem Googlea',
+            user: {
+                email: userData.email,
+                name: userData.name,
+                surname: userData.surname,
+                is_professor: userData.is_professor
+            }
+        });
+
+    } catch (err) {
+        return res.status(400).json({message: "Neispravan Google ID token"});
+    }
+})
 
 module.exports = router;
