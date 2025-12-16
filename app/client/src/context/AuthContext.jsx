@@ -1,5 +1,6 @@
 // src/context/AuthContext.jsx
 import React, { createContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api";
 
 export const AuthContext = createContext();
@@ -7,6 +8,7 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     // Provjera logina kada se komponenta mount-a
     useEffect(() => {
@@ -27,6 +29,7 @@ export const AuthProvider = ({ children }) => {
         try {
             await api.post("/auth/logout");
             setUser(null);
+            navigate("/");
         } catch (err) {
             console.error("Logout failed", err);
         }

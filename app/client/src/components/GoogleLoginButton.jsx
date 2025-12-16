@@ -8,8 +8,7 @@ export default function GoogleLoginButton() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        console.log("ENV GOOGLE CLIENT ID:", import.meta.env.GOOGLE_CLIENT_ID);
-        console.log("window.google exists?", !!window.google);
+        //console.log("ENV GOOGLE CLIENT ID:", import.meta.env.GOOGLE_CLIENT_ID);
 
         if (!window.google) return;
 

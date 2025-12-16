@@ -6,7 +6,6 @@ import Input from '../components/Input';
 import styles from './RegisterEmail.module.css'; // Koristi kopirani CSS
 import GoogleLoginButton from "../components/GoogleLoginButton";
 import { EmailIcon, LockIcon, EyeIcon, EyeOffIcon, GoogleIcon, ChevronDownIcon } from '../components/Icons';
-import styles from './RegisterEmail.module.css';
 import slikaRegistracija from '../assets/images/slikaRegistracija.png';
 
 function RegisterEmail() {
@@ -141,6 +140,10 @@ function RegisterEmail() {
                         >
                             {loading ? 'Slanje...' : 'Registracija'}
                         </button>
+
+                        <div className={styles.divider}>
+                            <span></span>
+                        </div>
 
                         <div style={{ margin: "20px 0", textAlign: "center" }}>
                             <GoogleLoginButton />

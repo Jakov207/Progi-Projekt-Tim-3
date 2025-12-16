@@ -93,20 +93,15 @@ function Login() {
                         {loading ? 'Prijava...' : 'Prijava'}
                     </button>
 
+                    <div className={styles.divider}>
+                        <span></span>
+                    </div>
+
                     <div style={{ margin: "20px 0", textAlign: "center" }}>
                         <GoogleLoginButton />
                     </div>
 
                 </form>
-
-                <div className={styles.divider}>
-                    <span></span>
-                </div>
-
-                <button type="button" className={`${styles.btn} ${styles.btnGoogle}`} onClick={handleGoogleLogin}>
-                    <GoogleIcon size={20} />
-                    <span>Prijava sa Google računom</span>
-                </button>
 
                 <div className={styles.signupLink}>
                     <p>Još nemate račun?</p>
