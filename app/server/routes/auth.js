@@ -135,7 +135,7 @@ router.get('/verify-token', async (req, res) => {
     if (!token) {
         return res.status(400).json({ message: 'Token nije pronađen.' });
     }
-
+    console.log("Verifikacija: " + token);
     //provjera token, ako je token dobar idemo na zadnji dio registracije
     try {
         jwt.verify(token, process.env.VERIFY_SECRET);
@@ -148,7 +148,7 @@ router.get('/verify-token', async (req, res) => {
 
 // RUTA 3: FINALIZACIJA REGISTRACIJE (POSTAVLJANJE LOZINKE I DETALJA)
 router.post('/finish-register', async (req, res) => {
-    const { token, name, surname, date_of_birth, sex, is_professor, city, education } = req.body; //RIJESITI TOKEN!!!
+    const { token, name, surname, date_of_birth, sex, is_professor, city, education } = req.body;
 
     if (!token) return res.status(400).json({message: "Istekao token"});
     if (!name || !surname || !date_of_birth || !sex || typeof is_professor === "undefined" || !city || !education) {
@@ -342,24 +342,24 @@ router.post('/reset-password', async (req, res) => {
 
 //GOOGLE LOGIN
 router.post('/google-login', async (req, res) => {
-    const { idToken } = req.body;
+    const { credential } = req.body;
 
-    //provjera postoji li idToken
-    if(!idToken) return res.status(400).json({message: "idToken nedostaje"});
+    //provjera postoji li credential
+    if(!credential) return res.status(400).json({message: "credential nedostaje"});
 
 
     try {
-        //verifikacija tokena
+        //verifikacija tokena credential
         const ticket = await googleClient.verifyIdToken({
-            idToken,
+            idToken: credential,
             audience: process.env.GOOGLE_CLIENT_ID,
         });
 
         const payload = ticket.getPayload();
         const email = payload.email;
-        const name = payload.given_name || 'Google Name';
+        /*const name = payload.given_name || 'Google Name';         zadas se ne koristi
         const surname = payload.family_name || 'Google Surname';
-        const profilePic = payload.picture;
+        const profilePic = payload.picture;*/
 
         //provjera postoji li korisnik
         let user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
@@ -373,8 +373,11 @@ router.post('/google-login', async (req, res) => {
             //token za spremanje emaila i passworda privremeno
             const token = generateVerifyToken(email, password_hash);
 
-            //preusmjeravanje na zadnji dio registracije
-            return res.redirect(`${process.env.FRONTEND_URL}/finish-register?token=${token}`);
+            //flag za frontend da preusmjeri na finish register
+            return res.status(200).json({
+                needsFinishRegistration: true,
+                token
+            });
         }
 
         //dohvacamo podatke o useru
