@@ -86,6 +86,7 @@ function RegisterEmail() {
                             onChange={(e) => setPassword(e.target.value)}
                             onRightIconClick={() => setShowPassword(!showPassword)}
                             required
+                            autoComplete="new-password"
                         />
                         <Input
                             icon={showPassword ? EyeIcon : EyeOffIcon}
@@ -96,6 +97,7 @@ function RegisterEmail() {
                             onChange={(e) => setPasswordCheck(e.target.value)}
                             onRightIconClick={() => setShowPassword(!showPassword)}
                             required
+                            autoComplete="new-password"
                         />
 
                         {/* Password Requirements Dropdown */}

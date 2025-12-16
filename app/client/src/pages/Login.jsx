@@ -57,6 +57,7 @@ function Login() {
                         value={email}
                         onChange={e => setEmail(e.target.value)}
                         required
+                        autoComplete="email"
                     />
                     <Input
                         icon={showPassword ? EyeIcon : EyeOffIcon}
@@ -67,6 +68,7 @@ function Login() {
                         onChange={e => setPassword(e.target.value)}
                         onRightIconClick={togglePasswordVisibility}
                         required
+                        autoComplete="current-password"
                     />
 
                     <div className={styles.formOptions}>
