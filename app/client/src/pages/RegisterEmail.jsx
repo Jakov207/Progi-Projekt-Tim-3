@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import AuthLayout from '../components/AuthLayout';
 import Input from '../components/Input';
+import styles from './RegisterEmail.module.css'; // Koristi kopirani CSS
+import GoogleLoginButton from "../components/GoogleLoginButton";
 import { EmailIcon, LockIcon, EyeIcon, EyeOffIcon, GoogleIcon, ChevronDownIcon } from '../components/Icons';
 import styles from './RegisterEmail.module.css';
 import slikaRegistracija from '../assets/images/slikaRegistracija.png';
@@ -140,14 +142,9 @@ function RegisterEmail() {
                             {loading ? 'Slanje...' : 'Registracija'}
                         </button>
 
-                        <div className={styles.divider}>
-                            <span></span>
+                        <div style={{ margin: "20px 0", textAlign: "center" }}>
+                            <GoogleLoginButton />
                         </div>
-
-                        <button type="button" className={`${styles.btn} ${styles.btnGoogle}`} onClick={handleGoogleLogin}>
-                            <GoogleIcon size={20} />
-                            <span>Prijava sa Google računom</span>
-                        </button>
 
                         <div className={styles.loginLink}>
                             <p>Već imate račun?</p>

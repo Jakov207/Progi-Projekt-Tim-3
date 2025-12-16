@@ -7,6 +7,8 @@ const sendEmail = require('../config/email');
 const fs = require('fs');
 const path = require('path');
 const verifyToken = require("../middleware/verifyToken");
+const { OAuth2Client } = require("google-auth-library");
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const router = express.Router();
 
@@ -146,7 +148,7 @@ router.get('/verify-token', async (req, res) => {
 
 // RUTA 3: FINALIZACIJA REGISTRACIJE (POSTAVLJANJE LOZINKE I DETALJA)
 router.post('/finish-register', async (req, res) => {
-    const { token, name, surname, date_of_birth, sex, is_professor, city, education } = req.body; //RIJESITI TOKEN!!!
+    const { token, name, surname, date_of_birth, sex, is_professor, city, education } = req.body;
 
     if (!token) return res.status(400).json({message: "Istekao token"});
     if (!name || !surname || !date_of_birth || !sex || typeof is_professor === "undefined" || !city || !education) {
@@ -338,5 +340,66 @@ router.post('/reset-password', async (req, res) => {
     return res.status(200).json({ message: "Lozinka uspješno promijenjena." });
 });
 
+//GOOGLE LOGIN
+router.post('/google-login', async (req, res) => {
+    const { credential } = req.body;
+
+    //provjera postoji li credential
+    if(!credential) return res.status(400).json({message: "credential nedostaje"});
+
+
+    try {
+        //verifikacija tokena credential
+        const ticket = await googleClient.verifyIdToken({
+            idToken: credential,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+
+        const payload = ticket.getPayload();
+        const email = payload.email;
+        /*const name = payload.given_name || 'Google Name';         zadas se ne koristi
+        const surname = payload.family_name || 'Google Surname';
+        const profilePic = payload.picture;*/
+
+        //provjera postoji li korisnik
+        let user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+
+        //ako korisnik ne postoji, registriraj ga
+        if (user.rows.length === 0) {
+            //random password
+            const tempPassword = crypto.randomBytes(16).toString('hex');
+            const password_hash = await bcrypt.hash(tempPassword, 12);
+
+            //token za spremanje emaila i passworda privremeno
+            const token = generateVerifyToken(email, password_hash);
+
+            //flag za frontend da preusmjeri na finish register
+            return res.status(200).json({
+                needsFinishRegistration: true,
+                token
+            });
+        }
+
+        //dohvacamo podatke o useru
+        const userData = user.rows[0];
+
+        //generiramo token za login
+        const token = generateLoginToken(userData.id);
+        res.cookie('token', token, cookieOptionsRemember);
+
+        return res.status(200).json({
+            message: 'Uspješan login putem Googlea',
+            user: {
+                email: userData.email,
+                name: userData.name,
+                surname: userData.surname,
+                is_professor: userData.is_professor
+            }
+        });
+
+    } catch (err) {
+        return res.status(400).json({message: "Neispravan Google ID token"});
+    }
+})
 
 module.exports = router;
