@@ -11,7 +11,7 @@ const { OAuth2Client } = require("google-auth-library");
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const router = express.Router();
-console.log(process.env.DB_PASSWORD);
+
 // Ažurirajte putanju ovisno o strukturi!
 const TEMPLATE_PATH = path.join(__dirname, '..', 'templates', 'verification.html');
 let verificationTemplate;
