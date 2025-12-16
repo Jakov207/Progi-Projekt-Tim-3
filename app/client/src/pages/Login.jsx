@@ -6,6 +6,7 @@ import Input from '../components/Input';
 import styles from './Login.module.css';
 import slikaProfesora from '../assets/images/slikaProfesora.png';
 import { AuthContext } from '../context/AuthContext';
+import GoogleLoginButton from "../components/GoogleLoginButton";
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -49,6 +50,11 @@ function Login() {
                     <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`} disabled={loading}>
                         {loading ? 'Prijava...' : 'Prijava'}
                     </button>
+
+                    <div style={{ margin: "20px 0", textAlign: "center" }}>
+                        <GoogleLoginButton />
+                    </div>
+
                 </form>
             </div>
         </AuthLayout>

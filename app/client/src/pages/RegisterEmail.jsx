@@ -5,6 +5,8 @@ import api from '../api';
 import AuthLayout from '../components/AuthLayout';
 import Input from '../components/Input';
 import styles from './RegisterEmail.module.css'; // Koristi kopirani CSS
+import GoogleLoginButton from "../components/GoogleLoginButton";
+
 
 import slikaRegistracija from '../assets/images/slikaRegistracija.png';
 
@@ -121,7 +123,9 @@ function RegisterEmail() {
                             {loading ? 'Slanje...' : 'Registracija'}
                         </button>
 
-                        {/* Ovdje može doći "Prijava sa Google računom" */}
+                        <div style={{ margin: "20px 0", textAlign: "center" }}>
+                            <GoogleLoginButton />
+                        </div>
 
                         <div className={styles.loginLink}>
                             <p>Već imate račun?</p>
