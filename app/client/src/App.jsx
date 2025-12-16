@@ -10,7 +10,7 @@ import FinishRegister from './pages/FinishRegister';
 
 // Uvezi layout
 import MainLayout from './components/MainLayout';
-import Profile from "./pages/Profile.jsx";
+import {Profile} from "./pages/Profile.jsx";
 
 
 

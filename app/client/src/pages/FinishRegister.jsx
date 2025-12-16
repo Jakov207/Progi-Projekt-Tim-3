@@ -1,9 +1,54 @@
+// src/pages/FinishRegister.jsx
+
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
+import AuthLayout from '../components/AuthLayout';
+import Input from '../components/Input';
+import { UserIcon, CalendarIcon, ChevronDownIcon, ProfileAvatarIcon } from '../components/Icons';
 import styles from './FinishRegister.module.css';
-import FinishRegisterImage from '../assets/images/FinishRegister.png';
-import { UserIcon, CalendarIcon, ProfileAvatarIcon } from '../components/Icons';
+import slikaRegistracija from '../assets/images/slikaRegistracija.png';
+
+// City icon component
+const CityIcon = ({ size = 20, color = '#4a90a4', className = '' }) => (
+    <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+    >
+        <path d="M3 21h18" />
+        <path d="M5 21V7l8-4v18" />
+        <path d="M19 21V11l-6-4" />
+        <path d="M9 9v.01" />
+        <path d="M9 12v.01" />
+        <path d="M9 15v.01" />
+        <path d="M9 18v.01" />
+    </svg>
+);
+
+// Education/graduation icon
+const EducationIcon = ({ size = 20, color = '#4a90a4', className = '' }) => (
+    <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+    >
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+        <path d="M6 12v5c3 3 9 3 12 0v-5" />
+    </svg>
+);
 
 function FinishRegister() {
     const [formData, setFormData] = useState({
@@ -11,11 +56,10 @@ function FinishRegister() {
         surname: '',
         date_of_birth: '',
         sex: '',
+        is_professor: '',
         city: '',
-        education_level: '',
-        school: '',
+        education: ''
     });
-
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -24,162 +68,162 @@ function FinishRegister() {
     const token = searchParams.get('token');
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+
+        if (name === "is_professor") {
+            setFormData(prev => ({ ...prev, is_professor: value }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: type === 'checkbox' ? checked : value
+            }));
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
 
         if (!token) {
-            setError("Token nije pronađen. Pokrenite registraciju ponovno.");
+            setError("Token za registraciju nije pronađen. Molimo krenite ispočetka.");
             return;
         }
 
         setLoading(true);
-        setError('');
 
         try {
             await api.post('/auth/finish-register', {
-                token,
+                token: token,
                 ...formData,
-                is_professor: false
+                is_professor: formData.is_professor === 'true'
             });
+
             navigate('/login');
         } catch (err) {
-            setError(err.response?.data?.message || 'Pogreška pri spremanju.');
+            setError(err.response?.data?.message || 'Greška pri završetku registracije.');
         } finally {
             setLoading(false);
         }
     };
 
+    const infoText = "Registrirajte se kako biste pristupili rezervacijama, instruktorima i personaliziranom učenju.";
+
     return (
-        <div className={styles.container}>
-            {/* Left Side — Image */}
-            <div className={styles.leftSide} style={{ backgroundImage: `url(${FinishRegisterImage})` }} />
+        <AuthLayout
+            infoText={infoText}
+            infoImage={slikaRegistracija}
+            blurLeft={true}
+        >
+            <div className={styles.formContainer}>
+                <h2>Osnovni osobni podaci</h2>
 
-            {/* Right Side */}
-            <div className={styles.rightSide}>
-                <h1>Osnovni osobni podaci</h1>
-
-                <div className={styles.formLayout}>
-                    {/* Profile Image Circle */}
-                    <div className={styles.profileSection}>
-                        <div className={styles.profilePic}>
-                            <ProfileAvatarIcon size={120} color="#7bb8d8" />
-                        </div>
-                        <p>Profilna slika</p>
+                {/* Profile Avatar */}
+                <div className={styles.avatarSection}>
+                    <div className={styles.avatarWrapper}>
+                        <ProfileAvatarIcon size={100} />
                     </div>
+                    <span className={styles.avatarLabel}>Profilna slika</span>
+                </div>
 
-                    {/* Form */}
-                    <form onSubmit={handleSubmit}>
-                        {/* Name */}
-                        <div className={styles.formGroup}>
-                            <UserIcon className={styles.icon} />
-                            <input
-                                type="text"
-                                name="name"
-                                placeholder="Ime*"
-                                value={formData.name}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
+                <form onSubmit={handleSubmit}>
+                    <Input
+                        icon={UserIcon}
+                        name="name"
+                        placeholder="Ime*"
+                        value={formData.name}
+                        onChange={handleChange}
+                        required
+                    />
+                    <Input
+                        icon={UserIcon}
+                        name="surname"
+                        placeholder="Prezime*"
+                        value={formData.surname}
+                        onChange={handleChange}
+                        required
+                    />
+                    <Input
+                        icon={CalendarIcon}
+                        type="date"
+                        name="date_of_birth"
+                        placeholder="Datum rođenja"
+                        value={formData.date_of_birth}
+                        onChange={handleChange}
+                        required
+                    />
 
-                        {/* Surname */}
-                        <div className={styles.formGroup}>
-                            <UserIcon className={styles.icon} />
-                            <input
-                                type="text"
-                                name="surname"
-                                placeholder="Prezime*"
-                                value={formData.surname}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-
-                        {/* Birthdate */}
-                        <div className={styles.formGroup}>
-                            <input
-                                type="date"
-                                name="date_of_birth"
-                                value={formData.date_of_birth}
-                                onChange={handleChange}
-                                required
-                            />
-                            <CalendarIcon className={styles.icon} />
-                        </div>
-
-                        {/* Gender */}
-                        <div className={styles.formGroup}>
-                            <input
-                                type="text"
+                    {/* Gender Select */}
+                    <div className={styles.selectGroup}>
+                        <div className={styles.selectWrapper}>
+                            <select
+                                id="sex"
                                 name="sex"
-                                placeholder="Spol"
                                 value={formData.sex}
                                 onChange={handleChange}
-                            />
+                                required
+                            >
+                                <option value="" disabled>Spol*</option>
+                                <option value="M">Muški</option>
+                                <option value="F">Ženski</option>
+                                <option value="X">Ostalo / Ne želim reći</option>
+                            </select>
+                            <ChevronDownIcon size={18} className={styles.selectIcon} />
                         </div>
+                    </div>
 
-                        {/* Locked Field: Učenik */}
-                        <div className={styles.formGroup}>
-                            <input
-                                type="text"
-                                value="Učenik"
-                                readOnly
-                                className={styles.lockedField}
-                            />
-                        </div>
-
-                        <hr />
-
-                        {/* City */}
-                        <div className={styles.formGroup}>
-                            <input
-                                type="text"
-                                name="city"
-                                placeholder="Mjesto"
-                                value={formData.city}
+                    {/* User Type Select */}
+                    <div className={styles.selectGroup}>
+                        <div className={styles.selectWrapper}>
+                            <select
+                                id="is_professor"
+                                name="is_professor"
+                                value={formData.is_professor}
                                 onChange={handleChange}
-                            />
+                                required
+                            >
+                                <option value="" disabled>Tip Korisnika*</option>
+                                <option value="false">Student</option>
+                                <option value="true">Profesor</option>
+                            </select>
+                            <ChevronDownIcon size={18} className={styles.selectIcon} />
                         </div>
+                    </div>
 
-                        {/* Education */}
-                        <div className={styles.formGroup}>
-                            <input
-                                type="text"
-                                name="education_level"
-                                placeholder="Stupanj obrazovanja"
-                                value={formData.education_level}
-                                onChange={handleChange}
-                            />
-                        </div>
+                    {/* City field */}
+                    <Input
+                        icon={CityIcon}
+                        name="city"
+                        placeholder="Grad*"
+                        value={formData.city}
+                        onChange={handleChange}
+                        required
+                    />
 
-                        {/* School */}
-                        <div className={styles.formGroup}>
-                            <input
-                                type="text"
-                                name="school"
-                                placeholder="Škola"
-                                value={formData.school}
-                                onChange={handleChange}
-                            />
-                        </div>
+                    {/* Education field */}
+                    <Input
+                        icon={EducationIcon}
+                        name="education"
+                        placeholder="Edukacija (npr. FER)*"
+                        value={formData.education}
+                        onChange={handleChange}
+                        required
+                    />
 
-                        {error && <p className={styles.error}>{error}</p>}
+                    <p className={styles.requiredNote}>Sa znakom * označena obavezna polja.</p>
 
-                        <button className={styles.submitBtn} type="submit" disabled={loading}>
-                            {loading ? 'Spremanje...' : 'Nastavi'}
-                        </button>
+                    {error && <p className={styles.errorMessage}>{error}</p>}
 
-                        <p className={styles.note}>Sa znakom * označena obavezna polja.</p>
-                    </form>
-                </div>
+                    <button
+                        type="submit"
+                        className={`${styles.btn} ${styles.btnPrimary}`}
+                        disabled={loading}
+                    >
+                        {loading ? 'Spremanje...' : 'Završi registraciju'}
+                    </button>
+                </form>
             </div>
-        </div>
+        </AuthLayout>
     );
 }
 
 export default FinishRegister;
-

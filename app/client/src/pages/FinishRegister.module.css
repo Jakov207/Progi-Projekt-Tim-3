@@ -1,153 +1,140 @@
-* {
-    box-sizing: border-box;
-    font-family: "Segoe UI", Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-}
+/* src/pages/FinishRegister.module.css */
 
-.container {
-    display: flex;
-    height: 100vh;
-    overflow: hidden;
-}
-
-/* LEFT IMAGE SIDE */
-.leftSide {
-    flex: 0.35;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-}
-
-/* RIGHT SIDE */
-.rightSide {
-    flex: 0.65;
-    background-color: #b9ecff;
-    padding: 60px 80px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow-y: auto;
-}
-
-.rightSide h1 {
-    margin-bottom: 40px;
-    font-weight: 600;
-    color: #111;
-    font-size: 2rem;
-}
-
-/* FORM + AVATAR LAYOUT */
-.formLayout {
-    display: flex;
-    gap: 50px;
-}
-
-/* PROFILE SECTION */
-.profileSection {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-width: 220px;
-    margin-top: 10px;
-}
-
-.profilePic {
-    width: 200px;
-    height: 200px;
-    background-color: #d8f0ff;
-    border: 6px solid #a7d4ef;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-.profileSection p {
-    font-weight: 600;
-    font-size: 1.3rem;
-    margin-top: 8px;
-}
-
-/* FORM */
-form {
-    display: flex;
-    flex-direction: column;
-    max-width: 450px;
+/* --- Form Container (matching RegisterEmail) --- */
+.formContainer {
     width: 100%;
+    max-width: 340px;
 }
 
-.formGroup {
-    position: relative;
+.formContainer h2 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* --- Profile Avatar Section --- */
+.avatarSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.avatarWrapper {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.avatarLabel {
+    font-size: 0.9rem;
+    color: #4a90a4;
+    font-weight: 500;
+}
+
+/* --- Select Group (matching Input styling) --- */
+.selectGroup {
     margin-bottom: 20px;
 }
 
-input {
+.selectWrapper {
+    position: relative;
     width: 100%;
-    padding: 14px 18px;
-    padding-right: 48px;
-    border: none;
-    border-radius: 10px;
-    background-color: #fff;
-    font-size: 1.05rem;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-input:focus {
+.selectWrapper select {
+    width: 100%;
+    padding: 15px;
+    padding-right: 45px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    color: #333;
+}
+
+.selectWrapper select:focus {
     outline: none;
-    box-shadow: 0 0 8px rgba(0, 123, 255, 0.4);
+    border-color: #4a90a4;
 }
 
-.icon {
+.selectIcon {
     position: absolute;
-    right: 14px;
+    right: 15px;
     top: 50%;
     transform: translateY(-50%);
-    color: #6fa6c7;
+    color: #4a90a4;
     pointer-events: none;
-    font-size: 18px;
 }
 
-hr {
+/* --- Button Styles (matching RegisterEmail exactly) --- */
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 14px 20px;
     border: none;
-    border-top: 1px solid #9ed9f0;
-    margin: 15px 0 25px;
-}
-
-/* BUTTON */
-.submitBtn {
-    background-color: #61bdf7;
-    border: none;
-    color: white;
-    padding: 14px;
-    border-radius: 10px;
-    font-size: 1.1rem;
-    font-weight: bold;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
     cursor: pointer;
-    transition: 0.2s;
-    margin-top: 10px;
-}
-
-.submitBtn:hover {
-    background-color: #42a7df;
-    transform: scale(1.03);
-}
-
-.note {
-    font-size: 0.95rem;
-    color: #333;
     text-align: center;
-    margin-top: 20px;
+    text-decoration: none;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+    transition: all 0.2s ease;
 }
 
-/* ERROR */
-.error {
+.btnPrimary {
+    background-color: #a8c5d8;
+    color: #1a1a2e;
+}
+
+.btnPrimary:hover {
+    background-color: #96b5c9;
+}
+
+.btnPrimary:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* --- Required Fields Note --- */
+.requiredNote {
+    font-size: 0.8rem;
+    color: #666;
+    text-align: center;
+    margin: 20px 0;
+}
+
+/* --- Error Message (matching RegisterEmail) --- */
+.errorMessage {
     color: #d93025;
-    background: #fdd;
+    background-color: #fdd;
     border: 1px solid #d93025;
-    padding: 10px;
-    border-radius: 6px;
-    margin-bottom: 10px;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
     text-align: center;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+    .formContainer h2 {
+        text-align: center;
+    }
 }

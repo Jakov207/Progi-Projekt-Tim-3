@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/db');
@@ -82,7 +81,7 @@ router.post('/update', verifyToken, async (req, res) => {
 
     }catch(err){
         console.error('error while updating user', err);
-        res.status(500).json({message: 'server je u kurcu'});
+        res.status(500).json({message: 'server je zeznut'});
     }
 })
 

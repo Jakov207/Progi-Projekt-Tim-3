@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "../api";
 import styles from "./Profile.module.css";
 
-export default function Profile() {
+export function Profile() {
     const [activeTab, setActiveTab] = useState("osobni");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -11,10 +11,11 @@ export default function Profile() {
     const [form, setForm] = useState({
         name: "",
         surname: "",
+        email: "",
         date_of_birth: "",
         sex: "",
         city: "",
-        school: "",
+        education: "",
         teaching: "",
         is_professor: false
     });
@@ -31,23 +32,24 @@ export default function Profile() {
             setForm({
                 name: u.name,
                 surname: u.surname,
+                email: u.email,
                 date_of_birth: u.profile.date_of_birth?.split("T")[0] ?? "",
                 sex: u.profile.sex ?? "",
                 city: u.profile.city ?? "",
-                school: u.profile.school ?? "",
+                education: u.profile.education ?? "",
                 teaching: u.profile.teaching ?? "",
                 is_professor: u.is_professor
             });
 
         } catch (err) {
-            setError("Greška pri učitavanju profila." + err);
+            setError("Greška pri učitavanju profila.")
         } finally {
             setLoading(false);
         }
     }
 
     function updateField(key, val) {
-        setForm(prev => ({ ...prev, [key]: val }));
+        setForm(prev => ({...prev, [key]: val}));
     }
 
     async function saveChanges(e) {
@@ -68,7 +70,7 @@ export default function Profile() {
         }
     }
 
-    if (loading) return <p style={{ textAlign: "center", marginTop: 40 }}>Učitavanje…</p>;
+    if (loading) return <p style={{textAlign: "center", marginTop: 40}}>Učitavanje…</p>;
 
     return (
         <div className={styles.pageWrapper}>
@@ -98,20 +100,23 @@ export default function Profile() {
                         <button className={styles.navBtn} onClick={() => setActiveTab("blank")}>Personalizacija</button>
                         <button className={styles.navBtn} onClick={() => setActiveTab("blank")}>Notifikacije</button>
 
-                        <hr />
+                        <hr/>
 
                         <button className={styles.navBtn} onClick={() => setActiveTab("blank")}>Sigurnost</button>
                         <button className={styles.navBtn} onClick={() => setActiveTab("blank")}>Privatnost</button>
-                        <button className={styles.navBtn} onClick={() => setActiveTab("blank")}>Povijest aktivnosti</button>
+                        <button className={styles.navBtn} onClick={() => setActiveTab("blank")}>Povijest aktivnosti
+                        </button>
 
-                        <hr />
+                        <hr/>
 
                         <button className={styles.navBtn} onClick={() => setActiveTab("blank")}>Podrška</button>
                         <button className={styles.navBtn} onClick={() => setActiveTab("blank")}>Brisanje računa</button>
 
-                        <hr />
+                        <hr/>
 
-                        <button className={styles.navBtn} onClick={() => {}}>Odjava</button>
+                        <button className={styles.navBtn} onClick={() => {
+                        }}>Odjava
+                        </button>
                     </nav>
                 </aside>
 
@@ -125,27 +130,29 @@ export default function Profile() {
                                 {/* FORMA ZA UNOS JE PRVA (LIJEVA STRANA) */}
                                 <div className={styles.formFields}>
                                     <label>Ime</label>
-                                    <input value={form.name} onChange={e => updateField("name", e.target.value)} />
+                                    <input value={form.name} onChange={e => updateField("name", e.target.value)}/>
 
                                     <label>Prezime</label>
-                                    <input value={form.surname} onChange={e => updateField("surname", e.target.value)} />
+                                    <input value={form.surname} onChange={e => updateField("surname", e.target.value)}/>
 
                                     <label>Datum rođenja</label>
-                                    <input type="date" value={form.date_of_birth} onChange={e => updateField("date_of_birth", e.target.value)} />
+                                    <input type="date" value={form.date_of_birth}
+                                           onChange={e => updateField("date_of_birth", e.target.value)}/>
 
                                     <label>Spol</label>
-                                    <input value={form.sex} onChange={e => updateField("sex", e.target.value)} />
+                                    <input value={form.sex} onChange={e => updateField("sex", e.target.value)}/>
 
                                     <label>Mjesto/Grad</label>
-                                    <input value={form.city} onChange={e => updateField("city", e.target.value)} />
+                                    <input value={form.city} onChange={e => updateField("city", e.target.value)}/>
 
                                     <label>Škola</label>
-                                    <input value={form.school} onChange={e => updateField("school", e.target.value)} />
+                                    <input value={form.education} onChange={e => updateField("education", e.target.value)}/>
 
                                     {form.is_professor && (
                                         <>
                                             <label>Predmet</label>
-                                            <input value={form.teaching} onChange={e => updateField("teaching", e.target.value)} />
+                                            <input value={form.teaching}
+                                                   onChange={e => updateField("teaching", e.target.value)}/>
                                         </>
                                     )}
 
@@ -168,11 +175,12 @@ export default function Profile() {
                         </div>
                     ) : (
                         <div className={styles.pageBlank}>
-                            <p style={{ opacity: 0.6 }}>⚙️ Ova sekcija još nije implementirana.</p>
+                            <p style={{opacity: 0.6}}>⚙️ Ova sekcija još nije implementirana.</p>
                         </div>
                     )}
                 </section>
-            </main>s
+            </main>
+            s
         </div>
     );
 }

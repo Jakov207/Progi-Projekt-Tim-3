@@ -9,7 +9,7 @@ const path = require('path');
 const verifyToken = require("../middleware/verifyToken");
 
 const router = express.Router();
-
+console.log(process.env.DB_PASSWORD);
 // Ažurirajte putanju ovisno o strukturi!
 const TEMPLATE_PATH = path.join(__dirname, '..', 'templates', 'verification.html');
 let verificationTemplate;
