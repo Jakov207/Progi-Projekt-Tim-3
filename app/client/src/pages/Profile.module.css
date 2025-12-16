@@ -1,95 +1,248 @@
-.profile-page {
-    display: flex;
-    height: calc(100vh - 64px);
+/* ===== GLOBALNO (CSS Modules zahtijevaju :global) ===== */
+
+:global(*) {
+    box-sizing: border-box;
+}
+
+:global(body) {
+    font-family: "Segoe UI", Arial, sans-serif;
+    margin: 0;
     background: #bfeefc;
+    color: #062a2b;
+    min-height: 100vh;
 }
 
-/* Lijevi sidebar 40% */
-.sidebar {
-    width: 40%;
-    background: #9fd6e6;
-    padding: 24px;
+:global(h2) {
+    font-size: 28px;
+    margin: 4px 0 22px;
+    color: #062a2b;
+}
+
+/* ===== TOP BAR ===== */
+.navbar{
+    height: 64px;
+    background:#051a1b;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 0 22px;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.15);
+}
+.logoImg { /* .logo-img */
+    width: 50px;
+    height: auto;
+    margin-right: 10px;
+}
+.navLeft{ /* .nav-left */
+    display:flex;
+    align-items:center;
+}
+.siteTitle{ /* .site-title */
+    color:white;
+    text-decoration:none;
+    font-weight:600;
+    margin-left:6px;
+}
+.navRight{ /* .nav-right */
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+.userName{ /* .user-name */
+    color:#e6f6fb;
+}
+.topProfileThumb{ /* .top-profile-thumb */
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    background:#cfeff8;
+    border:2px solid #fff;
+}
+
+/* ===== LAYOUT ===== */
+.mainContainer{ /* .main-container */
+    display:flex;
+    height: calc(100vh - 64px);
+}
+
+.sidebar{
+    flex: 0 0 40%;
+    background:#9fd6e6;
+    padding: 24px 32px 24px 24px;
+    border-right: 1px solid rgba(0,0,0,0.06);
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    justify-content: flex-start;
+    overflow:auto;
+}
+.content{
+    flex: 0 0 60%;
+    padding: 48px;
+    background: linear-gradient(180deg,#bff0fb,#b9ecff 60%);
+    overflow:auto;
 }
 
-/* Sidebar user */
-.sidebar-user {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    margin-bottom: 10px;
+/* ===== SIDEBAR ===== */
+.sidebarUser{ /* .sidebar-user */
+    display:flex;
+    gap:14px;
+    align-items:center;
+    margin-bottom:20px;
+    margin-left: auto;
+    margin-right: 0;
+    width: fit-content;
 }
-.sidebar-avatar {
-    width: 56px;
-    height: 56px;
-    background: white;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-left: 350px;
+.sidebarAvatar{ /* .sidebar-avatar */
+    width:56px;
+    height:56px;
+    border-radius:50%;
+    background:#e0f6fb;
+    border:3px solid #7bb8d8;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+.sidebarAvatar i{
+    color:#7bb8d8;
+    font-size:24px;
+}
+.sidebarName{ /* .sidebar-name */
+    font-weight:700;
+}
+.sidebarRole{ /* .sidebar-role */
+    font-size:0.9rem;
+    color:#123;
+    opacity:0.8;
+    margin-top:2px;
 }
 
-/* Sidebar buttons */
-.nav-btn {
-    padding: 10px;
-    margin-left: 350px;
+/* ===== GUMBI ===== */
+.settingsNav{ /* .settings-nav */
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    align-items: flex-end;
+}
+.settingsNav hr{ /* .settings-nav hr */
+    border:none;
+    border-top:1px solid rgba(0,0,0,0.06);
+    width: 280px;
+    margin:10px 0;
+}
+.navBtn{ /* .nav-btn */
+    background: rgba(255,255,255,0.15);
     border: none;
-    background: rgba(255,255,255,0.2);
-    border-radius: 8px;
+    padding:10px 14px;
+    text-align:left;
+    border-radius:6px;
+    cursor:pointer;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.03);
+    font-weight:600;
+    color:#0b3b3b;
+    width: 280px;
+    transition: background 0.2s;
+}
+.navBtn:hover{
+    background: rgba(255,255,255,0.22);
+}
+.navBtn.active{
+    background: #cdeff6;
+    box-shadow: inset 0 2px 0 rgba(0,0,0,0.04);
+}
+
+/* ===== SADRŽAJ ===== */
+.page{
+    display:none;
+}
+.pageActive{ /* .page-active */
+    display:block;
+}
+
+.editForm{ /* .edit-form */
+    display:flex;
+    gap:60px; /* Povećan razmak za bolji izgled */
+    align-items:flex-start;
+}
+
+.formFields{ /* .form-fields */
+    flex: 1; /* KLJUČNO: Forma zauzima sav lijevi prostor */
+    display:flex;
+    flex-direction:column;
+    gap:16px; /* Povećan razmak za bolji izgled */
+}
+.formFields label{ /* .form-fields label */
+    font-weight:600;
+    font-size:0.95rem;
+    color:#062a2b;
+}
+.formFields input{ /* .form-fields input */
+    width:380px;
+    padding:10px 14px;
+    border-radius:8px;
+    border:none;
+    background:#eef9fb;
+    box-shadow:0 2px 6px rgba(0,0,0,0.06);
+    font-size:0.95rem;
+}
+:global(input[type="date"]::-webkit-calendar-picker-indicator) {
+    transform: scale(1.3);
+    filter: invert(25%) sepia(15%) saturate(500%) hue-rotate(180deg);
     cursor: pointer;
-    font-weight: bold;
-}
-.nav-btn.active {
-    background: white;
 }
 
-/* Content */
-.content {
-    flex: 60%;
-    padding: 40px;
+/* PROFILNA */
+.photoSection{ /* .profile-photo-section */
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+    margin-top:18px; /* Odmak za poravnanje s poljima */
+}
+.profileCircle{ /* .profile-circle */
+    width:210px;
+    height:210px;
+    border-radius:50%;
+    background:#9fd5f0;
+    border:4px solid #333;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+}
+.profileCircle i{
+    font-size:86px;
+    color:white;
+}
+.editPhotoBtn{ /* .edit-photo-btn */
+    background:white;
+    border:none;
+    padding:8px 12px;
+    border-radius:8px;
+    box-shadow:0 3px 8px rgba(0,0,0,0.12);
+    cursor:pointer;
+    font-weight:600;
 }
 
-.form-section {
-    display: flex;
-    gap: 40px;
+/* GUMB SPREMI */
+.saveBtn{ /* .save-btn */
+    margin-top:20px;
+    background-color:#61bdf7;
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:12px 16px;
+    font-size:1rem;
+    cursor:pointer;
+    font-weight:600;
+    width:200px;
+    align-self:flex-start;
+}
+.saveBtn:hover{
+    background:#42a7df;
 }
 
-.form-fields {
-    width: 360px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+/* PRAZNA STRANICA */
+.pageBlank{ /* #page-blank */
+    min-height:200px;
 }
-
-.form-fields input {
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    background: #eef9fb;
-}
-
-/* Profile picture */
-.circle-photo {
-    width: 190px;
-    height: 190px;
-    background: #8ccff0;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.save-btn {
-    margin-top: 20px;
-    padding: 12px 20px;
-    background: #0a5773;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-}
-.error { color: red; margin-top: 10px; }
-.success { color: green; margin-top: 10px; }

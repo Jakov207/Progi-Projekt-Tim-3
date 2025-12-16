@@ -12,7 +12,7 @@ import ResetPassword from './pages/ResetPassword';
 
 // Uvezi layout
 import MainLayout from './components/MainLayout';
-import Profile from "./pages/Profile.jsx";
+import {Profile} from "./pages/Profile.jsx";
 
 
 
