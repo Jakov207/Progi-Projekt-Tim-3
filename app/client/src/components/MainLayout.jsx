@@ -19,7 +19,7 @@ function MainLayout() {
                     <Link to="/">Početna</Link>
                     <Link to="/instructors">Instruktori</Link>
                     <Link to="/quizzes">Kvizovi</Link>
-                    <Link to="/profile">Profil</Link>
+                    {user && <Link to="/profile">Profil</Link>}
                 </nav>
 
                 <div className={styles.rightSide}>
