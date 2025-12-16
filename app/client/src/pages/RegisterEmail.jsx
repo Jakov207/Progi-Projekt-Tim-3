@@ -12,7 +12,6 @@ function RegisterEmail() {
     const [password, setPassword] = useState('');
     const [passwordCheck, setPasswordCheck] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [showPasswordCheck, setShowPasswordCheck] = useState(false);
     const [termsAndConditions, setTermsAndConditions] = useState(false);
     const [showRequirements, setShowRequirements] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -89,13 +88,13 @@ function RegisterEmail() {
                             required
                         />
                         <Input
-                            icon={showPasswordCheck ? EyeIcon : EyeOffIcon}
+                            icon={showPassword ? EyeIcon : EyeOffIcon}
                             rightIcon={LockIcon}
-                            type={showPasswordCheck ? 'text' : 'password'}
+                            type={showPassword ? 'text' : 'password'}
                             placeholder="Potvrdi Lozinku"
                             value={passwordCheck}
                             onChange={(e) => setPasswordCheck(e.target.value)}
-                            onRightIconClick={() => setShowPasswordCheck(!showPasswordCheck)}
+                            onRightIconClick={() => setShowPassword(!showPassword)}
                             required
                         />
 
