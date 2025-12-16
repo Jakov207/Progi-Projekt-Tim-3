@@ -135,7 +135,7 @@ router.get('/verify-token', async (req, res) => {
     if (!token) {
         return res.status(400).json({ message: 'Token nije pronađen.' });
     }
-    console.log("Verifikacija: " + token);
+
     //provjera token, ako je token dobar idemo na zadnji dio registracije
     try {
         jwt.verify(token, process.env.VERIFY_SECRET);

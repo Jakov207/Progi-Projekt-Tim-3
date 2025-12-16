@@ -10,9 +10,9 @@ export default defineConfig({
         proxy: {
             // Svi zahtjevi koji počinju s '/api' bit će preusmjereni
             '/api': {
-                target: 'http://localhost:8080', // Vaš backend server
-                changeOrigin: true, // Nužno za virtualne hostove
-                secure: false,      // Ako backend nema HTTPS
+                target: 'http://localhost:3001', // Backend server on port 3001
+                changeOrigin: true,
+                secure: false,
             },
         },
     },

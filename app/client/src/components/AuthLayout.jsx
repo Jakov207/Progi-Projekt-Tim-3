@@ -3,26 +3,23 @@
 import React from 'react';
 import styles from './AuthLayout.module.css';
 
-
-
-function AuthLayout({ children, infoText, infoImage }) {
+function AuthLayout({ children, infoText, infoImage, blurLeft = false }) {
     return (
         <div className={styles.container}>
 
-            {/* Lijeva strana (sada je dinamična) */}
-            <div className={styles.infoPanel}>
+            {/* Left panel - info section with optional blur */}
+            <div className={`${styles.infoPanel} ${blurLeft ? styles.blurred : ''}`}>
                 <div className={styles.infoContent}>
                     <p>{infoText}</p>
                 </div>
-                {/* Koristimo 'infoImage' prop */}
                 <img
                     className={styles.infoImage}
-                    src={infoImage} // Slika dolazi kao prop
+                    src={infoImage}
                     alt="Ilustracija"
                 />
             </div>
 
-            {/* Desna strana (prima sadržaj - 'children') */}
+            {/* Right panel - form content */}
             <div className={styles.formPanel}>
                 {children}
             </div>

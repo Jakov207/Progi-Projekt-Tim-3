@@ -5,17 +5,58 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import AuthLayout from '../components/AuthLayout';
 import Input from '../components/Input';
-import styles from './FinishRegister.module.css'; // Koristi kopirani CSS
-
+import { UserIcon, CalendarIcon, ChevronDownIcon, ProfileAvatarIcon } from '../components/Icons';
+import styles from './FinishRegister.module.css';
 import slikaRegistracija from '../assets/images/slikaRegistracija.png';
+
+// City icon component
+const CityIcon = ({ size = 20, color = '#4a90a4', className = '' }) => (
+    <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+    >
+        <path d="M3 21h18" />
+        <path d="M5 21V7l8-4v18" />
+        <path d="M19 21V11l-6-4" />
+        <path d="M9 9v.01" />
+        <path d="M9 12v.01" />
+        <path d="M9 15v.01" />
+        <path d="M9 18v.01" />
+    </svg>
+);
+
+// Education/graduation icon
+const EducationIcon = ({ size = 20, color = '#4a90a4', className = '' }) => (
+    <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+    >
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+        <path d="M6 12v5c3 3 9 3 12 0v-5" />
+    </svg>
+);
 
 function FinishRegister() {
     const [formData, setFormData] = useState({
         name: '',
         surname: '',
         date_of_birth: '',
-        sex: 'M', // Default 'Muški'
-        is_professor: false, // Default 'Student'
+        sex: '',
+        is_professor: '',
         city: '',
         education: ''
     });
@@ -24,14 +65,13 @@ function FinishRegister() {
 
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const token = searchParams.get('token'); // Čitamo token iz URL-a
+    const token = searchParams.get('token');
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
 
-        // Posebno rukovanje za 'is_professor' radio gumbe
         if (name === "is_professor") {
-            setFormData(prev => ({ ...prev, is_professor: value === 'true' }));
+            setFormData(prev => ({ ...prev, is_professor: value }));
         } else {
             setFormData(prev => ({
                 ...prev,
@@ -54,7 +94,8 @@ function FinishRegister() {
         try {
             await api.post('/auth/finish-register', {
                 token: token,
-                ...formData
+                ...formData,
+                is_professor: formData.is_professor === 'true'
             });
 
             navigate('/login');
@@ -65,19 +106,28 @@ function FinishRegister() {
         }
     };
 
-    const registerInfoText = "Registrirajte se kako biste pristupili rezervacijama, instruktorima i personaliziranom učenju.";
+    const infoText = "Registrirajte se kako biste pristupili rezervacijama, instruktorima i personaliziranom učenju.";
 
     return (
         <AuthLayout
-            infoText={registerInfoText}
+            infoText={infoText}
             infoImage={slikaRegistracija}
+            blurLeft={true}
         >
             <div className={styles.formContainer}>
                 <h2>Osnovni osobni podaci</h2>
-                <form onSubmit={handleSubmit}>
 
+                {/* Profile Avatar */}
+                <div className={styles.avatarSection}>
+                    <div className={styles.avatarWrapper}>
+                        <ProfileAvatarIcon size={100} />
+                    </div>
+                    <span className={styles.avatarLabel}>Profilna slika</span>
+                </div>
+
+                <form onSubmit={handleSubmit}>
                     <Input
-                        icon="👤"
+                        icon={UserIcon}
                         name="name"
                         placeholder="Ime*"
                         value={formData.name}
@@ -85,7 +135,7 @@ function FinishRegister() {
                         required
                     />
                     <Input
-                        icon="👤"
+                        icon={UserIcon}
                         name="surname"
                         placeholder="Prezime*"
                         value={formData.surname}
@@ -93,61 +143,65 @@ function FinishRegister() {
                         required
                     />
                     <Input
-                        icon="📅"
+                        icon={CalendarIcon}
                         type="date"
                         name="date_of_birth"
-                        placeholder="Datum rođenja" // Placeholder se možda neće vidjeti
+                        placeholder="Datum rođenja"
                         value={formData.date_of_birth}
                         onChange={handleChange}
                         required
                     />
 
-                    {/* --- NOVI KOD ZA SPOL --- */}
+                    {/* Gender Select */}
                     <div className={styles.selectGroup}>
-                        <label htmlFor="sex">Spol*</label>
-                        <select id="sex" name="sex" value={formData.sex} onChange={handleChange} required>
-                            <option value="M">Muški</option>
-                            <option value="F">Ženski</option>
-                            <option value="X">Ostalo / Ne želim reći</option>
-                        </select>
+                        <div className={styles.selectWrapper}>
+                            <select
+                                id="sex"
+                                name="sex"
+                                value={formData.sex}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="" disabled>Spol*</option>
+                                <option value="M">Muški</option>
+                                <option value="F">Ženski</option>
+                                <option value="X">Ostalo / Ne želim reći</option>
+                            </select>
+                            <ChevronDownIcon size={18} className={styles.selectIcon} />
+                        </div>
                     </div>
 
-                    {/* --- NOVI KOD ZA TIP KORISNIKA --- */}
-                    <div className={styles.radioGroup}>
-                        <p>Tip Korisnika*</p>
-                        <label>
-                            <input
-                                type="radio"
+                    {/* User Type Select */}
+                    <div className={styles.selectGroup}>
+                        <div className={styles.selectWrapper}>
+                            <select
+                                id="is_professor"
                                 name="is_professor"
-                                value="false" // Student (false)
-                                checked={formData.is_professor === false}
+                                value={formData.is_professor}
                                 onChange={handleChange}
-                            />
-                            Student
-                        </label>
-                        <label>
-                            <input
-                                type="radio"
-                                name="is_professor"
-                                value="true" // Profesor (true)
-                                checked={formData.is_professor === true}
-                                onChange={handleChange}
-                            />
-                            Profesor
-                        </label>
+                                required
+                            >
+                                <option value="" disabled>Tip Korisnika*</option>
+                                <option value="false">Student</option>
+                                <option value="true">Profesor</option>
+                            </select>
+                            <ChevronDownIcon size={18} className={styles.selectIcon} />
+                        </div>
                     </div>
 
-                    {/* Polja koja si imao u backendu ali ne na slici */}
+                    {/* City field */}
                     <Input
-                        icon="🏙️"
+                        icon={CityIcon}
                         name="city"
                         placeholder="Grad*"
                         value={formData.city}
                         onChange={handleChange}
                         required
                     />
+
+                    {/* Education field */}
                     <Input
-                        icon="🎓"
+                        icon={EducationIcon}
                         name="education"
                         placeholder="Edukacija (npr. FER)*"
                         value={formData.education}
@@ -155,7 +209,7 @@ function FinishRegister() {
                         required
                     />
 
-                    <p className={styles.obaveznoPolje}>Sa znakom * označena obavezna polja.</p>
+                    <p className={styles.requiredNote}>Sa znakom * označena obavezna polja.</p>
 
                     {error && <p className={styles.errorMessage}>{error}</p>}
 

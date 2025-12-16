@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
@@ -6,30 +5,29 @@ import AuthLayout from '../components/AuthLayout';
 import Input from '../components/Input';
 import styles from './RegisterEmail.module.css'; // Koristi kopirani CSS
 import GoogleLoginButton from "../components/GoogleLoginButton";
-
-
+import { EmailIcon, LockIcon, EyeIcon, EyeOffIcon, GoogleIcon, ChevronDownIcon } from '../components/Icons';
+import styles from './RegisterEmail.module.css';
 import slikaRegistracija from '../assets/images/slikaRegistracija.png';
 
 function RegisterEmail() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [passwordCheck, setPasswordCheck] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [termsAndConditions, setTermsAndConditions] = useState(false);
+    const [showRequirements, setShowRequirements] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    // Poruke
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
 
-    // Tekst za lijevu stranu
-    const registerInfoText = "Registrirajte se kako biste pristupili rezervacijama, instruktorima i personaliziranom učenju.";
+    const infoText = "Registrirajte se kako biste pristupili rezervacijama, instruktorima i personaliziranom učenju.";
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setMessage('');
 
-        // Frontend validacija (backend radi isto, ali dobro je i ovdje)
         if (password !== passwordCheck) {
             setError("Lozinke se ne podudaraju.");
             return;
@@ -49,9 +47,7 @@ function RegisterEmail() {
                 termsAndConditions
             });
 
-            // Uspjeh! Prikazujemo poruku "Link poslan..."
             setMessage(response.data.message);
-
         } catch (err) {
             setError(err.response?.data?.message || 'Greška pri registraciji.');
         } finally {
@@ -59,15 +55,15 @@ function RegisterEmail() {
         }
     };
 
+    const handleGoogleLogin = () => {
+        console.log('Google login clicked - OAuth not implemented');
+    };
+
     return (
-        <AuthLayout
-            infoText={registerInfoText}
-            infoImage={slikaRegistracija}
-        >
+        <AuthLayout infoText={infoText} infoImage={slikaRegistracija}>
             <div className={styles.formContainer}>
                 <h2>Registracija</h2>
 
-                {/* Ako je poruka uspješno poslana, sakrij formu */}
                 {message ? (
                     <div className={styles.successMessage}>
                         <h3>Provjerite email!</h3>
@@ -76,7 +72,7 @@ function RegisterEmail() {
                 ) : (
                     <form onSubmit={handleSubmit}>
                         <Input
-                            icon="📧"
+                            icon={EmailIcon}
                             type="email"
                             placeholder="Email Adresa"
                             value={email}
@@ -84,24 +80,47 @@ function RegisterEmail() {
                             required
                         />
                         <Input
-                            icon="🔒"
-                            type="password"
+                            icon={showPassword ? EyeIcon : EyeOffIcon}
+                            rightIcon={LockIcon}
+                            type={showPassword ? 'text' : 'password'}
                             placeholder="Lozinka"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            onRightIconClick={() => setShowPassword(!showPassword)}
                             required
+                            autoComplete="new-password"
                         />
                         <Input
-                            icon="🔒"
-                            type="password"
+                            icon={showPassword ? EyeIcon : EyeOffIcon}
+                            rightIcon={LockIcon}
+                            type={showPassword ? 'text' : 'password'}
                             placeholder="Potvrdi Lozinku"
                             value={passwordCheck}
                             onChange={(e) => setPasswordCheck(e.target.value)}
+                            onRightIconClick={() => setShowPassword(!showPassword)}
                             required
+                            autoComplete="new-password"
                         />
 
-                        {/* Ovdje može ići onaj dropdown "Minimalni zahtjevi",
-                ali zasad ćemo ga preskočiti radi jednostavnosti */}
+                        {/* Password Requirements Dropdown */}
+                        <div className={styles.requirementsDropdown}>
+                            <button
+                                type="button"
+                                className={styles.requirementsToggle}
+                                onClick={() => setShowRequirements(!showRequirements)}
+                            >
+                                <span>Minimalni zahtjevi za lozinku:</span>
+                                <ChevronDownIcon size={16} className={showRequirements ? styles.rotated : ''} />
+                            </button>
+                            {showRequirements && (
+                                <ul className={styles.requirementsList}>
+                                    <li>Najmanje 8 znakova</li>
+                                    <li>Barem jedno veliko slovo</li>
+                                    <li>Barem jedan broj</li>
+                                    <li>Barem jedan specijalni znak</li>
+                                </ul>
+                            )}
+                        </div>
 
                         <div className={styles.termsCheckbox}>
                             <input
@@ -110,7 +129,7 @@ function RegisterEmail() {
                                 checked={termsAndConditions}
                                 onChange={(e) => setTermsAndConditions(e.target.checked)}
                             />
-                            <label htmlFor="terms">Prihvaćam uvjete korištenja</label>
+                            <label htmlFor="terms">Prihvaćam uvjete korištenja.</label>
                         </div>
 
                         {error && <p className={styles.errorMessage}>{error}</p>}
