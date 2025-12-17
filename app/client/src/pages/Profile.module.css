@@ -29,30 +29,30 @@
     padding: 0 22px;
     box-shadow: 0 2px 0 rgba(0,0,0,0.15);
 }
-.logoImg { /* .logo-img */
+.logoImg {
     width: 50px;
     height: auto;
     margin-right: 10px;
 }
-.navLeft{ /* .nav-left */
+.navLeft{
     display:flex;
     align-items:center;
 }
-.siteTitle{ /* .site-title */
+.siteTitle{
     color:white;
     text-decoration:none;
     font-weight:600;
     margin-left:6px;
 }
-.navRight{ /* .nav-right */
+.navRight{
     display:flex;
     align-items:center;
     gap:14px;
 }
-.userName{ /* .user-name */
+.userName{
     color:#e6f6fb;
 }
-.topProfileThumb{ /* .top-profile-thumb */
+.topProfileThumb{
     width:38px;
     height:38px;
     border-radius:50%;
@@ -61,7 +61,7 @@
 }
 
 /* ===== LAYOUT ===== */
-.mainContainer{ /* .main-container */
+.mainContainer{
     display:flex;
     height: calc(100vh - 64px);
 }
@@ -73,7 +73,8 @@
     border-right: 1px solid rgba(0,0,0,0.06);
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    align-items: flex-end;
+    justify-content: center;
     overflow:auto;
 }
 .content{
@@ -84,16 +85,14 @@
 }
 
 /* ===== SIDEBAR ===== */
-.sidebarUser{ /* .sidebar-user */
+.sidebarUser{
     display:flex;
     gap:14px;
     align-items:center;
-    margin-bottom:20px;
-    margin-left: auto;
-    margin-right: 0;
+    margin-bottom:40px;
     width: fit-content;
 }
-.sidebarAvatar{ /* .sidebar-avatar */
+.sidebarAvatar{
     width:56px;
     height:56px;
     border-radius:50%;
@@ -107,10 +106,10 @@
     color:#7bb8d8;
     font-size:24px;
 }
-.sidebarName{ /* .sidebar-name */
+.sidebarName{
     font-weight:700;
 }
-.sidebarRole{ /* .sidebar-role */
+.sidebarRole{
     font-size:0.9rem;
     color:#123;
     opacity:0.8;
@@ -118,30 +117,34 @@
 }
 
 /* ===== GUMBI ===== */
-.settingsNav{ /* .settings-nav */
+.settingsNav{
     display:flex;
     flex-direction:column;
-    gap:10px;
+    gap:16px;
     align-items: flex-end;
 }
-.settingsNav hr{ /* .settings-nav hr */
+.settingsNav hr{
     border:none;
     border-top:1px solid rgba(0,0,0,0.06);
-    width: 280px;
-    margin:10px 0;
+    width: 220px;
+    margin:16px 0;
 }
-.navBtn{ /* .nav-btn */
+.navBtn{
     background: rgba(255,255,255,0.15);
     border: none;
-    padding:10px 14px;
-    text-align:left;
-    border-radius:6px;
+    padding: 16px 20px;
+    text-align:center;
+    border-radius:8px;
     cursor:pointer;
     box-shadow: 0 2px 0 rgba(0,0,0,0.03);
     font-weight:600;
     color:#0b3b3b;
-    width: 280px;
+    width: 220px;
+    height: 56px;
     transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .navBtn:hover{
     background: rgba(255,255,255,0.22);
@@ -155,28 +158,28 @@
 .page{
     display:none;
 }
-.pageActive{ /* .page-active */
+.pageActive{
     display:block;
 }
 
-.editForm{ /* .edit-form */
+.editForm{
     display:flex;
-    gap:60px; /* Povećan razmak za bolji izgled */
+    gap:60px;
     align-items:flex-start;
 }
 
-.formFields{ /* .form-fields */
-    flex: 1; /* KLJUČNO: Forma zauzima sav lijevi prostor */
+.formFields{
+    flex: 1;
     display:flex;
     flex-direction:column;
-    gap:16px; /* Povećan razmak za bolji izgled */
+    gap:16px;
 }
-.formFields label{ /* .form-fields label */
+.formFields label{
     font-weight:600;
     font-size:0.95rem;
     color:#062a2b;
 }
-.formFields input{ /* .form-fields input */
+.formFields input{
     width:380px;
     padding:10px 14px;
     border-radius:8px;
@@ -192,14 +195,14 @@
 }
 
 /* PROFILNA */
-.photoSection{ /* .profile-photo-section */
+.photoSection{
     display:flex;
     flex-direction:column;
     align-items:center;
     gap:12px;
-    margin-top:18px; /* Odmak za poravnanje s poljima */
+    margin-top:18px;
 }
-.profileCircle{ /* .profile-circle */
+.profileCircle{
     width:210px;
     height:210px;
     border-radius:50%;
@@ -214,7 +217,7 @@
     font-size:86px;
     color:white;
 }
-.editPhotoBtn{ /* .edit-photo-btn */
+.editPhotoBtn{
     background:white;
     border:none;
     padding:8px 12px;
@@ -225,7 +228,7 @@
 }
 
 /* GUMB SPREMI */
-.saveBtn{ /* .save-btn */
+.saveBtn{
     margin-top:20px;
     background-color:#61bdf7;
     color:white;
@@ -243,7 +246,7 @@
 }
 
 /* PRAZNA STRANICA */
-.pageBlank{ /* #page-blank */
+.pageBlank{
     min-height:200px;
 }
 
@@ -268,4 +271,24 @@
 .profileCircle i {
     font-size: 4rem;
     color: #ccc;
+}
+
+.error {
+    color: #d93025;
+    background: #fdd;
+    border: 1px solid #d93025;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.success {
+    color: #0f5132;
+    background: #d1e7dd;
+    border: 1px solid #0f5132;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-top: 1rem;
+    text-align: center;
 }

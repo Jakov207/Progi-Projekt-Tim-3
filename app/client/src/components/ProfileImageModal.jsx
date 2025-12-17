@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { uploadProfileImage, deleteProfileImage } from '../api';
-import styles from './ProfileImageModal.module.css'; // ✅ DODAJ OVO
+import styles from './ProfileImageModal.module.css';
 
 const ProfileImageModal = ({ isOpen, onClose, currentImage, onImageUpdated }) => {
     const [selectedImage, setSelectedImage] = useState(null);
@@ -12,6 +12,17 @@ const ProfileImageModal = ({ isOpen, onClose, currentImage, onImageUpdated }) =>
     const handleImageSelect = (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            setError('Samo slike su dozvoljene (jpg, png, gif, webp)');
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            setError('Slika ne smije biti veća od 5MB');
+            return;
+        }
 
         setError('');
         setSelectedImage(file);
@@ -26,13 +37,11 @@ const ProfileImageModal = ({ isOpen, onClose, currentImage, onImageUpdated }) =>
         setLoading(true);
         setError('');
         try {
-            const data = await uploadProfileImage(selectedImage);
-            onImageUpdated(data.filename);
-            setSelectedImage(null);
-            setPreview(null);
-            onClose();
+            const result = await uploadProfileImage(selectedImage);
+            onImageUpdated(result.filename);
+            handleClose();
         } catch (err) {
-            setError(err.response?.data?.message || 'Greška pri uploadu');
+            setError(err.response?.data?.message || 'Greška pri uploadu slike');
         } finally {
             setLoading(false);
         }
@@ -46,9 +55,9 @@ const ProfileImageModal = ({ isOpen, onClose, currentImage, onImageUpdated }) =>
         try {
             await deleteProfileImage();
             onImageUpdated(null);
-            onClose();
+            handleClose();
         } catch (err) {
-            setError(err.response?.data?.message || 'Greška pri brisanju');
+            setError(err.response?.data?.message || 'Greška pri brisanju slike');
         } finally {
             setLoading(false);
         }
@@ -63,6 +72,8 @@ const ProfileImageModal = ({ isOpen, onClose, currentImage, onImageUpdated }) =>
 
     if (!isOpen) return null;
 
+    const displayImage = preview || currentImage;
+
     return (
         <div className={styles.backdrop} onClick={handleClose}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -70,17 +81,39 @@ const ProfileImageModal = ({ isOpen, onClose, currentImage, onImageUpdated }) =>
                     ×
                 </button>
 
-                <h2 className={styles.title}>Uredi Profilnu Sliku</h2>
+                <h2 className={styles.title}>Profilna Slika</h2>
+
+                <div className={styles.imagePreview}>
+                    {displayImage ? (
+                        <img src={displayImage} alt="Preview" className={styles.previewImage} />
+                    ) : (
+                        <div className={styles.placeholder}>
+                            <i className="fa-solid fa-user"></i>
+                        </div>
+                    )}
+                </div>
 
                 {error && <div className={styles.error}>{error}</div>}
 
-                <div className={styles.imagePreview}>
-                    {preview ? (
-                        <img src={preview} alt="Preview" className={styles.previewImage} />
-                    ) : currentImage ? (
-                        <img src={currentImage} alt="Current" className={styles.previewImage} />
-                    ) : (
-                        <div className={styles.placeholder}>Nema slike</div>
+                <div className={styles.actions}>
+                    <button
+                        className={styles.actionBtn}
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={loading}
+                    >
+                        <i className="fa-solid fa-upload"></i>
+                        {selectedImage ? 'Promijeni odabir' : 'Odaberi novu sliku'}
+                    </button>
+
+                    {currentImage && (
+                        <button
+                            className={styles.actionBtn}
+                            onClick={handleDelete}
+                            disabled={loading}
+                        >
+                            <i className="fa-solid fa-trash"></i>
+                            Obriši sliku
+                        </button>
                     )}
                 </div>
 
@@ -92,26 +125,6 @@ const ProfileImageModal = ({ isOpen, onClose, currentImage, onImageUpdated }) =>
                     className={styles.fileInput}
                 />
 
-                <div className={styles.actions}>
-                    <button
-                        className={styles.actionBtn}
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={loading}
-                    >
-                        <i className="fa-solid fa-folder-open"></i> Odaberi novu sliku
-                    </button>
-
-                    {currentImage && !selectedImage && (
-                        <button
-                            className={styles.actionBtn}
-                            onClick={handleDelete}
-                            disabled={loading}
-                        >
-                            <i className="fa-solid fa-trash"></i> Obriši sliku
-                        </button>
-                    )}
-                </div>
-
                 <div className={styles.buttonGroup}>
                     <button
                         className={styles.cancelBtn}
@@ -120,16 +133,13 @@ const ProfileImageModal = ({ isOpen, onClose, currentImage, onImageUpdated }) =>
                     >
                         Odustani
                     </button>
-
-                    {selectedImage && (
-                        <button
-                            className={styles.saveBtn}
-                            onClick={handleUpload}
-                            disabled={loading}
-                        >
-                            {loading ? 'Spremanje...' : 'Spremi'}
-                        </button>
-                    )}
+                    <button
+                        className={styles.saveBtn}
+                        onClick={handleUpload}
+                        disabled={!selectedImage || loading}
+                    >
+                        {loading ? 'Spremanje...' : 'Spremi'}
+                    </button>
                 </div>
             </div>
         </div>
