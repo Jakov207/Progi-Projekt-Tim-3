@@ -4,7 +4,6 @@ dotenv.config();
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-const session = require('express-session');
 
 const app = express();
 
@@ -14,22 +13,9 @@ app.use(cors({
 }));
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // DODANO
 app.use(express.json());
 app.use(cookieParser());
-
-//cookie
-/* mozda ipak netreba al cu ostavit tu ak ce nam trebat
-app.use(session({
-    secret: process.env.SESSION_SECRET || "secret",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        secure: process.env.NODE_ENV === "production",
-        httpOnly: true,
-        maxAge: 15 * 60 * 1000 // 15 min
-    }
-}))
-*/
 
 const authRoutes = require('./routes/auth');
 app.use("/api/auth", authRoutes);
@@ -43,9 +29,8 @@ app.get("/", (req, res) => {
 
 app.get("/finish-register", (req, res) => {
     res.sendFile(path.join(__dirname, "public/finish-register.html"));
-})
+});
 
-//pali server na portu 8080
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
