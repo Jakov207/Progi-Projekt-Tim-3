@@ -167,7 +167,7 @@ function FinishRegister() {
                         </div>
                     </div>
                     <span className={styles.avatarLabel}>
-                        {imagePreview ? 'Promijenite sliku' : 'Dodajte profilnu sliku (opciono)'}
+                        {imagePreview ? 'Promijenite sliku' : 'Dodajte profilnu sliku'}
                     </span>
                     <input
                         ref={fileInputRef}
