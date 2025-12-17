@@ -1,88 +1,78 @@
-import { useState, useRef } from 'react';
-import styles from './ProfileImageModal.module.css';
-import { uploadProfileImage, deleteProfileImage, getImageUrl } from '../api';
+import React, { useState, useRef } from 'react';
+import { uploadProfileImage, deleteProfileImage } from '../api';
+import styles from './ProfileImageModal.module.css'; // ✅ DODAJ OVO
 
 const ProfileImageModal = ({ isOpen, onClose, currentImage, onImageUpdated }) => {
+    const [selectedImage, setSelectedImage] = useState(null);
     const [preview, setPreview] = useState(null);
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [isUploading, setIsUploading] = useState(false);
-    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
     const fileInputRef = useRef(null);
 
-    if (!isOpen) return null;
-
-    const handleFileSelect = (e) => {
+    const handleImageSelect = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-        if (!validTypes.includes(file.type)) {
-            setError('Dozvoljeni su samo jpg, png, gif i webp formati');
-            return;
-        }
-
-        if (file.size > 5 * 1024 * 1024) {
-            setError('Slika ne smije biti veća od 5MB');
-            return;
-        }
-
-        setError(null);
-        setSelectedFile(file);
-
+        setError('');
+        setSelectedImage(file);
         const reader = new FileReader();
         reader.onloadend = () => setPreview(reader.result);
         reader.readAsDataURL(file);
     };
 
     const handleUpload = async () => {
-        if (!selectedFile) {
-            setError('Molimo odaberite sliku');
-            return;
-        }
+        if (!selectedImage) return;
 
+        setLoading(true);
+        setError('');
         try {
-            setIsUploading(true);
-            const response = await uploadProfileImage(selectedFile);
-            onImageUpdated(response.filename);
-            handleClose();
+            const data = await uploadProfileImage(selectedImage);
+            onImageUpdated(data.filename);
+            setSelectedImage(null);
+            setPreview(null);
+            onClose();
         } catch (err) {
-            setError(err.response?.data?.message || 'Greška pri uploadu slike');
+            setError(err.response?.data?.message || 'Greška pri uploadu');
         } finally {
-            setIsUploading(false);
+            setLoading(false);
         }
     };
 
     const handleDelete = async () => {
         if (!currentImage) return;
 
+        setLoading(true);
+        setError('');
         try {
-            setIsUploading(true);
             await deleteProfileImage();
             onImageUpdated(null);
-            handleClose();
+            onClose();
         } catch (err) {
-            setError(err.response?.data?.message || 'Greška pri brisanju slike');
+            setError(err.response?.data?.message || 'Greška pri brisanju');
         } finally {
-            setIsUploading(false);
+            setLoading(false);
         }
     };
 
     const handleClose = () => {
+        setSelectedImage(null);
         setPreview(null);
-        setSelectedFile(null);
-        setError(null);
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
+        setError('');
         onClose();
     };
 
-    return (
-        <div className={styles.backdrop} onClick={(e) => e.target === e.currentTarget && handleClose()}>
-            <div className={styles.modal}>
-                <button className={styles.closeBtn} onClick={handleClose}>&times;</button>
+    if (!isOpen) return null;
 
-                <h2 className={styles.title}>Profilna Slika</h2>
+    return (
+        <div className={styles.backdrop} onClick={handleClose}>
+            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+                <button className={styles.closeBtn} onClick={handleClose}>
+                    ×
+                </button>
+
+                <h2 className={styles.title}>Uredi Profilnu Sliku</h2>
+
+                {error && <div className={styles.error}>{error}</div>}
 
                 <div className={styles.imagePreview}>
                     {preview ? (
@@ -94,31 +84,30 @@ const ProfileImageModal = ({ isOpen, onClose, currentImage, onImageUpdated }) =>
                     )}
                 </div>
 
-                {error && <div className={styles.error}>{error}</div>}
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    className={styles.fileInput}
+                />
 
                 <div className={styles.actions}>
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileSelect}
-                        accept="image/*"
-                        className={styles.fileInput}
-                    />
                     <button
                         className={styles.actionBtn}
                         onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
+                        disabled={loading}
                     >
-                        📁 Odaberi sliku
+                        <i className="fa-solid fa-folder-open"></i> Odaberi novu sliku
                     </button>
 
-                    {currentImage && (
+                    {currentImage && !selectedImage && (
                         <button
                             className={styles.actionBtn}
                             onClick={handleDelete}
-                            disabled={isUploading}
+                            disabled={loading}
                         >
-                            🗑️ Obriši sliku
+                            <i className="fa-solid fa-trash"></i> Obriši sliku
                         </button>
                     )}
                 </div>
@@ -127,17 +116,20 @@ const ProfileImageModal = ({ isOpen, onClose, currentImage, onImageUpdated }) =>
                     <button
                         className={styles.cancelBtn}
                         onClick={handleClose}
-                        disabled={isUploading}
+                        disabled={loading}
                     >
                         Odustani
                     </button>
-                    <button
-                        className={styles.saveBtn}
-                        onClick={handleUpload}
-                        disabled={isUploading || !selectedFile}
-                    >
-                        {isUploading ? 'Spremanje...' : 'Spremi'}
-                    </button>
+
+                    {selectedImage && (
+                        <button
+                            className={styles.saveBtn}
+                            onClick={handleUpload}
+                            disabled={loading}
+                        >
+                            {loading ? 'Spremanje...' : 'Spremi'}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
