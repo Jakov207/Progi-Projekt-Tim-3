@@ -8,12 +8,10 @@ export default function GoogleLoginButton() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        //console.log("ENV GOOGLE CLIENT ID:", import.meta.env.GOOGLE_CLIENT_ID);
-
         if (!window.google) return;
 
         window.google.accounts.id.initialize({
-            client_id: import.meta.env.GOOGLE_CLIENT_ID,
+            client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
             callback: handleGoogleResponse,
         });
 
