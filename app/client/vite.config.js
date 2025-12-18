@@ -10,7 +10,7 @@ export default defineConfig({
         proxy: {
             // Svi zahtjevi koji počinju s '/api' bit će preusmjereni
             '/api': {
-                target: 'http://localhost:3001', // Backend server on port 3001
+                target: 'http://localhost:8080', // Backend server on port 3001
                 changeOrigin: true,
                 secure: false,
             },
