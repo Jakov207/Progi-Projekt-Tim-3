@@ -98,7 +98,7 @@ function FinishRegister() {
                 is_professor: formData.is_professor === 'true'
             });
 
-            navigate('/login');
+            navigate('/interests');
         } catch (err) {
             setError(err.response?.data?.message || 'Greška pri završetku registracije.');
         } finally {

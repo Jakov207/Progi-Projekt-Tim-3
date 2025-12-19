@@ -8,6 +8,8 @@ import RegisterEmail from './pages/RegisterEmail';
 import FinishRegister from './pages/FinishRegister';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import Interests from "./pages/Interests";
+
 // ... ostale
 
 // Uvezi layout
@@ -24,6 +26,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<RegisterEmail />} />
             <Route path="/finish-register" element={<FinishRegister />} />
+            <Route path="/interests" element={<Interests />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 

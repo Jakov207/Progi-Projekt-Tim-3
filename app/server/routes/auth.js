@@ -7,7 +7,7 @@ const sendEmail = require('../config/email');
 const fs = require('fs');
 const path = require('path');
 const verifyToken = require("../middleware/verifyToken");
-const { OAuth2Client } = require("google-auth-library");
+const { OAuth2Client } = crequire("google-auth-library");
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const router = express.Router();
