@@ -247,7 +247,7 @@ router.post('/forgotpassword', async (req, res) => {
 
     const userData = user.rows[0];
     const resetPassToken = generateResetPassToken(userData.id, email);
-    const resetLink = `${process.env.FRONTEND_URL}/api/auth/verify-reset-token?token=${resetPassToken}`;
+    const resetLink = `${process.env.BACKEND_URL}/api/auth/verify-reset-token?token=${resetPassToken}`;
 
     const resetTemplatePath = path.join(__dirname, '..', 'templates', 'reset_password.html');
     let resetHtml = fs.readFileSync(resetTemplatePath, 'utf8');

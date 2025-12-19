@@ -37,7 +37,7 @@ router.get('/', verifyToken, async (req, res) => {
 
     }catch(err){
         console.error('error while fetching profile', err);
-        res.status(500).json({message: 'server je u kurcu'});
+        res.status(500).json({message: 'Greška pri dohvaćanju profila'});
     }
 });
 
@@ -71,7 +71,7 @@ router.post('/update', verifyToken, async (req, res) => {
 
     }catch(err){
         console.error('error while updating user', err);
-        res.status(500).json({message: 'server je zeznut'});
+        res.status(500).json({message: 'Greška pri ažuriranju profila'});
     }
 });
 

@@ -28,11 +28,13 @@ function ResetPassword() {
 
         if (password !== passwordCheck) {
             setError("Lozinke se ne podudaraju.");
+            setLoading(false);
             return;
         }
 
         if (!token) {
             setError("Token nedostaje. Molimo ponovite postupak zaboravljene lozinke.");
+            setLoading(false);
             return;
         }
 
