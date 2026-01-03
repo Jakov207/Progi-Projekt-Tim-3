@@ -125,6 +125,21 @@
         box-shadow: 0 3px 11px rgba(74, 144, 164, 0.2);
     }
 
+    .formFields select {
+        padding: 10px 13px;
+        border: 2px solid rgba(255, 255, 255, 0.6);
+        border-radius: 8px;
+        font-size: 0.7rem;
+        background: rgba(255, 255, 255, 0.85);
+        transition: all 0.3s ease;
+    }
+
+    .formFields select:focus {
+        outline: none;
+        border-color: #4a90a4;
+        box-shadow: 0 3px 11px rgba(74, 144, 164, 0.2);
+    }
+
     .saveBtn {
         padding: 10px 22px;
         background: #4a90a4;

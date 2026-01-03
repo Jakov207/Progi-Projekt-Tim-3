@@ -132,7 +132,15 @@ export function Profile() {
                                            onChange={e => updateField("date_of_birth", e.target.value)}/>
 
                                     <label>Spol</label>
-                                    <input value={form.sex} onChange={e => updateField("sex", e.target.value)}/>
+                                    <select
+                                        value={form.sex}
+                                        onChange={e => updateField("sex", e.target.value)}
+                                    >
+                                        <option value="M">Muško</option>
+                                        <option value="F">Žensko</option>
+                                        <option value="X">Ostalo / Ne želim reći</option>
+                                    </select>
+
 
                                     <label>Mjesto/Grad</label>
                                     <input value={form.city} onChange={e => updateField("city", e.target.value)}/>
