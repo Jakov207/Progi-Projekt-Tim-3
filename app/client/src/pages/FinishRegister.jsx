@@ -70,13 +70,18 @@ function FinishRegister() {
         const { name, value } = e.target;
 
         if (name === "is_professor") {
-            setFormData(prev => ({ ...prev, is_professor: value }));
+            setFormData(prev => ({
+                ...prev,
+                is_professor: value,
+                education: "" // reset when switching type
+            }));
         } else {
             setFormData(prev => ({
                 ...prev,
                 [name]: value
             }));
         }
+
     };
 
     const handleImageSelect = (e) => {
@@ -249,14 +254,28 @@ function FinishRegister() {
                         required
                     />
 
-                    <Input
-                        icon={EducationIcon}
-                        name="education"
-                        placeholder="Edukacija (npr. FER)*"
-                        value={formData.education}
-                        onChange={handleChange}
-                        required
-                    />
+                    {formData.is_professor === "false" && (
+                        <Input
+                            icon={EducationIcon}
+                            name="education"
+                            placeholder="Škola / Fakultet*"
+                            value={formData.education}
+                            onChange={handleChange}
+                            required
+                        />
+                    )}
+
+                    {formData.is_professor === "true" && (
+                        <Input
+                            icon={EducationIcon}
+                            name="education"
+                            placeholder="Edukacija / Stručna sprema*"
+                            value={formData.education}
+                            onChange={handleChange}
+                            required
+                        />
+                    )}
+
 
                     <p className={styles.requiredNote}>Sa znakom * označena obavezna polja.</p>
 

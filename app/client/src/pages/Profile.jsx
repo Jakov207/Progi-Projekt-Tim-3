@@ -149,7 +149,7 @@ export function Profile() {
 
                                     {!form.is_professor && (
                                         <>
-                                            <label>Škola</label>
+                                            <label>Škola / Fakultet</label>
                                             <input value={form.education}
                                                    onChange={e => updateField("education", e.target.value)}/>
                                         </>
@@ -157,7 +157,7 @@ export function Profile() {
 
                                     {form.is_professor && (
                                         <>
-                                            <label>Stupanj obrazovanja</label>
+                                            <label>Edukacija / Stručna sprema</label>
                                             <input value={form.teaching}
                                                    onChange={e => updateField("teaching", e.target.value)}/>
                                         </>
