@@ -145,12 +145,19 @@ export function Profile() {
                                     <label>Mjesto/Grad</label>
                                     <input value={form.city} onChange={e => updateField("city", e.target.value)}/>
 
-                                    <label>Škola</label>
-                                    <input value={form.education} onChange={e => updateField("education", e.target.value)}/>
+
+
+                                    {!form.is_professor && (
+                                        <>
+                                            <label>Škola</label>
+                                            <input value={form.education}
+                                                   onChange={e => updateField("education", e.target.value)}/>
+                                        </>
+                                    )}
 
                                     {form.is_professor && (
                                         <>
-                                            <label>Predmet</label>
+                                            <label>Stupanj obrazovanja</label>
                                             <input value={form.teaching}
                                                    onChange={e => updateField("teaching", e.target.value)}/>
                                         </>
