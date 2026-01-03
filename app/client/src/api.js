@@ -1,11 +1,29 @@
-// src/api.js
 import axios from 'axios';
 
-// Kreiramo instancu Axios-a
-// Svi pozivi sada automatski koriste Vite proxy (jer počinju s /api)
 const api = axios.create({
     baseURL: '/api',
-    withCredentials: true, // Važno za slanje/primanje kolačića (cookies)
+    withCredentials: true,
 });
+
+export const uploadProfileImage = async (file) => {
+    const formData = new FormData();
+    formData.append('profileImage', file);
+
+    const response = await api.post('/profile/upload-image', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    });
+
+    return response.data;
+};
+
+export const deleteProfileImage = async () => {
+    const response = await api.delete('/profile/delete-image');
+    return response.data;
+};
+
+export const getImageUrl = (filename) => {
+    if (!filename) return null;
+    return `/uploads/profiles/${filename}`;
+};
 
 export default api;

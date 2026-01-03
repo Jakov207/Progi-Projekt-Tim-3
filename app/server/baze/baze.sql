@@ -6,7 +6,8 @@ CREATE TABLE users (
         name VARCHAR(100) NOT NULL,
         surname VARCHAR(100) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        CHECK (email ~* '^[A-Za-z0-9.%+-]+@[A-Za-z0-9.-]+.[A-Za-z]{2,}$')
+        CHECK (email ~* '^[A-Za-z0-9.%+-]+@[A-Za-z0-9.-]+.[A-Za-z]{2,}$'),
+        profile_picture VARCHAR(255) DEFAULT NULL
 );
 
 CREATE TABLE students (

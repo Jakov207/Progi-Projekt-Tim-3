@@ -2,28 +2,24 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/db');
 const verifyToken = require('../middleware/verifyToken');
+const { upload, deleteOldImage } = require('../middleware/upload');
 
 router.get('/', verifyToken, async (req, res) => {
     try{
-
-        const result = await pool.query('SELECT name, surname, email, is_professor FROM users WHERE id = $1', [req.user.id]);
+        const result = await pool.query('SELECT name, surname, email, is_professor, profile_picture FROM users WHERE id = $1', [req.user.id]);
 
         if(result.rows.length === 0){
             return res.status(404).json({message: 'Korisnik ne postoji'});
         }
 
         const user = result.rows[0];
-
         let profile = {};
-
-        console.log(user.is_professor);
 
         if(user.is_professor){
             const resP = await pool.query(
                 'SELECT sex, city, teaching, date_of_birth FROM professors WHERE user_id = $1',
                 [req.user.id]
             );
-            console.log(resP);
             profile = resP.rows[0] ?? {};
         }
         else{
@@ -31,18 +27,16 @@ router.get('/', verifyToken, async (req, res) => {
                 'SELECT sex, city, education, date_of_birth FROM students WHERE user_id = $1',
                 [req.user.id]
             );
-            console.log(resS);
             profile = resS.rows[0] ?? {};
         }
 
-        console.log(profile);
         return res.json({
             ...user,
             profile
         });
 
     }catch(err){
-        console.error('error while registering user', err);
+        console.error('error while fetching profile', err);
         res.status(500).json({message: 'server je u kurcu'});
     }
 });
@@ -60,7 +54,7 @@ router.post('/update', verifyToken, async (req, res) => {
             'UPDATE users SET name = $1, surname = $2, email = $3, is_professor = $4 WHERE id = $5',
             [name, surname, email, is_professor, userId]
         );
-        console.log('uspjesno azuiriranje pola profila');
+
         if(is_professor){
             await pool.query(
                 'UPDATE professors SET sex = $1, city = $2, teaching = $3, date_of_birth = $4 WHERE user_id=$5',
@@ -73,16 +67,58 @@ router.post('/update', verifyToken, async (req, res) => {
             );
         }
 
-        console.log('uspjesno azuriranje potpunog profila');
-        console.log(req.body);
-
         res.json({message: 'sve stima'});
-
 
     }catch(err){
         console.error('error while updating user', err);
         res.status(500).json({message: 'server je zeznut'});
     }
-})
+});
+
+router.post('/upload-image', verifyToken, upload.single('profileImage'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'Niste odabrali sliku' });
+        }
+
+        const userId = req.user.id;
+        const newFilename = req.file.filename;
+
+        const oldImageResult = await pool.query('SELECT profile_picture FROM users WHERE id = $1', [userId]);
+        const oldImage = oldImageResult.rows[0]?.profile_picture;
+
+        await pool.query('UPDATE users SET profile_picture = $1 WHERE id = $2', [newFilename, userId]);
+
+        if (oldImage) {
+            deleteOldImage(oldImage);
+        }
+
+        res.json({ message: 'Slika uspješno uploadana', filename: newFilename });
+    } catch (err) {
+        console.error('Error uploading image:', err);
+        res.status(500).json({ message: 'Greška pri uploadu slike' });
+    }
+});
+
+router.delete('/delete-image', verifyToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const result = await pool.query('SELECT profile_picture FROM users WHERE id = $1', [userId]);
+        const filename = result.rows[0]?.profile_picture;
+
+        if (!filename) {
+            return res.status(404).json({ message: 'Nema slike za brisanje' });
+        }
+
+        await pool.query('UPDATE users SET profile_picture = NULL WHERE id = $1', [userId]);
+        deleteOldImage(filename);
+
+        res.json({ message: 'Slika uspješno obrisana' });
+    } catch (err) {
+        console.error('Error deleting image:', err);
+        res.status(500).json({ message: 'Greška pri brisanju slike' });
+    }
+});
 
 module.exports = router;

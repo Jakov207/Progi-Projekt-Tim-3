@@ -1,6 +1,4 @@
-// src/pages/FinishRegister.jsx
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import AuthLayout from '../components/AuthLayout';
@@ -9,7 +7,6 @@ import { UserIcon, CalendarIcon, ChevronDownIcon, ProfileAvatarIcon } from '../c
 import styles from './FinishRegister.module.css';
 import slikaRegistracija from '../assets/images/slikaRegistracija.png';
 
-// City icon component
 const CityIcon = ({ size = 20, color = '#4a90a4', className = '' }) => (
     <svg
         width={size}
@@ -32,7 +29,6 @@ const CityIcon = ({ size = 20, color = '#4a90a4', className = '' }) => (
     </svg>
 );
 
-// Education/graduation icon
 const EducationIcon = ({ size = 20, color = '#4a90a4', className = '' }) => (
     <svg
         width={size}
@@ -60,24 +56,55 @@ function FinishRegister() {
         city: '',
         education: ''
     });
+    const [profileImage, setProfileImage] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const fileInputRef = useRef(null);
 
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const token = searchParams.get('token');
 
     const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
+        const { name, value } = e.target;
 
         if (name === "is_professor") {
-            setFormData(prev => ({ ...prev, is_professor: value }));
+            setFormData(prev => ({
+                ...prev,
+                is_professor: value,
+                education: "" // reset when switching type
+            }));
         } else {
             setFormData(prev => ({
                 ...prev,
-                [name]: type === 'checkbox' ? checked : value
+                [name]: value
             }));
         }
+
+    };
+
+    const handleImageSelect = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            setError('Samo slike su dozvoljene (jpg, png, gif, webp)');
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            setError('Slika ne smije biti veća od 5MB');
+            return;
+        }
+
+        setError('');
+        setProfileImage(file);
+
+        const reader = new FileReader();
+        reader.onloadend = () => setImagePreview(reader.result);
+        reader.readAsDataURL(file);
     };
 
     const handleSubmit = async (e) => {
@@ -92,10 +119,22 @@ function FinishRegister() {
         setLoading(true);
 
         try {
-            await api.post('/auth/finish-register', {
-                token: token,
-                ...formData,
-                is_professor: formData.is_professor === 'true'
+            const formDataToSend = new FormData();
+            formDataToSend.append('token', token);
+            formDataToSend.append('name', formData.name);
+            formDataToSend.append('surname', formData.surname);
+            formDataToSend.append('date_of_birth', formData.date_of_birth);
+            formDataToSend.append('sex', formData.sex);
+            formDataToSend.append('is_professor', formData.is_professor);
+            formDataToSend.append('city', formData.city);
+            formDataToSend.append('education', formData.education);
+
+            if (profileImage) {
+                formDataToSend.append('profileImage', profileImage);
+            }
+
+            await api.post('/auth/finish-register', formDataToSend, {
+                headers: { 'Content-Type': 'multipart/form-data' }
             });
 
             navigate('/login');
@@ -119,10 +158,29 @@ function FinishRegister() {
 
                 {/* Profile Avatar */}
                 <div className={styles.avatarSection}>
-                    <div className={styles.avatarWrapper}>
-                        <ProfileAvatarIcon size={100} />
+                    <div
+                        className={styles.avatarWrapper}
+                        onClick={() => fileInputRef.current?.click()}
+                    >
+                        {imagePreview ? (
+                            <img src={imagePreview} alt="Preview" className={styles.avatarImage} />
+                        ) : (
+                            <ProfileAvatarIcon size={100} />
+                        )}
+                        <div className={styles.avatarOverlay}>
+                            <i className="fa-solid fa-camera"></i>
+                        </div>
                     </div>
-                    <span className={styles.avatarLabel}>Profilna slika</span>
+                    <span className={styles.avatarLabel}>
+                        {imagePreview ? 'Promijenite sliku' : 'Dodajte profilnu sliku'}
+                    </span>
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageSelect}
+                        style={{ display: 'none' }}
+                    />
                 </div>
 
                 <form onSubmit={handleSubmit}>
@@ -152,7 +210,6 @@ function FinishRegister() {
                         required
                     />
 
-                    {/* Gender Select */}
                     <div className={styles.selectGroup}>
                         <div className={styles.selectWrapper}>
                             <select
@@ -171,7 +228,6 @@ function FinishRegister() {
                         </div>
                     </div>
 
-                    {/* User Type Select */}
                     <div className={styles.selectGroup}>
                         <div className={styles.selectWrapper}>
                             <select
@@ -189,7 +245,6 @@ function FinishRegister() {
                         </div>
                     </div>
 
-                    {/* City field */}
                     <Input
                         icon={CityIcon}
                         name="city"
@@ -199,15 +254,28 @@ function FinishRegister() {
                         required
                     />
 
-                    {/* Education field */}
-                    <Input
-                        icon={EducationIcon}
-                        name="education"
-                        placeholder="Edukacija (npr. FER)*"
-                        value={formData.education}
-                        onChange={handleChange}
-                        required
-                    />
+                    {formData.is_professor === "false" && (
+                        <Input
+                            icon={EducationIcon}
+                            name="education"
+                            placeholder="Škola / Fakultet*"
+                            value={formData.education}
+                            onChange={handleChange}
+                            required
+                        />
+                    )}
+
+                    {formData.is_professor === "true" && (
+                        <Input
+                            icon={EducationIcon}
+                            name="education"
+                            placeholder="Edukacija / Stručna sprema*"
+                            value={formData.education}
+                            onChange={handleChange}
+                            required
+                        />
+                    )}
+
 
                     <p className={styles.requiredNote}>Sa znakom * označena obavezna polja.</p>
 

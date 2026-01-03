@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "../api";
+import ProfileImageModal from "../components/ProfileImageModal";
+import { getImageUrl } from "../api";
 import styles from "./Profile.module.css";
 
 export function Profile() {
@@ -7,6 +9,7 @@ export function Profile() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
     const [form, setForm] = useState({
         name: "",
@@ -17,32 +20,41 @@ export function Profile() {
         city: "",
         education: "",
         teaching: "",
-        is_professor: false
+        is_professor: false,
+        profile_picture: null
     });
 
     useEffect(() => {
         loadProfile();
     }, []);
 
+    function formatDateForInput(dateString) {
+        if (!dateString) return "";
+        const date = new Date(dateString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
     async function loadProfile() {
         try {
             const res = await axios.get("/profile");
-            const u = res.data;
-
+            const { name, surname, email, is_professor, profile_picture, profile } = res.data;
             setForm({
-                name: u.name,
-                surname: u.surname,
-                email: u.email,
-                date_of_birth: u.profile.date_of_birth?.split("T")[0] ?? "",
-                sex: u.profile.sex ?? "",
-                city: u.profile.city ?? "",
-                education: u.profile.education ?? "",
-                teaching: u.profile.teaching ?? "",
-                is_professor: u.is_professor
+                name,
+                surname,
+                email,
+                is_professor,
+                profile_picture,
+                date_of_birth: formatDateForInput(profile.date_of_birth), // ✅ FIX
+                sex: profile.sex || "",
+                city: profile.city || "",
+                education: profile.education || "",
+                teaching: profile.teaching || ""
             });
-
         } catch (err) {
-            setError("Greška pri učitavanju profila.")
+            setError(err.response?.data?.message || "Greška kod dohvata podataka");
         } finally {
             setLoading(false);
         }
@@ -63,12 +75,26 @@ export function Profile() {
         }
 
         try {
-            await axios.post("/profile/update", form);
-            setMessage("Promjene su uspješno spremljene!");
+            await axios.post("/profile/update", {
+                name: form.name,
+                surname: form.surname,
+                email: form.email,
+                is_professor: form.is_professor,
+                date_of_birth: form.date_of_birth,
+                sex: form.sex,
+                city: form.city,
+                education: form.education,
+                teaching: form.teaching
+            });
+            setMessage("Promjene uspješno spremljene!");
         } catch (err) {
-            setError("Greška pri spremanju." + err);
+            setError(err.response?.data?.message || "Greška kod spremanja");
         }
     }
+
+    const handleImageUpdated = (newFilename) => {
+        setForm(prev => ({ ...prev, profile_picture: newFilename }));
+    };
 
     if (loading) return <p style={{textAlign: "center", marginTop: 40}}>Učitavanje…</p>;
 
@@ -76,58 +102,24 @@ export function Profile() {
         <div className={styles.pageWrapper}>
             <main className={styles.mainContainer}>
 
-                {/* SIDEBAR */}
                 <aside className={styles.sidebar}>
-                    <div className={styles.sidebarUser}>
-                        <div className={styles.sidebarAvatar}>
-                            <i className="fa-solid fa-user"></i>
-                        </div>
-                        <div>
-                            <div className={styles.sidebarName}>{form.name} {form.surname}</div>
-                            <div className={styles.sidebarRole}>{form.is_professor ? "Profesor" : "Učenik"}</div>
-                        </div>
-                    </div>
-
-                    <nav className={styles.settingsNav}>
-                        <button
-                            className={`${styles.navBtn} ${activeTab === "osobni" ? styles.active : ""}`}
-                            onClick={() => setActiveTab("osobni")}
-                        >
-                            Osobni podaci
-                        </button>
-
-                        <button className={styles.navBtn} onClick={() => setActiveTab("blank")}>Predmeti</button>
-                        <button className={styles.navBtn} onClick={() => setActiveTab("blank")}>Personalizacija</button>
-                        <button className={styles.navBtn} onClick={() => setActiveTab("blank")}>Notifikacije</button>
-
-                        <hr/>
-
-                        <button className={styles.navBtn} onClick={() => setActiveTab("blank")}>Sigurnost</button>
-                        <button className={styles.navBtn} onClick={() => setActiveTab("blank")}>Privatnost</button>
-                        <button className={styles.navBtn} onClick={() => setActiveTab("blank")}>Povijest aktivnosti
-                        </button>
-
-                        <hr/>
-
-                        <button className={styles.navBtn} onClick={() => setActiveTab("blank")}>Podrška</button>
-                        <button className={styles.navBtn} onClick={() => setActiveTab("blank")}>Brisanje računa</button>
-
-                        <hr/>
-
-                        <button className={styles.navBtn} onClick={() => {
-                        }}>Odjava
-                        </button>
-                    </nav>
+                    <button className={activeTab === "osobni" ? styles.active : ""} onClick={() => setActiveTab("osobni")}>
+                        👤 Osobni podaci
+                    </button>
+                    <button className={activeTab === "sigurnost" ? styles.active : ""} onClick={() => setActiveTab("sigurnost")}>
+                        🔒 Sigurnost
+                    </button>
+                    <button className={activeTab === "privatnost" ? styles.active : ""} onClick={() => setActiveTab("privatnost")}>
+                        🛡️ Privatnost
+                    </button>
                 </aside>
 
-                {/* CONTENT */}
                 <section className={styles.content}>
                     {activeTab === "osobni" ? (
                         <div className={styles.pageActive}>
                             <h2>Tvoji osobni podaci</h2>
 
                             <form className={styles.editForm} onSubmit={saveChanges}>
-                                {/* FORMA ZA UNOS JE PRVA (LIJEVA STRANA) */}
                                 <div className={styles.formFields}>
                                     <label>Ime</label>
                                     <input value={form.name} onChange={e => updateField("name", e.target.value)}/>
@@ -140,17 +132,32 @@ export function Profile() {
                                            onChange={e => updateField("date_of_birth", e.target.value)}/>
 
                                     <label>Spol</label>
-                                    <input value={form.sex} onChange={e => updateField("sex", e.target.value)}/>
+                                    <select
+                                        value={form.sex}
+                                        onChange={e => updateField("sex", e.target.value)}
+                                    >
+                                        <option value="M">Muško</option>
+                                        <option value="F">Žensko</option>
+                                        <option value="X">Ostalo / Ne želim reći</option>
+                                    </select>
+
 
                                     <label>Mjesto/Grad</label>
                                     <input value={form.city} onChange={e => updateField("city", e.target.value)}/>
 
-                                    <label>Škola</label>
-                                    <input value={form.education} onChange={e => updateField("education", e.target.value)}/>
+
+
+                                    {!form.is_professor && (
+                                        <>
+                                            <label>Škola / Fakultet</label>
+                                            <input value={form.education}
+                                                   onChange={e => updateField("education", e.target.value)}/>
+                                        </>
+                                    )}
 
                                     {form.is_professor && (
                                         <>
-                                            <label>Predmet</label>
+                                            <label>Edukacija / Stručna sprema</label>
                                             <input value={form.teaching}
                                                    onChange={e => updateField("teaching", e.target.value)}/>
                                         </>
@@ -159,12 +166,19 @@ export function Profile() {
                                     <button type="submit" className={styles.saveBtn}>💾 Spremi promjene</button>
                                 </div>
 
-                                {/* PROFILNA JE DRUGA (DESNA STRANA) */}
                                 <div className={styles.photoSection}>
                                     <div className={styles.profileCircle}>
-                                        <i className="fa-solid fa-user"></i>
+                                        {form.profile_picture ? (
+                                            <img src={getImageUrl(form.profile_picture)} alt="Profil" />
+                                        ) : (
+                                            <i className="fa-solid fa-user"></i>
+                                        )}
                                     </div>
-                                    <button className={styles.editPhotoBtn} type="button">
+                                    <button
+                                        className={styles.editPhotoBtn}
+                                        type="button"
+                                        onClick={() => setIsImageModalOpen(true)}
+                                    >
                                         <i className="fa-solid fa-pen"></i> Uredi
                                     </button>
                                 </div>
@@ -180,7 +194,13 @@ export function Profile() {
                     )}
                 </section>
             </main>
-            s
+
+            <ProfileImageModal
+                isOpen={isImageModalOpen}
+                onClose={() => setIsImageModalOpen(false)}
+                currentImage={form.profile_picture ? getImageUrl(form.profile_picture) : null}
+                onImageUpdated={handleImageUpdated}
+            />
         </div>
     );
 }

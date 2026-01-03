@@ -8,6 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const verifyToken = require("../middleware/verifyToken");
 const { OAuth2Client } = require("google-auth-library");
+const { upload, compressImage } = require('../middleware/upload');
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const router = express.Router();
@@ -147,12 +148,29 @@ router.get('/verify-token', async (req, res) => {
 
 
 // RUTA 3: FINALIZACIJA REGISTRACIJE (POSTAVLJANJE LOZINKE I DETALJA)
-router.post('/finish-register', async (req, res) => {
+router.post('/finish-register', upload.single('profileImage'), async (req, res) => {
     const { token, name, surname, date_of_birth, sex, is_professor, city, education } = req.body;
 
+    //pretvaranje u boolean
+    const isProfessor =
+        req.body.is_professor === true ||
+        req.body.is_professor === 'true';
+
+    //provjere
     if (!token) return res.status(400).json({message: "Istekao token"});
     if (!name || !surname || !date_of_birth || !sex || typeof is_professor === "undefined" || !city || !education) {
         return res.status(400).json({ message: 'Molimo unesite podatke u sva polja.' });
+    }
+
+    //provjera valjanosti datuma rođenja
+    const dob = new Date(date_of_birth);
+    const today = new Date();
+
+    dob.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    if (isNaN(dob.getTime()) || dob > today) {
+        return res.status(400).json({ message: 'Unesite valjani datum rođenja.' });
     }
 
     //dohvacanje podataka emaila i hash passworda
@@ -164,19 +182,28 @@ router.post('/finish-register', async (req, res) => {
         return res.status(400).json({ message: 'Invalid or expired token.' });
     }
 
+    //slika za profil
+    const profilePicture = req.file ? req.file.filename : null;
+
+    // Komprimiraj sliku ako postoji
+    if (profilePicture) {
+        const filePath = path.join(__dirname, '../uploads/profiles', profilePicture);
+        await compressImage(filePath);
+    }
+
     //upis u bazu users
-    await pool.query('INSERT INTO  users (email, password_hash, is_professor, name, surname) VALUES ($1, $2, $3, $4, $5)',
-        [parsed.email, parsed.password_hash, is_professor, name, surname]);
+    await pool.query('INSERT INTO  users (email, password_hash, is_professor, name, surname, profile_picture) VALUES ($1, $2, $3, $4, $5, $6)',
+        [parsed.email, parsed.password_hash, is_professor, name, surname, profilePicture]);
 
     //id novog usera
     const id = await pool.query('SELECT id FROM users WHERE email = $1', [parsed.email]);
     const user_id = id.rows[0].id;
 
     //upis u baze professors ili students
-    if (is_professor) {
+    if (isProfessor) {
         await pool.query('INSERT INTO  professors (user_id, sex, city, teaching, date_of_birth) VALUES ($1, $2, $3, $4, $5)',
             [user_id, sex, city, education, date_of_birth]);
-    } else if (!is_professor) {
+    } else if (!isProfessor) {
         await pool.query('INSERT INTO  students (user_id, sex, city, education, date_of_birth) VALUES ($1, $2, $3, $4, $5)',
             [user_id, sex, city, education, date_of_birth]);
     }
