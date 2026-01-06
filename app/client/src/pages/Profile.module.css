@@ -86,7 +86,7 @@
         font-size: 1.4rem;
         font-weight: 600;
         color: #062a2b;
-        margin-bottom: 22px;
+        margin: 0;
     }
 
     /* ===== FORMA ===== */
@@ -230,7 +230,15 @@
         margin-top: 11px;
     }
 
-    /* ===== BLANK PAGE ===== */
+    .role {
+        font-weight: 600;
+        font-size: 14px;
+        margin-top: 4px;
+        margin-bottom: 12px;
+        margin-left: 2px;
+    }
+
+/* ===== BLANK PAGE ===== */
     .pageBlank {
         display: flex;
         align-items: center;

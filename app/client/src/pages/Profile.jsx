@@ -119,6 +119,10 @@ export function Profile() {
                         <div className={styles.pageActive}>
                             <h2>Tvoji osobni podaci</h2>
 
+                            <div className={styles.role}>
+                                {form.is_professor ? "Instruktor" : "Student"}
+                            </div>
+
                             <form className={styles.editForm} onSubmit={saveChanges}>
                                 <div className={styles.formFields}>
                                     <label>Ime</label>
