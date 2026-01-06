@@ -3,6 +3,7 @@ import React, { useContext } from "react";
 import { Link, Outlet } from "react-router-dom"; // <--- Outlet je ključan
 import styles from "./MainLayout.module.css";
 import logo from "../assets/images/logo.png";
+import { getImageUrl } from "../api";
 import { AuthContext } from "../context/AuthContext";
 
 function MainLayout() {
@@ -29,11 +30,34 @@ function MainLayout() {
                             <Link to="/login" className={styles.loginBtn}>Prijava</Link>
                         </>
                     ) : (
-                        <button onClick={logout} className={styles.loginBtn}>
-                            Odjava
-                        </button>
+                        <>
+                            <span className={styles.userName}>
+                                {user.name}
+                            </span>
+                            <span className={styles.separator}>
+                                |
+                            </span>
+                            <div className={styles.userInfo}>
+                                <div className={styles.avatarWrapper}>
+                                    {user.profile_picture ? (
+                                        <img
+                                            src={getImageUrl(user.profile_picture)}
+                                            alt="Profil"
+                                            className={styles.avatar}
+                                        />
+                                    ) : (
+                                        <i className="fa-solid fa-user"></i>
+                                    )}
+                                </div>
+                            </div>
+
+                            <button onClick={logout} className={styles.loginBtn}>
+                                Odjava
+                            </button>
+                        </>
                     )}
                 </div>
+
             </header>
 
             {/* GLAVNI SADRŽAJ STRANICE */}

@@ -249,7 +249,8 @@ router.post('/login', async (req, res) => {
             email: userData.email,
             name: userData.name,
             surname: userData.surname,
-            is_professor: userData.is_professor
+            is_professor: userData.is_professor,
+            profile_picture: userData.profile_picture
         }
     });
 
@@ -268,7 +269,7 @@ router.post('/logout',  (req, res) => {
 //me
 router.get('/me', verifyToken, async (req, res) => {
     try {
-        const user = await pool.query('SELECT id, email, name, surname, is_professor FROM users WHERE id = $1', [req.user.id]);
+        const user = await pool.query('SELECT id, email, name, surname, is_professor, profile_picture FROM users WHERE id = $1', [req.user.id]);
         if (user.rows.length === 0) return res.status(404).json({ message: 'Korisnik nije pronađen' });
         res.json({ user: user.rows[0] });
     } catch (err) {
