@@ -79,8 +79,7 @@ function RegisterEmail() {
                             required
                         />
                         <Input
-                            icon={showPassword ? EyeIcon : EyeOffIcon}
-                            rightIcon={LockIcon}
+                            rightIcon={showPassword ? EyeIcon : EyeOffIcon}
                             type={showPassword ? 'text' : 'password'}
                             placeholder="Lozinka"
                             value={password}
@@ -90,8 +89,7 @@ function RegisterEmail() {
                             autoComplete="new-password"
                         />
                         <Input
-                            icon={showPassword ? EyeIcon : EyeOffIcon}
-                            rightIcon={LockIcon}
+                            rightIcon={showPassword ? EyeIcon : EyeOffIcon}
                             type={showPassword ? 'text' : 'password'}
                             placeholder="Potvrdi Lozinku"
                             value={passwordCheck}

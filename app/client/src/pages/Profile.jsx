@@ -153,17 +153,17 @@ export function Profile() {
                     <button className={activeTab === "osobni" ? styles.active : ""} onClick={() => setActiveTab("osobni")}>
                         👤 Osobni podaci
                     </button>
-                    <button className={activeTab === "sigurnost" ? styles.active : ""} onClick={() => setActiveTab("sigurnost")}>
-                        🔒 Sigurnost
-                    </button>
-                    <button className={activeTab === "privatnost" ? styles.active : ""} onClick={() => setActiveTab("privatnost")}>
-                        🛡️ Privatnost
-                    </button>
                     <button
                         className={activeTab === "interesi" ? styles.active : ""}
                         onClick={() => setActiveTab("interesi")}
                     >
                         ⭐ Osobni interesi
+                    </button>
+                    <button className={activeTab === "sigurnost" ? styles.active : ""} onClick={() => setActiveTab("sigurnost")}>
+                        🔒 Sigurnost
+                    </button>
+                    <button className={activeTab === "privatnost" ? styles.active : ""} onClick={() => setActiveTab("privatnost")}>
+                        🛡️ Privatnost
                     </button>
                 </aside>
 
