@@ -10,19 +10,19 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
-    // Provjera logina kada se komponenta mount-a
+    const refreshUser = async () => {
+        try {
+            const res = await api.get("/auth/me");
+            setUser(res.data.user);
+        } catch {
+            setUser(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const checkLogin = async () => {
-            try {
-                const res = await api.get("/auth/me"); // napravi ćemo rutu na backendu
-                setUser(res.data.user);
-            } catch (err) {
-                setUser(null);
-            } finally {
-                setLoading(false);
-            }
-        };
-        checkLogin();
+        refreshUser();
     }, []);
 
     const logout = async () => {
@@ -36,7 +36,9 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, setUser, logout, loading }}>
+        <AuthContext.Provider
+            value={{ user, setUser, refreshUser, logout, loading }}
+        >
             {children}
         </AuthContext.Provider>
     );

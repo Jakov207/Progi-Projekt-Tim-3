@@ -29,3 +29,22 @@ CREATE TABLE professors (
         CHECK (sex IN ('M', 'F', 'X')),
         CHECK (date_of_birth <= CURRENT_DATE)
 );
+
+CREATE TABLE interests (
+                           id SERIAL PRIMARY KEY,
+                           name VARCHAR(100) UNIQUE NOT NULL
+);
+
+INSERT INTO interests (name) VALUES
+                                 ('Matematika Osnovna Škola'),
+                                 ('Fizika Osnovna Škola'),
+                                 ('Informatika Osnovna Škola'),
+                                 ('Matematika Srednja Škola'),
+                                 ('Fizika Srednja Škola'),
+                                 ('Informatika Srednja Škola');
+
+CREATE TABLE user_interests (
+                                user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                                interest_id INT NOT NULL REFERENCES interests(id) ON DELETE CASCADE,
+                                PRIMARY KEY (user_id, interest_id)
+);

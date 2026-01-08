@@ -208,7 +208,48 @@ router.post('/finish-register', upload.single('profileImage'), async (req, res) 
             [user_id, sex, city, education, date_of_birth]);
     }
 
+    //generiramo token da user ostane loginan
+    const loginToken = generateLoginToken(user_id);
+    res.cookie('token', loginToken, cookieOptionsRemember);
+
     return res.status(200).json({message: "Profil je dovršen!"});
+});
+
+//opcionalno dodavanje interesa kod registracije
+router.post('/register-interests', verifyToken, async (req, res) => {
+    const { interests } = req.body;
+    const userId = req.user.id;
+
+    if (!Array.isArray(interests)) {
+        return res.status(400).json({ message: "Neispravan format interesa." });
+    }
+
+    if (interests.length === 0) {
+        return res.status(200).json({message: "Interesi preskočeni."});
+    }
+
+    try {
+        const dbInterests = await pool.query(
+            `SELECT id FROM interests WHERE name = ANY($1::text[])`,
+            [interests]
+        );
+
+        const values = dbInterests.rows.map(i => `(${userId}, ${i.id})`).join(',');
+
+        if (values.length > 0) {
+            await pool.query(`
+                INSERT INTO user_interests (user_id, interest_id)
+                VALUES ${values}
+                ON CONFLICT DO NOTHING
+            `);
+        }
+
+        return res.status(200).json({ message: "Interesi spremljeni." });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Greška pri spremanju interesa." });
+    }
 });
 
 //login
