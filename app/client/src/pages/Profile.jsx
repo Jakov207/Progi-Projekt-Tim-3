@@ -11,6 +11,53 @@ export function Profile() {
     const [message, setMessage] = useState("");
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
+    const [interests, setInterests] = useState([]);
+
+    const interestMap = {
+        mat_os: "Matematika Osnovna Škola",
+        fiz_os: "Fizika Osnovna Škola",
+        inf_os: "Informatika Osnovna Škola",
+        mat_ss: "Matematika Srednja Škola",
+        fiz_ss: "Fizika Srednja Škola",
+        inf_ss: "Informatika Srednja Škola"
+    };
+
+    const reverseInterestMap = Object.fromEntries(
+        Object.entries(interestMap).map(([k, v]) => [v, k])
+    );
+
+    useEffect(() => {
+        if (activeTab === "interesi") {
+            axios.get("/profile/interests")
+                .then(res => {
+                    setInterests(res.data.map(i => reverseInterestMap[i]));
+                })
+                .catch(() => setInterests([]));
+        }
+    }, [activeTab]);
+
+    const toggleInterest = (value) => {
+        setInterests(prev =>
+            prev.includes(value)
+                ? prev.filter(i => i !== value)
+                : [...prev, value]
+        );
+    };
+
+    const saveInterests = async () => {
+        setError("");
+        setMessage("");
+
+        try {
+            await axios.post("/profile/interests", {
+                interests: interests.map(i => interestMap[i])
+            });
+            setMessage("Interesi uspješno spremljeni!");
+        } catch {
+            setError("Greška kod spremanja interesa");
+        }
+    };
+
     const [form, setForm] = useState({
         name: "",
         surname: "",
@@ -112,10 +159,16 @@ export function Profile() {
                     <button className={activeTab === "privatnost" ? styles.active : ""} onClick={() => setActiveTab("privatnost")}>
                         🛡️ Privatnost
                     </button>
+                    <button
+                        className={activeTab === "interesi" ? styles.active : ""}
+                        onClick={() => setActiveTab("interesi")}
+                    >
+                        ⭐ Osobni interesi
+                    </button>
                 </aside>
 
                 <section className={styles.content}>
-                    {activeTab === "osobni" ? (
+                    {activeTab === "osobni" && (
                         <div className={styles.pageActive}>
                             <h2>Tvoji osobni podaci</h2>
 
@@ -191,7 +244,43 @@ export function Profile() {
                             {error && <p className={styles.error}>{error}</p>}
                             {message && <p className={styles.success}>{message}</p>}
                         </div>
-                    ) : (
+                    )}
+
+                    {activeTab === "interesi" && (
+                        <div className={styles.pageActive}>
+                            <h2>Osobni interesi</h2>
+
+                            <div className={styles.interestsGrid}>
+                                {Object.entries(interestMap).map(([key, label]) => (
+                                    <label key={key} className={styles.interestCard}>
+                                        <input
+                                            type="checkbox"
+                                            checked={interests.includes(key)}
+                                            onChange={() => toggleInterest(key)}
+                                        />
+                                        <span>{label}</span>
+                                    </label>
+                                ))}
+                            </div>
+
+                            <button
+                                className={styles.saveBtn}
+                                onClick={saveInterests}
+                            >
+                                💾 Spremi interese
+                            </button>
+                            {error && <p className={styles.error}>{error}</p>}
+                            {message && <p className={styles.success}>{message}</p>}
+                        </div>
+                    )}
+
+                    {activeTab === "sigurnost" && (
+                        <div className={styles.pageBlank}>
+                            <p style={{opacity: 0.6}}>⚙️ Ova sekcija još nije implementirana.</p>
+                        </div>
+                    )}
+
+                    {activeTab === "privatnost" && (
                         <div className={styles.pageBlank}>
                             <p style={{opacity: 0.6}}>⚙️ Ova sekcija još nije implementirana.</p>
                         </div>

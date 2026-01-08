@@ -121,4 +121,58 @@ router.delete('/delete-image', verifyToken, async (req, res) => {
     }
 });
 
+// GET current user interests
+router.get("/interests", verifyToken, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT i.name
+            FROM user_interests ui
+            JOIN interests i ON i.id = ui.interest_id
+            WHERE ui.user_id = $1
+        `, [req.user.id]);
+
+        res.json(result.rows.map(r => r.name));
+    } catch (err) {
+        res.status(500).json({ message: "Greška kod dohvaćanja interesa" });
+    }
+});
+
+//update interests
+router.post("/interests", verifyToken, async (req, res) => {
+    const { interests } = req.body;
+
+    if (!Array.isArray(interests)) {
+        return res.status(400).json({ message: "Neispravan format interesa" });
+    }
+
+    try {
+        await pool.query(
+            "DELETE FROM user_interests WHERE user_id = $1",
+            [req.user.id]
+        );
+
+        if (interests.length > 0) {
+            const dbInterests = await pool.query(
+                `SELECT id FROM interests WHERE name = ANY($1::text[])`,
+                [interests]
+            );
+
+            const values = dbInterests.rows
+                .map(i => `(${req.user.id}, ${i.id})`)
+                .join(",");
+
+            if (values.length) {
+                await pool.query(`
+                    INSERT INTO user_interests (user_id, interest_id)
+                    VALUES ${values}
+                `);
+            }
+        }
+
+        res.json({ message: "Interesi spremljeni" });
+    } catch (err) {
+        res.status(500).json({ message: "Greška kod spremanja interesa" });
+    }
+});
+
 module.exports = router;
