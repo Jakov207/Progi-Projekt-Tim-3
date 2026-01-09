@@ -267,6 +267,29 @@
     color: #007acc;
 }
 
+.publicForm {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 520px;
+}
+
+.textArea {
+    min-height: 120px;
+    max-height: 180px;
+    resize: vertical;
+    padding: 12px;
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.7);
+    font-size: 0.7rem;
+    background: rgba(255,255,255,0.9);
+    overflow-y: auto;
+}
+
+.row {
+    display: flex;
+    gap: 20px;
+}
 
 /* ===== BLANK PAGE ===== */
 .pageBlank {

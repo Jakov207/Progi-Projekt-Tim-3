@@ -20,12 +20,24 @@ CREATE TABLE students (
         CHECK (date_of_birth <= CURRENT_DATE)
 );
 
+CREATE TYPE teaching_type_enum AS ENUM (
+    'Uživo',
+    'Online',
+    'Uživo i Online'
+);
+
 CREATE TABLE professors (
         user_id INT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
         sex CHAR(1),
         city VARCHAR(100),
         teaching VARCHAR(255),
         date_of_birth DATE,
+        biography VARCHAR(500),
+        video_url VARCHAR(255),
+        reference VARCHAR(500),
+        teaching_type teaching_type_enum,
+        price NUMERIC(10,2),
+        location VARCHAR(150),
         CHECK (sex IN ('M', 'F', 'X')),
         CHECK (date_of_birth <= CURRENT_DATE)
 );

@@ -17,7 +17,7 @@ router.get('/', verifyToken, async (req, res) => {
 
         if(user.is_professor){
             const resP = await pool.query(
-                'SELECT sex, city, teaching, date_of_birth FROM professors WHERE user_id = $1',
+                'SELECT sex, city, teaching, date_of_birth, biography, video_url, reference, teaching_type, price, location FROM professors WHERE user_id = $1',
                 [req.user.id]
             );
             profile = resP.rows[0] ?? {};
@@ -172,6 +172,44 @@ router.post("/interests", verifyToken, async (req, res) => {
         res.json({ message: "Interesi spremljeni" });
     } catch (err) {
         res.status(500).json({ message: "Greška kod spremanja interesa" });
+    }
+});
+
+//mjenjanje podataka za javni profil profesora
+router.post("/public", verifyToken, async (req, res) => {
+    try {
+        const {
+            biography,
+            video_url,
+            reference,
+            teaching_type,
+            price,
+            location
+        } = req.body;
+
+        await pool.query(`
+            UPDATE professors
+            SET biography = $1,
+                video_url = $2,
+                reference = $3,
+                teaching_type = $4,
+                price = $5,
+                location = $6
+            WHERE user_id = $7
+        `, [
+            biography,
+            video_url,
+            reference,
+            teaching_type,
+            price,
+            location,
+            req.user.id
+        ]);
+
+        res.json({ message: "Javni profil ažuriran" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Greška kod spremanja javnog profila" });
     }
 });
 

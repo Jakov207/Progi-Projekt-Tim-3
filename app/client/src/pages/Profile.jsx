@@ -71,6 +71,15 @@ export function Profile() {
         profile_picture: null
     });
 
+    const [publicProfile, setPublicProfile] = useState({
+        biography: "",
+        video_url: "",
+        reference: "",
+        teaching_type: "",
+        price: "",
+        location: ""
+    });
+
     useEffect(() => {
         loadProfile();
     }, []);
@@ -100,6 +109,17 @@ export function Profile() {
                 education: profile.education || "",
                 teaching: profile.teaching || ""
             });
+            if (res.data.is_professor) {
+                setPublicProfile({
+                    biography: profile.biography || "",
+                    video_url: profile.video_url || "",
+                    reference: profile.reference || "",
+                    teaching_type: profile.teaching_type || "",
+                    price: profile.price || "",
+                    location: profile.location || ""
+                });
+            }
+
         } catch (err) {
             setError(err.response?.data?.message || "Greška kod dohvata podataka");
         } finally {
@@ -139,6 +159,18 @@ export function Profile() {
         }
     }
 
+    const savePublicProfile = async () => {
+        setError("");
+        setMessage("");
+
+        try {
+            await axios.post("/profile/public", publicProfile);
+            setMessage("Javni profil spremljen!");
+        } catch {
+            setError("Greška kod spremanja javnog profila");
+        }
+    };
+
     const handleImageUpdated = (newFilename) => {
         setForm(prev => ({ ...prev, profile_picture: newFilename }));
     };
@@ -159,6 +191,14 @@ export function Profile() {
                     >
                         ⭐ Osobni interesi
                     </button>
+                    {form.is_professor && (
+                        <button
+                            className={activeTab === "javni" ? styles.active : ""}
+                            onClick={() => setActiveTab("javni")}
+                        >
+                            🌍 Javni profil
+                        </button>
+                    )}
                     <button className={activeTab === "sigurnost" ? styles.active : ""} onClick={() => setActiveTab("sigurnost")}>
                         🔒 Sigurnost
                     </button>
@@ -273,6 +313,91 @@ export function Profile() {
                             {message && <p className={styles.success}>{message}</p>}
                         </div>
                     )}
+
+                    {activeTab === "javni" && (
+                        <div className={styles.pageActive}>
+                            <h2>Uredite izgled vašeg profila</h2>
+
+                            <div className={styles.publicForm}>
+
+                                <label>Biografija</label>
+                                <textarea
+                                    className={styles.textArea}
+                                    value={publicProfile.biography}
+                                    onChange={e =>
+                                        setPublicProfile(p => ({ ...p, biography: e.target.value }))
+                                    }
+                                />
+
+                                <label>Video-biografija</label>
+                                <input
+                                    value={publicProfile.video_url}
+                                    onChange={e =>
+                                        setPublicProfile(p => ({ ...p, video_url: e.target.value }))
+                                    }
+                                    placeholder="https://www.youtube.com/..."
+                                />
+
+                                <label>Reference</label>
+                                <textarea
+                                    className={styles.textArea}
+                                    value={publicProfile.reference}
+                                    onChange={e =>
+                                        setPublicProfile(p => ({ ...p, reference: e.target.value }))
+                                    }
+                                />
+
+                                <div className={styles.row}>
+                                    <div>
+                                        <label>Način predavanja</label>
+                                        <select
+                                            value={publicProfile.teaching_type}
+                                            onChange={e =>
+                                                setPublicProfile(p => ({ ...p, teaching_type: e.target.value }))
+                                            }
+                                        >
+                                            <option value="">Odaberi</option>
+                                            <option value="Uživo">Uživo</option>
+                                            <option value="Online">Online</option>
+                                            <option value="Uživo i Online">Uživo i Online</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label>Cijena po satu</label>
+                                        <input
+                                            type="number"
+                                            value={publicProfile.price}
+                                            onChange={e =>
+                                                setPublicProfile(p => ({ ...p, price: e.target.value }))
+                                            }
+                                        />
+                                    </div>
+                                </div>
+
+                                {(publicProfile.teaching_type === "Uživo" ||
+                                    publicProfile.teaching_type === "Uživo i Online") && (
+                                    <>
+                                        <label>Lokacija</label>
+                                        <input
+                                            value={publicProfile.location}
+                                            onChange={e =>
+                                                setPublicProfile(p => ({ ...p, location: e.target.value }))
+                                            }
+                                            placeholder="Zagreb – Knežija"
+                                        />
+                                    </>
+                                )}
+
+                                <button className={styles.saveBtn} onClick={savePublicProfile}>
+                                    💾 Spremi
+                                </button>
+                            </div>
+                            {error && <p className={styles.error}>{error}</p>}
+                            {message && <p className={styles.success}>{message}</p>}
+                        </div>
+                    )}
+
 
                     {activeTab === "sigurnost" && (
                         <div className={styles.pageBlank}>

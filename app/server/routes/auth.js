@@ -210,7 +210,7 @@ router.post('/finish-register', upload.single('profileImage'), async (req, res) 
 
     //generiramo token da user ostane loginan
     const loginToken = generateLoginToken(user_id);
-    res.cookie('token', loginToken, cookieOptionsRemember);
+    res.cookie('token', loginToken, cookieOptionsNoRemember);
 
     return res.status(200).json({message: "Profil je dovršen!"});
 });
@@ -454,7 +454,7 @@ router.post('/google-login', async (req, res) => {
 
         //generiramo token za login
         const token = generateLoginToken(userData.id);
-        res.cookie('token', token, cookieOptionsRemember);
+        res.cookie('token', token, cookieOptionsNoRemember);
 
         return res.status(200).json({
             message: 'Uspješan login putem Googlea',
