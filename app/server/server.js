@@ -96,13 +96,16 @@ app.use('/api/payments', paymentRoutes);
 const reviewRoutes = require('./routes/reviews');
 app.use('/api/reviews', reviewRoutes);
 
+const notificationRoutes = require('./routes/notifications');
+app.use('/api/notifications', notificationRoutes);
+
+const subjectRoutes = require('./routes/subjects');
+app.use('/api/subjects', subjectRoutes);
+
 // Placeholder routes for future implementation
 // Uncomment as routes are implemented
 // const quizRoutes = require('./routes/quizzes');
 // app.use('/api/quizzes', quizRoutes);
-
-// const notificationRoutes = require('./routes/notifications');
-// app.use('/api/notifications', notificationRoutes);
 
 // const adminRoutes = require('./routes/admin');
 // app.use('/api/admin', adminRoutes);
