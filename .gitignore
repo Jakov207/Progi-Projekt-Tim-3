@@ -70,6 +70,10 @@ app/server/.env
 .env.*
 !.env.example
 
+# Logs directory content (keep the directory)
+app/server/logs/*
+!app/server/logs/.gitkeep
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
