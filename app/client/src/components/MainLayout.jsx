@@ -18,10 +18,26 @@ function MainLayout() {
 
                 <nav className={styles.navLinks}>
                     <Link to="/">Početna</Link>
-                    <Link to="/instructors">Instruktori</Link>
-                    <Link to="/quizzes">Kvizovi</Link>
+
+                    {/* Only show for NON-professors */}
+                    {user && !user.is_professor && (
+                        <>
+                            <Link to="/instructors">Instruktori</Link>
+                            <Link to="/quizzes">Kvizovi</Link>
+                        </>
+                    )}
+
+                    {/* Optional: show for guests (not logged in) */}
+                    {!user && (
+                        <>
+                            <Link to="/instructors">Instruktori</Link>
+                            <Link to="/quizzes">Kvizovi</Link>
+                        </>
+                    )}
+
                     {user && <Link to="/profile">Profil</Link>}
                 </nav>
+
 
                 <div className={styles.rightSide}>
                     {!user ? (
