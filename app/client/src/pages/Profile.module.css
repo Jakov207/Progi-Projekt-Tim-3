@@ -1,11 +1,3 @@
-/* ===== GLOBALNO ===== */
-
-
-:global(body) {
-    min-height: 100vh;
-    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
 /* ===== PAGE WRAPPER ===== */
 .pageWrapper {
     width: 100%;

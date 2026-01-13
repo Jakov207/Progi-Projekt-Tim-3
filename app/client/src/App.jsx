@@ -14,6 +14,7 @@ import ResetPassword from './pages/ResetPassword';
 import MainLayout from './components/MainLayout';
 import {Profile} from "./pages/Profile.jsx";
 import Interests from "./pages/Interests.jsx";
+import Instructors from "./pages/Instructors.jsx";
 
 
 
@@ -33,6 +34,7 @@ function App() {
             <Route element={<MainLayout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/instructors" element={<Instructors />} />
                 {/* ... stavi ovdje sve ostale rute koje trebaju header ... */}
             </Route>
 
