@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "../api";
 import { getImageUrl } from "../api";
+import { useNavigate } from "react-router-dom";
 import styles from "./Instructors.module.css";
 
 export default function Instructors() {
+    const navigate = useNavigate();
     const [instructors, setInstructors] = useState([]);
     const [filters, setFilters] = useState({
         search: "",
@@ -87,7 +89,7 @@ export default function Instructors() {
 
             <div className={styles.grid}>
                 {instructors.map(i => (
-                    <div key={i.id} className={styles.card}>
+                    <div key={i.id} className={styles.card} onClick={() => navigate(`/instructors/${i.id}`)}>
                         <img
                             src={i.profile_picture ? getImageUrl(i.profile_picture) : "/avatar.png"}
                             alt=""
@@ -95,7 +97,7 @@ export default function Instructors() {
                         <h3>{i.name} {i.surname}</h3>
                         <p>{i.teaching_type}</p>
                         <p>{i.price} € / sat</p>
-                        <p>{i.location}</p>
+                        <p>{i.city}</p>
                     </div>
                 ))}
             </div>

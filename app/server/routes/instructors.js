@@ -16,7 +16,7 @@ router.get("/", async (req, res) => {
 
         if (search) {
             values.push(`%${search}%`);
-            where.push(`(u.name ILIKE $${values.length} OR u.surname ILIKE $${values.length})`);
+            where.push(`(u.name ILIKE $${values.length} OR u.surname ILIKE $${values.length} OR (u.name || ' ' || u.surname) ILIKE $${values.length})`);
         }
 
         if (teaching_type) {
@@ -49,7 +49,7 @@ router.get("/", async (req, res) => {
                 u.profile_picture,
                 p.teaching_type,
                 p.price,
-                p.location,
+                p.city,
                 p.biography
             FROM users u
             JOIN professors p ON p.user_id = u.id
@@ -63,6 +63,46 @@ router.get("/", async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Greška kod dohvaćanja instruktora" });
+    }
+});
+
+router.get("/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const query = `
+            SELECT
+                u.id,
+                u.name,
+                u.surname,
+                u.profile_picture,
+                p.city,
+                p.teaching,
+                p.price,
+                p.teaching_type,
+                p.biography,
+                p.reference,
+                p.video_url,
+                ARRAY_AGG(i.name) FILTER (WHERE i.name IS NOT NULL) AS interests
+            FROM users u
+                     JOIN professors p ON p.user_id = u.id
+                     LEFT JOIN user_interests ui ON ui.user_id = u.id
+                     LEFT JOIN interests i ON i.id = ui.interest_id
+            WHERE u.id = $1 AND u.is_professor = true
+            GROUP BY u.id, p.user_id
+        `;
+
+
+        const result = await pool.query(query, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: "Instruktor nije pronađen" });
+        }
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Greška kod dohvaćanja profila instruktora" });
     }
 });
 

@@ -1,15 +1,15 @@
-INSERT INTO users (email, password_hash, is_professor, name, surname)
+INSERT INTO users (email, password_hash, is_professor, name, surname, profile_picture)
 VALUES
-    ('ivan.horvat@test.hr', '$2b$10$testhash', true, 'Ivan', 'Horvat'),
-    ('ana.kovac@test.hr', '$2b$10$testhash', true, 'Ana', 'Kovač'),
-    ('marko.babic@test.hr', '$2b$10$testhash', true, 'Marko', 'Babić'),
-    ('petra.maric@test.hr', '$2b$10$testhash', true, 'Petra', 'Marić'),
-    ('luka.peric@test.hr', '$2b$10$testhash', true, 'Luka', 'Perić'),
-    ('ivana.novak@test.hr', '$2b$10$testhash', true, 'Ivana', 'Novak'),
-    ('domagoj.kralj@test.hr', '$2b$10$testhash', true, 'Domagoj', 'Kralj'),
-    ('maja.juric@test.hr', '$2b$10$testhash', true, 'Maja', 'Jurić'),
-    ('nikola.tomic@test.hr', '$2b$10$testhash', true, 'Nikola', 'Tomić'),
-    ('tea.pavic@test.hr', '$2b$10$testhash', true, 'Tea', 'Pavić');
+    ('ivan.horvat@test.hr', '$2b$10$testhash', true, 'Ivan', 'Horvat', 'profile-1768047062760-891580450.gif'),
+    ('ana.kovac@test.hr', '$2b$10$testhash', true, 'Ana', 'Kovač', 'profile-1768047062760-891580450.gif'),
+    ('marko.babic@test.hr', '$2b$10$testhash', true, 'Marko', 'Babić', 'profile-1768047062760-891580450.gif'),
+    ('petra.maric@test.hr', '$2b$10$testhash', true, 'Petra', 'Marić', 'profile-1768047062760-891580450.gif'),
+    ('luka.peric@test.hr', '$2b$10$testhash', true, 'Luka', 'Perić', 'profile-1768047062760-891580450.gif'),
+    ('ivana.novak@test.hr', '$2b$10$testhash', true, 'Ivana', 'Novak', 'profile-1768047062760-891580450.gif'),
+    ('domagoj.kralj@test.hr', '$2b$10$testhash', true, 'Domagoj', 'Kralj', 'profile-1768047062760-891580450.gif'),
+    ('maja.juric@test.hr', '$2b$10$testhash', true, 'Maja', 'Jurić', 'profile-1768047062760-891580450.gif'),
+    ('nikola.tomic@test.hr', '$2b$10$testhash', true, 'Nikola', 'Tomić', 'profile-1768047062760-891580450.gif'),
+    ('tea.pavic@test.hr', '$2b$10$testhash', true, 'Tea', 'Pavić', 'profile-1768047062760-891580450.gif');
 
 INSERT INTO professors (
     user_id, sex, city, teaching, date_of_birth,
