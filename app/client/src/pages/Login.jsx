@@ -61,8 +61,7 @@ function Login() {
                         autoComplete="email"
                     />
                     <Input
-                        icon={showPassword ? EyeIcon : EyeOffIcon}
-                        rightIcon={LockIcon}
+                        rightIcon={showPassword ? EyeIcon : EyeOffIcon}
                         type={showPassword ? 'text' : 'password'}
                         placeholder="Lozinka"
                         value={password}

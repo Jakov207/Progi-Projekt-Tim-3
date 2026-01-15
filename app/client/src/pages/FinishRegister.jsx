@@ -137,7 +137,7 @@ function FinishRegister() {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            navigate('/login');
+            navigate('/interests-register');
         } catch (err) {
             setError(err.response?.data?.message || 'Greška pri završetku registracije.');
         } finally {

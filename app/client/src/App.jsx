@@ -13,6 +13,9 @@ import ResetPassword from './pages/ResetPassword';
 // Uvezi layout
 import MainLayout from './components/MainLayout';
 import {Profile} from "./pages/Profile.jsx";
+import Interests from "./pages/Interests.jsx";
+import Instructors from "./pages/Instructors.jsx";
+import InstructorProfile from "./pages/InstructorProfile.jsx";
 
 
 
@@ -26,11 +29,14 @@ function App() {
             <Route path="/finish-register" element={<FinishRegister />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/interests-register" element={<Interests />} />
 
             {/* Rute koje KORISTE MainLayout (s navigacijom) */}
             <Route element={<MainLayout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/instructors" element={<Instructors />} />
+                <Route path="/instructors/:id" element={<InstructorProfile />} />
                 {/* ... stavi ovdje sve ostale rute koje trebaju header ... */}
             </Route>
 

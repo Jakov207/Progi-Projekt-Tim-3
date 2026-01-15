@@ -208,7 +208,48 @@ router.post('/finish-register', upload.single('profileImage'), async (req, res) 
             [user_id, sex, city, education, date_of_birth]);
     }
 
+    //generiramo token da user ostane loginan
+    const loginToken = generateLoginToken(user_id);
+    res.cookie('token', loginToken, cookieOptionsNoRemember);
+
     return res.status(200).json({message: "Profil je dovršen!"});
+});
+
+//opcionalno dodavanje interesa kod registracije
+router.post('/register-interests', verifyToken, async (req, res) => {
+    const { interests } = req.body;
+    const userId = req.user.id;
+
+    if (!Array.isArray(interests)) {
+        return res.status(400).json({ message: "Neispravan format interesa." });
+    }
+
+    if (interests.length === 0) {
+        return res.status(200).json({message: "Interesi preskočeni."});
+    }
+
+    try {
+        const dbInterests = await pool.query(
+            `SELECT id FROM interests WHERE name = ANY($1::text[])`,
+            [interests]
+        );
+
+        const values = dbInterests.rows.map(i => `(${userId}, ${i.id})`).join(',');
+
+        if (values.length > 0) {
+            await pool.query(`
+                INSERT INTO user_interests (user_id, interest_id)
+                VALUES ${values}
+                ON CONFLICT DO NOTHING
+            `);
+        }
+
+        return res.status(200).json({ message: "Interesi spremljeni." });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Greška pri spremanju interesa." });
+    }
 });
 
 //login
@@ -249,7 +290,8 @@ router.post('/login', async (req, res) => {
             email: userData.email,
             name: userData.name,
             surname: userData.surname,
-            is_professor: userData.is_professor
+            is_professor: userData.is_professor,
+            profile_picture: userData.profile_picture
         }
     });
 
@@ -268,7 +310,7 @@ router.post('/logout',  (req, res) => {
 //me
 router.get('/me', verifyToken, async (req, res) => {
     try {
-        const user = await pool.query('SELECT id, email, name, surname, is_professor FROM users WHERE id = $1', [req.user.id]);
+        const user = await pool.query('SELECT id, email, name, surname, is_professor, profile_picture FROM users WHERE id = $1', [req.user.id]);
         if (user.rows.length === 0) return res.status(404).json({ message: 'Korisnik nije pronađen' });
         res.json({ user: user.rows[0] });
     } catch (err) {
@@ -412,7 +454,7 @@ router.post('/google-login', async (req, res) => {
 
         //generiramo token za login
         const token = generateLoginToken(userData.id);
-        res.cookie('token', token, cookieOptionsRemember);
+        res.cookie('token', token, cookieOptionsNoRemember);
 
         return res.status(200).json({
             message: 'Uspješan login putem Googlea',

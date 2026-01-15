@@ -78,8 +78,7 @@ function ResetPassword() {
                     <>
                         <form onSubmit={handleSubmit}>
                             <Input
-                                icon={showPassword ? EyeIcon : EyeOffIcon}
-                                rightIcon={LockIcon}
+                                rightIcon={showPassword ? EyeIcon : EyeOffIcon}
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder="Nova lozinka"
                                 value={password}
@@ -89,8 +88,7 @@ function ResetPassword() {
                                 autoComplete="new-password"
                             />
                             <Input
-                                icon={showPassword ? EyeIcon : EyeOffIcon}
-                                rightIcon={LockIcon}
+                                rightIcon={showPassword ? EyeIcon : EyeOffIcon}
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder="Potvrdite lozinku"
                                 value={passwordCheck}

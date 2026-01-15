@@ -31,6 +31,8 @@ app.get("/finish-register", (req, res) => {
     res.sendFile(path.join(__dirname, "public/finish-register.html"));
 });
 
+app.use("/api/instructors", require("./routes/instructors"));
+
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {

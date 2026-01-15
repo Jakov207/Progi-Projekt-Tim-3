@@ -17,7 +17,7 @@ router.get('/', verifyToken, async (req, res) => {
 
         if(user.is_professor){
             const resP = await pool.query(
-                'SELECT sex, city, teaching, date_of_birth FROM professors WHERE user_id = $1',
+                'SELECT sex, city, teaching, date_of_birth, biography, video_url, reference, teaching_type, price, location FROM professors WHERE user_id = $1',
                 [req.user.id]
             );
             profile = resP.rows[0] ?? {};
@@ -118,6 +118,98 @@ router.delete('/delete-image', verifyToken, async (req, res) => {
     } catch (err) {
         console.error('Error deleting image:', err);
         res.status(500).json({ message: 'Greška pri brisanju slike' });
+    }
+});
+
+// GET current user interests
+router.get("/interests", verifyToken, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT i.name
+            FROM user_interests ui
+            JOIN interests i ON i.id = ui.interest_id
+            WHERE ui.user_id = $1
+        `, [req.user.id]);
+
+        res.json(result.rows.map(r => r.name));
+    } catch (err) {
+        res.status(500).json({ message: "Greška kod dohvaćanja interesa" });
+    }
+});
+
+//update interests
+router.post("/interests", verifyToken, async (req, res) => {
+    const { interests } = req.body;
+
+    if (!Array.isArray(interests)) {
+        return res.status(400).json({ message: "Neispravan format interesa" });
+    }
+
+    try {
+        await pool.query(
+            "DELETE FROM user_interests WHERE user_id = $1",
+            [req.user.id]
+        );
+
+        if (interests.length > 0) {
+            const dbInterests = await pool.query(
+                `SELECT id FROM interests WHERE name = ANY($1::text[])`,
+                [interests]
+            );
+
+            const values = dbInterests.rows
+                .map(i => `(${req.user.id}, ${i.id})`)
+                .join(",");
+
+            if (values.length) {
+                await pool.query(`
+                    INSERT INTO user_interests (user_id, interest_id)
+                    VALUES ${values}
+                `);
+            }
+        }
+
+        res.json({ message: "Interesi spremljeni" });
+    } catch (err) {
+        res.status(500).json({ message: "Greška kod spremanja interesa" });
+    }
+});
+
+//mjenjanje podataka za javni profil profesora
+router.post("/public", verifyToken, async (req, res) => {
+    try {
+        const {
+            biography,
+            video_url,
+            reference,
+            teaching_type,
+            price,
+            location
+        } = req.body;
+
+        await pool.query(`
+            UPDATE professors
+            SET biography = $1,
+                video_url = $2,
+                reference = $3,
+                teaching_type = $4,
+                price = $5,
+                location = $6
+            WHERE user_id = $7
+        `, [
+            biography,
+            video_url,
+            reference,
+            teaching_type,
+            price,
+            location,
+            req.user.id
+        ]);
+
+        res.json({ message: "Javni profil ažuriran" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Greška kod spremanja javnog profila" });
     }
 });
 

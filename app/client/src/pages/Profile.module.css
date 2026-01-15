@@ -1,271 +1,324 @@
-/* ===== GLOBALNO ===== */
+/* ===== PAGE WRAPPER ===== */
+.pageWrapper {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0;
+}
 
+.mainContainer {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    box-shadow: none;
+    border-radius: 0;
+    overflow: hidden;
+}
 
-    :global(body) {
-        min-height: 100vh;
-        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+/* ===== SIDEBAR (lijeva strana) ===== */
+.sidebar {
+    width: 40%;
+    background: linear-gradient(180deg, #a3dae8, #85c9dd);
+    padding: 17px 22px 17px 17px;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+}
 
-    /* ===== PAGE WRAPPER ===== */
-    .pageWrapper {
-        width: 100%;
-        min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        padding: 0;
-    }
+/* ===== GUMBI ===== */
+.sidebar button {
+    background: rgba(255, 255, 255, 0.25);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    padding: 11px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #062a2b;
+    width: 200px;
+    text-align: right;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+    align-self: center;
+}
 
+.sidebar button:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 13px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar button.active {
+    background: #ffffff;
+    border-color: #4a90a4;
+    box-shadow: 0 4px 13px rgba(74, 144, 164, 0.3);
+    color: #062a2b;
+    font-weight: 600;
+}
+
+.sidebar button i {
+    margin-right: 8px;
+    color: #4a90a4;
+}
+
+/* ===== CONTENT (desna strana) ===== */
+.content {
+    width:60%;
+    flex: 1;
+    background: linear-gradient(180deg, #bff0fb, #b9ecff);
+    padding: 34px;
+    overflow-y: auto;
+}
+
+.pageActive h2 {
+
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #062a2b;
+    margin: 0;
+}
+
+/* ===== FORMA ===== */
+.editForm {
+    display: flex;
+    gap: 34px;
+}
+
+.formFields {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 17px;
+    max-width: 50%;
+}
+
+.formFields label {
+    font-size: 0.67rem;
+    font-weight: 600;
+    color: #062a2b;
+    margin-bottom: -11px;
+}
+
+.formFields input {
+    padding: 10px 13px;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+    font-size: 0.7rem;
+    background: rgba(255, 255, 255, 0.85);
+    transition: all 0.3s ease;
+}
+
+.formFields input:focus {
+    outline: none;
+    border-color: #4a90a4;
+    box-shadow: 0 3px 11px rgba(74, 144, 164, 0.2);
+}
+
+.formFields select {
+    padding: 10px 13px;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+    font-size: 0.7rem;
+    background: rgba(255, 255, 255, 0.85);
+    transition: all 0.3s ease;
+}
+
+.formFields select:focus {
+    outline: none;
+    border-color: #4a90a4;
+    box-shadow: 0 3px 11px rgba(74, 144, 164, 0.2);
+}
+
+.saveBtn {
+    padding: 10px 22px;
+    background: #4a90a4;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 13px rgba(74, 144, 164, 0.3);
+    transition: all 0.3s ease;
+}
+
+.saveBtn:hover {
+    background: #3d7a8f;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 17px rgba(74, 144, 164, 0.4);
+}
+
+/* ===== PHOTO SECTION ===== */
+.photoSection {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: 14px;
+}
+
+.profileCircle {
+    width: 162px;
+    height: 162px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 6px 17px rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #e8f4f8, #d1e8f0);
+}
+
+.profileCircle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profileCircle i {
+    font-size: 2.8rem;
+    color: #4a90a4;
+}
+
+.editPhotoBtn {
+    padding: 8px 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #4a90a4;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 0.67rem;
+    font-weight: 600;
+    color: #4a90a4;
+    transition: all 0.3s ease;
+}
+
+.editPhotoBtn:hover {
+    background: #ffffff;
+    box-shadow: 0 3px 11px rgba(74, 144, 164, 0.25);
+    transform: translateY(-1px);
+}
+
+/* ===== MESSAGES ===== */
+.error {
+    color: #c33;
+    background: #fee;
+    border: 1px solid #fcc;
+    padding: 10px 13px;
+    border-radius: 7px;
+    font-size: 0.67rem;
+    margin-top: 11px;
+}
+
+.success {
+    color: #2a7f3e;
+    background: #e6f7ea;
+    border: 1px solid #a3d9af;
+    padding: 10px 13px;
+    border-radius: 7px;
+    font-size: 0.67rem;
+    margin-top: 11px;
+}
+
+.role {
+    font-weight: 600;
+    font-size: 14px;
+    margin-top: 4px;
+    margin-bottom: 12px;
+    margin-left: 2px;
+}
+
+.interestsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.interestCard {
+    background: white;
+    padding: 14px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: 0.2s;
+}
+
+.interestCard:hover {
+    background-color: #def3ff;
+}
+
+.interestCard input {
+    display: none;
+}
+
+.interestCard input:checked + span {
+    font-weight: bold;
+    color: #007acc;
+}
+
+.publicForm {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 520px;
+}
+
+.textArea {
+    min-height: 120px;
+    max-height: 180px;
+    resize: vertical;
+    padding: 12px;
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.7);
+    font-size: 0.7rem;
+    background: rgba(255,255,255,0.9);
+    overflow-y: auto;
+}
+
+.row {
+    display: flex;
+    gap: 20px;
+}
+
+/* ===== BLANK PAGE ===== */
+.pageBlank {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 350px;
+    font-size: 0.77rem;
+    color: #666;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
     .mainContainer {
-        display: flex;
-        width: 100%;
-        max-width: 100%;
-        min-height: 100vh;
-        box-shadow: none;
-        border-radius: 0;
-        overflow: hidden;
+        flex-direction: column;
     }
 
-    /* ===== SIDEBAR (lijeva strana) ===== */
     .sidebar {
-        width: 40%;
-        background: linear-gradient(180deg, #a3dae8, #85c9dd);
-        padding: 17px 22px 17px 17px;
-        display: flex;
-        flex-direction: column;
-        gap: 11px;
-    }
-
-    /* ===== GUMBI ===== */
-    .sidebar button {
-        background: rgba(255, 255, 255, 0.25);
-        border: 2px solid rgba(255, 255, 255, 0.4);
-        padding: 11px 14px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 0.7rem;
-        font-weight: 500;
-        color: #062a2b;
-        width: 200px;
-        text-align: right;
-        transition: all 0.3s ease;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
-        align-self: center;
-    }
-
-    .sidebar button:hover {
-        background: rgba(255, 255, 255, 0.4);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 13px rgba(0, 0, 0, 0.1);
-    }
-
-    .sidebar button.active {
-        background: #ffffff;
-        border-color: #4a90a4;
-        box-shadow: 0 4px 13px rgba(74, 144, 164, 0.3);
-        color: #062a2b;
-        font-weight: 600;
-    }
-
-    .sidebar button i {
-        margin-right: 8px;
-        color: #4a90a4;
-    }
-
-    /* ===== CONTENT (desna strana) ===== */
-    .content {
-        width:60%;
-        flex: 1;
-        background: linear-gradient(180deg, #bff0fb, #b9ecff);
-        padding: 34px;
-        overflow-y: auto;
-    }
-
-    .pageActive h2 {
-
-        font-size: 1.4rem;
-        font-weight: 600;
-        color: #062a2b;
-        margin-bottom: 22px;
-    }
-
-    /* ===== FORMA ===== */
-    .editForm {
-        display: flex;
-        gap: 34px;
-    }
-
-    .formFields {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 17px;
-        max-width: 50%;
-    }
-
-    .formFields label {
-        font-size: 0.67rem;
-        font-weight: 600;
-        color: #062a2b;
-        margin-bottom: -11px;
-    }
-
-    .formFields input {
-        padding: 10px 13px;
-        border: 2px solid rgba(255, 255, 255, 0.6);
-        border-radius: 8px;
-        font-size: 0.7rem;
-        background: rgba(255, 255, 255, 0.85);
-        transition: all 0.3s ease;
-    }
-
-    .formFields input:focus {
-        outline: none;
-        border-color: #4a90a4;
-        box-shadow: 0 3px 11px rgba(74, 144, 164, 0.2);
-    }
-
-    .formFields select {
-        padding: 10px 13px;
-        border: 2px solid rgba(255, 255, 255, 0.6);
-        border-radius: 8px;
-        font-size: 0.7rem;
-        background: rgba(255, 255, 255, 0.85);
-        transition: all 0.3s ease;
-    }
-
-    .formFields select:focus {
-        outline: none;
-        border-color: #4a90a4;
-        box-shadow: 0 3px 11px rgba(74, 144, 164, 0.2);
-    }
-
-    .saveBtn {
-        padding: 10px 22px;
-        background: #4a90a4;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        cursor: pointer;
-        box-shadow: 0 4px 13px rgba(74, 144, 164, 0.3);
-        transition: all 0.3s ease;
-    }
-
-    .saveBtn:hover {
-        background: #3d7a8f;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 17px rgba(74, 144, 164, 0.4);
-    }
-
-    /* ===== PHOTO SECTION ===== */
-    .photoSection {
-        display: flex;
-        flex-direction: column;
-        align-items: start;
-        gap: 14px;
-    }
-
-    .profileCircle {
-        width: 162px;
-        height: 162px;
-        border-radius: 50%;
-        overflow: hidden;
-        border: 3px solid rgba(255, 255, 255, 0.8);
-        box-shadow: 0 6px 17px rgba(0, 0, 0, 0.12);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #e8f4f8, #d1e8f0);
-    }
-
-    .profileCircle img {
         width: 100%;
-        height: 100%;
-        object-fit: cover;
+        flex-direction: row;
+        justify-content: space-around;
     }
 
-    .profileCircle i {
-        font-size: 2.8rem;
-        color: #4a90a4;
+    .sidebar button {
+        width: auto;
+        flex: 1;
     }
 
-    .editPhotoBtn {
-        padding: 8px 20px;
-        background: rgba(255, 255, 255, 0.9);
-        border: 2px solid #4a90a4;
-        border-radius: 7px;
-        cursor: pointer;
-        font-size: 0.67rem;
-        font-weight: 600;
-        color: #4a90a4;
-        transition: all 0.3s ease;
+    .content {
+        padding: 20px;
     }
 
-    .editPhotoBtn:hover {
-        background: #ffffff;
-        box-shadow: 0 3px 11px rgba(74, 144, 164, 0.25);
-        transform: translateY(-1px);
+    .editForm {
+        flex-direction: column;
     }
 
-    /* ===== MESSAGES ===== */
-    .error {
-        color: #c33;
-        background: #fee;
-        border: 1px solid #fcc;
-        padding: 10px 13px;
-        border-radius: 7px;
-        font-size: 0.67rem;
-        margin-top: 11px;
+    .photoSection {
+        order: -1;
     }
-
-    .success {
-        color: #2a7f3e;
-        background: #e6f7ea;
-        border: 1px solid #a3d9af;
-        padding: 10px 13px;
-        border-radius: 7px;
-        font-size: 0.67rem;
-        margin-top: 11px;
-    }
-
-    /* ===== BLANK PAGE ===== */
-    .pageBlank {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 350px;
-        font-size: 0.77rem;
-        color: #666;
-    }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 768px) {
-        .mainContainer {
-            flex-direction: column;
-        }
-
-        .sidebar {
-            width: 100%;
-            flex-direction: row;
-            justify-content: space-around;
-        }
-
-        .sidebar button {
-            width: auto;
-            flex: 1;
-        }
-
-        .content {
-            padding: 20px;
-        }
-
-        .editForm {
-            flex-direction: column;
-        }
-
-        .photoSection {
-            order: -1;
-        }
-    }
+}
