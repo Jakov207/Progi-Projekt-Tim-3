@@ -60,3 +60,28 @@ CREATE TABLE user_interests (
                                 interest_id INT NOT NULL REFERENCES interests(id) ON DELETE CASCADE,
                                 PRIMARY KEY (user_id, interest_id)
 );
+
+-- Calendar: professor availability slots and student bookings
+CREATE TABLE professor_slots (
+        id SERIAL PRIMARY KEY,
+        professor_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        start_time TIMESTAMP NOT NULL,
+        end_time TIMESTAMP NOT NULL,
+        capacity INT NOT NULL DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CHECK (end_time > start_time)
+);
+
+CREATE INDEX idx_professor_slots_professor ON professor_slots(professor_id);
+CREATE INDEX idx_professor_slots_start ON professor_slots(start_time);
+
+CREATE TABLE professor_slot_bookings (
+        id SERIAL PRIMARY KEY,
+        slot_id INT NOT NULL REFERENCES professor_slots(id) ON DELETE CASCADE,
+        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        booked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (slot_id, student_id)
+);
+
+CREATE INDEX idx_slot_bookings_slot ON professor_slot_bookings(slot_id);
+CREATE INDEX idx_slot_bookings_student ON professor_slot_bookings(student_id);

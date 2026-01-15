@@ -16,6 +16,7 @@ import {Profile} from "./pages/Profile.jsx";
 import Interests from "./pages/Interests.jsx";
 import Instructors from "./pages/Instructors.jsx";
 import InstructorProfile from "./pages/InstructorProfile.jsx";
+import Calendar from "./pages/Calendar.jsx";
 
 
 
@@ -35,6 +36,7 @@ function App() {
             <Route element={<MainLayout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/calendar" element={<Calendar />} />
                 <Route path="/instructors" element={<Instructors />} />
                 <Route path="/instructors/:id" element={<InstructorProfile />} />
                 {/* ... stavi ovdje sve ostale rute koje trebaju header ... */}
