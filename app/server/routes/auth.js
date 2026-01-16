@@ -77,14 +77,14 @@ function isPassword(password) {
 
 // RUTA 1: UNOS EMAILA I LOZINKE, SLANJE EMAIL VERIFIKACIJE
 router.post('/register', async (req, res) => {
-    const { email, password, passwordCheck, termsAndConditions} = req.body;
+    const { email, password, passwordCheck, termsAndConditions } = req.body;
 
     if (!email || !isEmail(email)) {
         return res.status(400).json({ message: 'Molimo unesite ispravnu email adresu.' });
     }
 
-    if(!password || !isPassword(password)) {
-        return res.status(400).json({message: "Lozinka mora imati 8-32 znakova, veliko i malo slovo, broj i specijalni znak."});
+    if (!password || !isPassword(password)) {
+        return res.status(400).json({ message: "Lozinka mora imati 8-32 znakova, veliko i malo slovo, broj i specijalni znak." });
     }
 
     if (!passwordCheck || password !== passwordCheck) {
@@ -92,13 +92,13 @@ router.post('/register', async (req, res) => {
     }
 
     if (!termsAndConditions) {
-        return res.status(400).json({message: "moras prihvatiti TaC"});
+        return res.status(400).json({ message: "moras prihvatiti TaC" });
     }
 
     //provjera postoji li email u users
     const userExists = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
 
-    if (userExists.rows.length > 0 ) {
+    if (userExists.rows.length > 0) {
         return res.status(400).json({ message: 'Korisnik s ovim emailom već postoji.' });
     }
 
@@ -121,8 +121,8 @@ router.post('/register', async (req, res) => {
     });
 
     //provjera slanja emaila
-    if(!sent) {
-        return res.status(500).json({message: "slanje emaila neuspjesno"});
+    if (!sent) {
+        return res.status(500).json({ message: "slanje emaila neuspjesno" });
     }
 
     return res.status(202).json({ message: 'Link za potvrdu poslan je na vaš email. Molimo provjerite sandučić.' });
@@ -157,7 +157,7 @@ router.post('/finish-register', upload.single('profileImage'), async (req, res) 
         req.body.is_professor === 'true';
 
     //provjere
-    if (!token) return res.status(400).json({message: "Istekao token"});
+    if (!token) return res.status(400).json({ message: "Istekao token" });
     if (!name || !surname || !date_of_birth || !sex || typeof is_professor === "undefined" || !city || !education) {
         return res.status(400).json({ message: 'Molimo unesite podatke u sva polja.' });
     }
@@ -212,7 +212,7 @@ router.post('/finish-register', upload.single('profileImage'), async (req, res) 
     const loginToken = generateLoginToken(user_id);
     res.cookie('token', loginToken, cookieOptionsNoRemember);
 
-    return res.status(200).json({message: "Profil je dovršen!"});
+    return res.status(200).json({ message: "Profil je dovršen!" });
 });
 
 //opcionalno dodavanje interesa kod registracije
@@ -225,7 +225,7 @@ router.post('/register-interests', verifyToken, async (req, res) => {
     }
 
     if (interests.length === 0) {
-        return res.status(200).json({message: "Interesi preskočeni."});
+        return res.status(200).json({ message: "Interesi preskočeni." });
     }
 
     try {
@@ -257,13 +257,13 @@ router.post('/login', async (req, res) => {
     const { email, password, rememberLogin } = req.body;
 
     if (!email || !password) {
-        return res.status(400).json({message: 'Molimo upišite podatke u sva polja'});
+        return res.status(400).json({ message: 'Molimo upišite podatke u sva polja' });
     }
 
     //provjera postoji li korisnik
     const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     if (user.rows.length === 0) {
-        return res.status(400).json({message: 'ne postoji korisnik s tim emailom'});
+        return res.status(400).json({ message: 'ne postoji korisnik s tim emailom' });
     }
 
     //podaci o useru
@@ -272,7 +272,7 @@ router.post('/login', async (req, res) => {
     //provjera jeli upisana lozinka tocna
     const isMatch = await bcrypt.compare(password, userData.password_hash);
     if (!isMatch) {
-        return res.status(400).json({message: 'Krivi podaci za login'});
+        return res.status(400).json({ message: 'Krivi podaci za login' });
     }
 
     //generiramo token da user ostane loginan
@@ -298,7 +298,7 @@ router.post('/login', async (req, res) => {
 });
 
 //logout
-router.post('/logout',  (req, res) => {
+router.post('/logout', (req, res) => {
     res.clearCookie('token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -330,7 +330,7 @@ router.post('/forgotpassword', async (req, res) => {
     //provjera postoji li korisnik
     const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     if (user.rows.length === 0) {
-        return res.status(200).json({message: 'Ako postoji korisnik, poslan je email'});
+        return res.status(200).json({ message: 'Ako postoji korisnik, poslan je email' });
     }
 
     //podaci o useru
@@ -392,8 +392,8 @@ router.post('/reset-password', async (req, res) => {
     }
 
     //provjera ispravnosti unesenih lozinka
-    if(!password || !isPassword(password)) {
-        return res.status(400).json({message: "Lozinka mora imati 8-32 znakova, veliko i malo slovo, broj i specijalni znak."});
+    if (!password || !isPassword(password)) {
+        return res.status(400).json({ message: "Lozinka mora imati 8-32 znakova, veliko i malo slovo, broj i specijalni znak." });
     }
     if (!passwordCheck || password !== passwordCheck) {
         return res.status(400).json({ message: 'Lozinke se ne podudaraju.' });
@@ -414,7 +414,7 @@ router.post('/google-login', async (req, res) => {
     const { credential } = req.body;
 
     //provjera postoji li credential
-    if(!credential) return res.status(400).json({message: "credential nedostaje"});
+    if (!credential) return res.status(400).json({ message: "credential nedostaje" });
 
 
     try {
@@ -467,7 +467,7 @@ router.post('/google-login', async (req, res) => {
         });
 
     } catch (err) {
-        return res.status(400).json({message: "Neispravan Google ID token"});
+        return res.status(400).json({ message: "Neispravan Google ID token" });
     }
 })
 

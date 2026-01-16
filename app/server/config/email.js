@@ -3,11 +3,11 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-    host: 'smtp.sendgrid.net',
+    host: 'smtp.eu.mailgun.org',
     port: 587,
     secure: false,
     auth: {
-        user: 'apikey',
+        user: 'mail@fertutor.xyz',
         pass: process.env.EMAIL_SERVICE_KEY,
     },
 });
