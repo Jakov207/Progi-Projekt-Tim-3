@@ -37,7 +37,6 @@ CREATE TABLE professors (
         reference VARCHAR(500),
         teaching_type teaching_type_enum,
         price NUMERIC(10,2),
-        location VARCHAR(150),
         CHECK (sex IN ('M', 'F', 'X')),
         CHECK (date_of_birth <= CURRENT_DATE)
 );
@@ -68,8 +67,15 @@ CREATE TABLE professor_slots (
         start_time TIMESTAMP NOT NULL,
         end_time TIMESTAMP NOT NULL,
         capacity INT NOT NULL DEFAULT 1,
+        teaching_type teaching_type_enum NOT NULL,
+        price NUMERIC(10,2) NOT NULL,
+        location VARCHAR(150),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        CHECK (end_time > start_time)
+        CHECK (end_time > start_time),
+        CHECK (
+        teaching_type <> 'Uživo'
+        OR location IS NOT NULL
+        )
 );
 
 CREATE INDEX idx_professor_slots_professor ON professor_slots(professor_id);

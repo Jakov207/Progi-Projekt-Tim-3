@@ -84,8 +84,7 @@ export function Profile() {
         video_url: "",
         reference: "",
         teaching_type: "",
-        price: "",
-        location: ""
+        price: ""
     });
 
     useEffect(() => {
@@ -123,8 +122,7 @@ export function Profile() {
                     video_url: profile.video_url || "",
                     reference: profile.reference || "",
                     teaching_type: profile.teaching_type || "",
-                    price: profile.price || "",
-                    location: profile.location || ""
+                    price: profile.price || ""
                 });
             }
 
@@ -463,17 +461,6 @@ export function Profile() {
                                         />
                                     </div>
                                 </div>
-
-                                {(publicProfile.teaching_type === "Uživo" || publicProfile.teaching_type === "Uživo i Online") && (
-                                    <div className={styles.field}>
-                                        <label>📍 Lokacija predavanja</label>
-                                        <input
-                                            value={publicProfile.location}
-                                            onChange={e => setPublicProfile(p => ({ ...p, location: e.target.value }))}
-                                            placeholder="Zagreb – Centar, dolazim i na lokaciju studenta"
-                                        />
-                                    </div>
-                                )}
 
                                 <button 
                                     className={styles.saveBtn} 
