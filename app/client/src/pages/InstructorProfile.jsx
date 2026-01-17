@@ -455,6 +455,17 @@ export default function InstructorProfile() {
                                                     <div className={styles.slotTime}>
                                                         🕐 {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
                                                     </div>
+                                                    <div className={styles.slotMeta}>
+                                                        <span className={styles.slotType}>
+                                                            {slot.teaching_type === "Online" && "💻 Online"}
+                                                            {slot.teaching_type === "Uživo" && "🏫 Uživo"}
+                                                        </span>
+                                                            {slot.price != null && (
+                                                                <span className={styles.slotPrice}>
+                                                                💰 {slot.price}€
+                                                                </span>
+                                                            )}
+                                                    </div>
                                                     <div className={styles.slotCapacity}>
                                                         👥 {Number(slot.capacity) - Number(slot.booked_count || 0)} mjesta preostalo
                                                     </div>

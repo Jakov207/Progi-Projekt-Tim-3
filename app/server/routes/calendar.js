@@ -23,20 +23,31 @@ const requireStudent = async (userId) => {
 router.post("/slots", verifyToken, async (req, res) => {
     try {
         const userId = req.user.id;
-        const { start_time, end_time, capacity } = req.body;
+        const {
+            start_time,
+            end_time,
+            capacity,
+            teaching_type,
+            price,
+            location
+        } = req.body;
 
-        if (!start_time || !end_time) {
-            return res.status(400).json({ message: "Nedostaje vrijeme termina." });
+        if (!start_time || !end_time || !teaching_type || price == null) {
+            return res.status(400).json({ message: "Nedostaju obavezni podaci termina." });
         }
 
-        const slotCapacity = Number.isFinite(Number(capacity)) && Number(capacity) > 0
-            ? Number(capacity)
-            : 1;
+        if (teaching_type === "Uživo" && !location) {
+            return res.status(400).json({ message: "Lokacija je obavezna za uživo nastavu." });
+        }
 
         const isProfessor = await requireProfessor(userId);
         if (!isProfessor) {
             return res.status(403).json({ message: "Samo profesori mogu kreirati termine." });
         }
+
+        const slotCapacity = Number.isFinite(Number(capacity)) && Number(capacity) > 0
+            ? Number(capacity)
+            : 1;
 
         const overlap = await pool.query(
             `SELECT 1
@@ -53,10 +64,19 @@ router.post("/slots", verifyToken, async (req, res) => {
         }
 
         const result = await pool.query(
-            `INSERT INTO professor_slots (professor_id, start_time, end_time, capacity)
-             VALUES ($1, $2, $3, $4)
-             RETURNING id, start_time, end_time, capacity`,
-            [userId, start_time, end_time, slotCapacity]
+            `INSERT INTO professor_slots
+             (professor_id, start_time, end_time, capacity, teaching_type, price, location)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
+                 RETURNING *`,
+            [
+                userId,
+                start_time,
+                end_time,
+                slotCapacity,
+                teaching_type,
+                price,
+                teaching_type === "Uživo" ? location : null
+            ]
         );
 
         res.status(201).json({ slot: result.rows[0] });
@@ -73,17 +93,27 @@ router.get("/slots/:professorId", async (req, res) => {
         const includeBooked = req.query.includeBooked === "true";
 
         const result = await pool.query(
-            `SELECT s.id,
-                    s.start_time,
-                    s.end_time,
-                    s.capacity,
-                    COUNT(b.id) AS booked_count
+            `SELECT
+                 s.id,
+                 s.start_time,
+                 s.end_time,
+                 s.capacity,
+                 s.teaching_type,
+                 s.price,
+                 COUNT(b.id) AS booked_count
              FROM professor_slots s
-             LEFT JOIN professor_slot_bookings b ON b.slot_id = s.id
+                      LEFT JOIN professor_slot_bookings b
+                                ON b.slot_id = s.id
              WHERE s.professor_id = $1
                AND s.start_time >= NOW()
-             GROUP BY s.id
-             ${includeBooked ? "" : "HAVING COUNT(b.id) < s.capacity"}
+             GROUP BY
+                 s.id,
+                 s.start_time,
+                 s.end_time,
+                 s.capacity,
+                 s.teaching_type,
+                 s.price
+                 ${includeBooked ? "" : "HAVING COUNT(b.id) < s.capacity"}
              ORDER BY s.start_time`,
             [professorId]
         );
@@ -109,6 +139,9 @@ router.get("/my-slots", verifyToken, async (req, res) => {
                     s.start_time,
                     s.end_time,
                     s.capacity,
+                    s.teaching_type,
+                    s.price,
+                    s.location,
                     COUNT(b.id) AS booked_count
              FROM professor_slots s
              LEFT JOIN professor_slot_bookings b ON b.slot_id = s.id

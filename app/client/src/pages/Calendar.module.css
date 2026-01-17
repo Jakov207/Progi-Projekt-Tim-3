@@ -651,6 +651,14 @@
     to { transform: rotate(360deg); }
 }
 
+.field select {
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+    background: #f8fafc;
+    font-size: 0.95rem;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .mainContent {

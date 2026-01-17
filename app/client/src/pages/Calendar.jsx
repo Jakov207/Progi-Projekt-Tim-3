@@ -14,8 +14,12 @@ export default function Calendar() {
         date: "",
         start: "",
         end: "",
-        capacity: 1
+        capacity: 1,
+        teaching_type: "Online",
+        price: "",
+        location: ""
     });
+
     const [currentMonth, setCurrentMonth] = useState(() => {
         const now = new Date();
         return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -70,8 +74,19 @@ export default function Calendar() {
         e.preventDefault();
         setError("");
 
-        if (!form.date || !form.start || !form.end) {
-            setError("Molimo ispunite datum, početak i kraj termina.");
+        if (
+            !form.date ||
+            !form.start ||
+            !form.end ||
+            !form.teaching_type ||
+            form.price === ""
+        ) {
+            setError("Molimo ispunite sva obavezna polja.");
+            return;
+        }
+
+        if (form.teaching_type === "Uživo" && !form.location) {
+            setError("Lokacija je obavezna za uživo nastavu.");
             return;
         }
 
@@ -82,9 +97,23 @@ export default function Calendar() {
             await api.post("/calendar/slots", {
                 start_time,
                 end_time,
-                capacity: Number(form.capacity) || 1
+                capacity: Number(form.capacity) || 1,
+                teaching_type: form.teaching_type,
+                price: Number(form.price),
+                location: form.teaching_type === "Uživo" ? form.location : null
             });
-            setForm({ date: "", start: "", end: "", capacity: 1 });
+
+            // 🔥 KLJUČNO: reset cijelog statea
+            setForm({
+                date: "",
+                start: "",
+                end: "",
+                capacity: 1,
+                teaching_type: "Online",
+                price: "",
+                location: ""
+            });
+
             showSuccess("Termin uspješno dodan! ✓");
             loadSlots();
         } catch (err) {
@@ -447,6 +476,19 @@ export default function Calendar() {
                                             />
                                         </div>
                                     </div>
+
+                                    <div className={styles.field}>
+                                        <label>💰 Cijena (€)</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            value={form.price}
+                                            onChange={(e) =>
+                                                setForm(prev => ({ ...prev, price: e.target.value }))
+                                            }
+                                        />
+                                    </div>
                                     <div className={styles.field}>
                                         <label>👥 Kapacitet (broj studenata)</label>
                                         <input
@@ -457,6 +499,32 @@ export default function Calendar() {
                                             onChange={(e) => setForm(prev => ({ ...prev, capacity: e.target.value }))}
                                         />
                                     </div>
+
+                                    <div className={styles.field}>
+                                        <label>🎓 Način predavanja</label>
+                                        <select
+                                            value={form.teaching_type}
+                                            onChange={(e) =>
+                                                setForm(prev => ({ ...prev, teaching_type: e.target.value }))
+                                            }
+                                        >
+                                            <option value="Online">Online</option>
+                                            <option value="Uživo">Uživo</option>
+                                        </select>
+                                    </div>
+
+                                    {form.teaching_type === "Uživo" && (
+                                        <div className={styles.field}>
+                                            <label>📍 Lokacija</label>
+                                            <input
+                                                type="text"
+                                                value={form.location}
+                                                onChange={(e) =>
+                                                    setForm(prev => ({ ...prev, location: e.target.value }))
+                                                }
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                                 <button type="submit" className={styles.createBtn}>
                                     Dodaj termin
@@ -509,6 +577,11 @@ export default function Calendar() {
                                                 <div className={styles.slotTime}>
                                                     {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
                                                 </div>
+                                                <div className={styles.slotMetaInfo}>
+                                                    🎓 {slot.teaching_type} · 💰 {slot.price} €
+                                                    {slot.location && <div>📍 {slot.location}</div>}
+                                                </div>
+
                                             </div>
                                             <div className={styles.slotMeta}>
                                                 <div className={`${styles.capacityBadge} ${Number(slot.booked_count) >= Number(slot.capacity) ? styles.full : ""}`}>

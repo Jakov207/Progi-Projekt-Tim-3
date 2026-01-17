@@ -466,6 +466,29 @@
     font-size: 0.7rem;
 }
 
+.slotMeta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.slotType {
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 4px 10px;
+    border-radius: 10px;
+}
+
+.slotPrice {
+    background: #dcfce7;
+    color: #166534;
+    padding: 4px 10px;
+    border-radius: 10px;
+}
+
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateX(-50%) translateY(10px); }
     to { opacity: 1; transform: translateX(-50%) translateY(0); }
