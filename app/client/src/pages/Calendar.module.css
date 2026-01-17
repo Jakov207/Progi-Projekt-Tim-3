@@ -631,6 +631,24 @@
     font-size: 0.85rem;
 }
 
+.inputField {
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+    background: #f8fafc;
+    font-size: 0.95rem;
+    width: 100%;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.inputField:focus {
+    outline: none;
+    border-color: #1a4a5e;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(26, 74, 94, 0.1);
+}
+
 /* Loading State */
 .loadingState {
     text-align: center;

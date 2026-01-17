@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import api from "../api";
+import { Autocomplete, useLoadScript } from "@react-google-maps/api";
 import { AuthContext } from "../context/AuthContext";
 import styles from "./Calendar.module.css";
 
@@ -19,6 +20,30 @@ export default function Calendar() {
         price: "",
         location: ""
     });
+
+    const libraries = ["places"];
+
+    const { isLoaded } = useLoadScript({
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+        libraries
+    });
+
+    const [autocomplete, setAutocomplete] = useState(null);
+
+    const onLoadAutocomplete = (auto) => {
+        setAutocomplete(auto);
+    };
+
+    const onPlaceChanged = () => {
+        if (!autocomplete) return;
+        const place = autocomplete.getPlace();
+        if (place.formatted_address) {
+            setForm(prev => ({
+                ...prev,
+                location: place.formatted_address
+            }));
+        }
+    };
 
     const [currentMonth, setCurrentMonth] = useState(() => {
         const now = new Date();
@@ -516,13 +541,33 @@ export default function Calendar() {
                                     {form.teaching_type === "Uživo" && (
                                         <div className={styles.field}>
                                             <label>📍 Lokacija</label>
-                                            <input
-                                                type="text"
-                                                value={form.location}
-                                                onChange={(e) =>
-                                                    setForm(prev => ({ ...prev, location: e.target.value }))
-                                                }
-                                            />
+
+                                            {!isLoaded ? (
+                                                <input
+                                                    disabled
+                                                    placeholder="Učitavanje mape..."
+                                                    className={styles.inputField}
+                                                />
+                                            ) : (
+                                                <Autocomplete
+                                                    options={{
+                                                        types: ["address"],
+                                                        componentRestrictions: { country: "hr" }
+                                                    }}
+                                                    onLoad={onLoadAutocomplete}
+                                                    onPlaceChanged={onPlaceChanged}
+                                                >
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Unesite adresu"
+                                                        value={form.location}
+                                                        onChange={(e) =>
+                                                            setForm(prev => ({ ...prev, location: e.target.value }))
+                                                        }
+                                                        className={styles.inputField}
+                                                    />
+                                                </Autocomplete>
+                                            )}
                                         </div>
                                     )}
                                 </div>
