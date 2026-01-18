@@ -17,6 +17,10 @@ export default function InstructorProfile() {
     const [selectedDate, setSelectedDate] = useState("");
     const [hoveredDay, setHoveredDay] = useState(null);
     const [bookingInProgress, setBookingInProgress] = useState(null);
+    const [showBookingModal, setShowBookingModal] = useState(false);
+    const [selectedSlot, setSelectedSlot] = useState(null);
+    const [note, setNote] = useState("");
+    const [selectedInterest, setSelectedInterest] = useState("");
 
     const [currentMonth, setCurrentMonth] = useState(() => {
         const now = new Date();
@@ -53,7 +57,7 @@ export default function InstructorProfile() {
         }
     };
 
-    const handleBook = async (slotId) => {
+    const handleBook = async (slotId, note, interest_id) => {
         setBookingError("");
         setBookingMessage("");
 
@@ -65,7 +69,10 @@ export default function InstructorProfile() {
         setBookingInProgress(slotId);
 
         try {
-            await axios.post(`/calendar/book/${slotId}`);
+            await axios.post(`/calendar/book/${slotId}`, {
+                note,
+                interest_id
+            });
             setBookingMessage("Termin je uspješno rezerviran! ✓");
             fetchSlots();
             setTimeout(() => setBookingMessage(""), 4000);
@@ -204,6 +211,66 @@ export default function InstructorProfile() {
 
     return (
         <div className={styles.page}>
+            {showBookingModal && selectedSlot && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modal}>
+                        <h3>Potvrda rezervacije</h3>
+
+                        <div className={styles.modalInfo}>
+                            <p>📅 {formatFullDate(selectedSlot.start_time)}</p>
+                            <p>🕐 {formatTime(selectedSlot.start_time)} – {formatTime(selectedSlot.end_time)}</p>
+                            <p>🎓 {selectedSlot.teaching_type}</p>
+                            <p>💰 {selectedSlot.price}€</p>
+
+                            {selectedSlot.teaching_type === "Uživo" && selectedSlot.location && (
+                                <p>📍 {selectedSlot.location}</p>
+                            )}
+                        </div>
+
+                        <label>Predmet</label>
+                        <select
+                            value={selectedInterest}
+                            onChange={(e) => setSelectedInterest(e.target.value)}
+                        >
+                            <option value="">-- Odaberi predmet --</option>
+                            {instructor.interests.map(i => (
+                                <option key={i.id} value={i.id}>
+                                    {i.name}
+                                </option>
+                            ))}
+                        </select>
+
+                        <label>Bilješka za instruktora</label>
+                        <textarea
+                            value={note}
+                            onChange={(e) => setNote(e.target.value)}
+                            placeholder="Npr. trebam pomoć oko..."
+                        />
+
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.cancelBtn}
+                                onClick={() => setShowBookingModal(false)}
+                            >
+                                Odustani
+                            </button>
+
+                            <button
+                                className={styles.confirmBtn}
+                                onClick={() => {
+                                    handleBook(selectedSlot.id, note, selectedInterest);
+                                    setShowBookingModal(false);
+                                    setNote("");
+                                    setSelectedInterest("");
+                                }}
+                                disabled={!selectedInterest}
+                            >
+                                Rezerviraj
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             {/* Success Banner */}
             {bookingMessage && (
                 <div className={styles.successBanner}>
@@ -269,9 +336,9 @@ export default function InstructorProfile() {
                         <div className={styles.section}>
                             <h3>🎓 Područja predavanja</h3>
                             <div className={styles.tags}>
-                                {instructor.interests.map(subject => (
-                                    <span key={subject} className={styles.tag}>
-                                        {subject}
+                                {instructor.interests.map(i => (
+                                    <span key={i.id} className={styles.tag}>
+                                        {i.name}
                                     </span>
                                 ))}
                             </div>
@@ -472,7 +539,10 @@ export default function InstructorProfile() {
                                                 </div>
                                                 <button
                                                     className={styles.bookBtn}
-                                                    onClick={() => handleBook(slot.id)}
+                                                    onClick={() => {
+                                                        setSelectedSlot(slot);
+                                                        setShowBookingModal(true);
+                                                    }}
                                                     disabled={bookingInProgress === slot.id}
                                                 >
                                                     {bookingInProgress === slot.id ? (

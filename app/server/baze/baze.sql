@@ -85,6 +85,8 @@ CREATE TABLE professor_slot_bookings (
         id SERIAL PRIMARY KEY,
         slot_id INT NOT NULL REFERENCES professor_slots(id) ON DELETE CASCADE,
         student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        note VARCHAR(500),
+        interest_id INT REFERENCES interests(id) NOT NULL,
         booked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE (slot_id, student_id)
 );

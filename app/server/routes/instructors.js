@@ -83,7 +83,12 @@ router.get("/:id", async (req, res) => {
                 p.biography,
                 p.reference,
                 p.video_url,
-                ARRAY_AGG(i.name) FILTER (WHERE i.name IS NOT NULL) AS interests
+                ARRAY_AGG(
+                        json_build_object(
+                                'id', i.id,
+                                'name', i.name
+                        )
+                ) FILTER (WHERE i.id IS NOT NULL) AS interests
             FROM users u
                      JOIN professors p ON p.user_id = u.id
                      LEFT JOIN user_interests ui ON ui.user_id = u.id
@@ -91,7 +96,6 @@ router.get("/:id", async (req, res) => {
             WHERE u.id = $1 AND u.is_professor = true
             GROUP BY u.id, p.user_id
         `;
-
 
         const result = await pool.query(query, [id]);
 

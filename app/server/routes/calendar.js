@@ -100,6 +100,7 @@ router.get("/slots/:professorId", async (req, res) => {
                  s.capacity,
                  s.teaching_type,
                  s.price,
+                 s.location,
                  COUNT(b.id) AS booked_count
              FROM professor_slots s
                       LEFT JOIN professor_slot_bookings b
@@ -112,7 +113,8 @@ router.get("/slots/:professorId", async (req, res) => {
                  s.end_time,
                  s.capacity,
                  s.teaching_type,
-                 s.price
+                 s.price,
+                 s.location
                  ${includeBooked ? "" : "HAVING COUNT(b.id) < s.capacity"}
              ORDER BY s.start_time`,
             [professorId]
@@ -195,6 +197,11 @@ router.post("/book/:slotId", verifyToken, async (req, res) => {
     try {
         const userId = req.user.id;
         const { slotId } = req.params;
+        const { note, interest_id } = req.body;
+
+        if (!interest_id) {
+            return res.status(400).json({ message: "Predmet je obavezan." });
+        }
 
         const isStudent = await requireStudent(userId);
         if (!isStudent) {
@@ -220,10 +227,10 @@ router.post("/book/:slotId", verifyToken, async (req, res) => {
         }
 
         await pool.query(
-            `INSERT INTO professor_slot_bookings (slot_id, student_id)
-             VALUES ($1, $2)
+            `INSERT INTO professor_slot_bookings (slot_id, student_id, note, interest_id)
+             VALUES ($1, $2, $3, $4)
              ON CONFLICT DO NOTHING`,
-            [slotId, userId]
+            [slotId, userId, note || null, interest_id]
         );
 
         res.json({ message: "Termin rezerviran." });
