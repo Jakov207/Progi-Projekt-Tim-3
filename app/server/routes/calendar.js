@@ -279,14 +279,21 @@ router.get("/my-bookings", verifyToken, async (req, res) => {
         }
 
         const result = await pool.query(
-            `SELECT s.id,
+            `SELECT b.id,
+                    s.id AS slot_id,
                     s.start_time,
                     s.end_time,
+                    s.teaching_type,
+                    s.price,
+                    s.location,
                     u.name AS professor_name,
-                    u.surname AS professor_surname
+                    u.surname AS professor_surname,
+                    i.id AS interest_id,
+                    i.name AS interest_name
              FROM professor_slot_bookings b
-             JOIN professor_slots s ON s.id = b.slot_id
-             JOIN users u ON u.id = s.professor_id
+                      JOIN professor_slots s ON s.id = b.slot_id
+                      JOIN users u ON u.id = s.professor_id
+                      JOIN interests i ON i.id = b.interest_id
              WHERE b.student_id = $1
              ORDER BY s.start_time`,
             [userId]

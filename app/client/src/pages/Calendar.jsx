@@ -668,6 +668,12 @@ export default function Calendar() {
                                                 <div className={styles.professorName}>
                                                     👨‍🏫 {booking.professor_name} {booking.professor_surname}
                                                 </div>
+                                                <div className={styles.slotMetaInfo}>
+                                                    🎓 {booking.teaching_type} · 💰 {booking.price} €
+                                                    {booking.interest_name && (
+                                                        <div>📘 {booking.interest_name}</div>
+                                                    )}
+                                                </div>
                                             </div>
                                             <div className={styles.slotMeta}>
                                                 <button
