@@ -1,0 +1,320 @@
+.page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.backBtn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #f0f0f0;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.backBtn:hover {
+    background: #e0e0e0;
+}
+
+.error {
+    background: #ffebee;
+    color: #c62828;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border-left: 4px solid #c62828;
+}
+
+/* ================= SECTIONS ================= */
+
+.section {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+}
+
+.section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.questionsSection {
+    margin-bottom: 25px;
+}
+
+.questionsSection h2 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* ================= FORM ================= */
+
+.formGroup {
+    margin-bottom: 15px;
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #eee;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    background: #fafafa;
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    background: #fff;
+}
+
+.formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* ================= QUESTION CARD ================= */
+
+.questionCard {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+    border-left: 4px solid #667eea;
+}
+
+.questionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.questionNumber {
+    font-weight: 600;
+    color: #667eea;
+    font-size: 1.1rem;
+}
+
+.removeBtn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    background: #ffebee;
+    color: #c62828;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.removeBtn:hover {
+    background: #ffcdd2;
+}
+
+.questionInput {
+    font-size: 1.1rem !important;
+    font-weight: 500;
+    text-align: center;
+    background: #f8f9ff !important;
+}
+
+/* ================= ANSWERS GRID (Kahoot Style) ================= */
+
+.answersGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.answerCard {
+    padding: 15px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.answerCard input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.9);
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+.answerCard input[type="text"]:focus {
+    outline: 2px solid rgba(255,255,255,0.5);
+}
+
+.correctLabel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.correctLabel input[type="radio"] {
+    width: 16px;
+    height: 16px;
+}
+
+/* Kahoot-like colors */
+.red {
+    background: linear-gradient(135deg, #e21b3c 0%, #ff4757 100%);
+}
+
+.blue {
+    background: linear-gradient(135deg, #1368ce 0%, #2e86de 100%);
+}
+
+.yellow {
+    background: linear-gradient(135deg, #d89e00 0%, #ffc048 100%);
+}
+
+.green {
+    background: linear-gradient(135deg, #26890c 0%, #2ed573 100%);
+}
+
+/* ================= POINTS ROW ================= */
+
+.pointsRow {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.pointsRow label {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.pointsInput {
+    width: 100px !important;
+    padding: 8px 12px !important;
+    text-align: center;
+}
+
+/* ================= BUTTONS ================= */
+
+.addQuestionBtn {
+    width: 100%;
+    padding: 15px;
+    border: 2px dashed #ccc;
+    border-radius: 12px;
+    background: transparent;
+    color: #666;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.addQuestionBtn:hover {
+    border-color: #667eea;
+    color: #667eea;
+    background: #f8f9ff;
+}
+
+.submitSection {
+    text-align: center;
+    padding: 30px 0;
+}
+
+.submitBtn {
+    padding: 15px 50px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.submitBtn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+.submitBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.hint {
+    margin-top: 15px;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 768px) {
+    .page {
+        padding: 25px 15px;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .formRow {
+        grid-template-columns: 1fr;
+    }
+
+    .answersGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .pointsRow {
+        flex-direction: column;
+        text-align: center;
+    }
+}

@@ -160,7 +160,7 @@ export default function Calendar() {
         try {
             await api.delete(`/calendar/book/${slotId}`);
             showSuccess("Termin uspješno otkazan.");
-            loadBookings();
+            await loadBookings();
         } catch (err) {
             setError(err.response?.data?.message || "Greška pri otkazivanju termina.");
         }
@@ -678,7 +678,7 @@ export default function Calendar() {
                                             <div className={styles.slotMeta}>
                                                 <button
                                                     className={styles.cancelBtn}
-                                                    onClick={() => handleCancel(booking.id)}
+                                                    onClick={() => handleCancel(booking.slot_id)}
                                                 >
                                                     ❌ Otkaži
                                                 </button>

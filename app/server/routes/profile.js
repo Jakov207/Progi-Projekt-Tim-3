@@ -157,15 +157,15 @@ router.post("/interests", verifyToken, async (req, res) => {
                 [interests]
             );
 
-            const values = dbInterests.rows
-                .map(i => `(${req.user.id}, ${i.id})`)
-                .join(",");
-
-            if (values.length) {
-                await pool.query(`
-                    INSERT INTO user_interests (user_id, interest_id)
-                    VALUES ${values}
-                `);
+            // Fixed SQL injection - use parameterized queries
+            if (dbInterests.rows.length > 0) {
+                const insertPromises = dbInterests.rows.map(i => 
+                    pool.query(
+                        `INSERT INTO user_interests (user_id, interest_id) VALUES ($1, $2)`,
+                        [req.user.id, i.id]
+                    )
+                );
+                await Promise.all(insertPromises);
             }
         }
 
@@ -178,6 +178,16 @@ router.post("/interests", verifyToken, async (req, res) => {
 //mjenjanje podataka za javni profil profesora
 router.post("/public", verifyToken, async (req, res) => {
     try {
+        // Verify user is actually a professor
+        const userCheck = await pool.query(
+            'SELECT is_professor FROM users WHERE id = $1',
+            [req.user.id]
+        );
+        
+        if (!userCheck.rows[0]?.is_professor) {
+            return res.status(403).json({ message: "Samo profesori mogu ažurirati javni profil" });
+        }
+
         const {
             biography,
             video_url,

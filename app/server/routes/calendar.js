@@ -148,7 +148,7 @@ router.get("/my-slots", verifyToken, async (req, res) => {
              FROM professor_slots s
              LEFT JOIN professor_slot_bookings b ON b.slot_id = s.id
              WHERE s.professor_id = $1
-             GROUP BY s.id
+             GROUP BY s.id, s.start_time
              ORDER BY s.start_time`,
             [userId]
         );

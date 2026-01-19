@@ -93,3 +93,64 @@ CREATE TABLE professor_slot_bookings (
 
 CREATE INDEX idx_slot_bookings_slot ON professor_slot_bookings(slot_id);
 CREATE INDEX idx_slot_bookings_student ON professor_slot_bookings(student_id);
+
+-- Quizzes (Kahoot-like knowledge tests)
+CREATE TABLE quizzes (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    description VARCHAR(500),
+    interest_id INT NOT NULL REFERENCES interests(id) ON DELETE CASCADE,
+    professor_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    time_limit INT DEFAULT 30, -- seconds per question
+    is_published BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_quizzes_professor ON quizzes(professor_id);
+CREATE INDEX idx_quizzes_interest ON quizzes(interest_id);
+
+CREATE TABLE quiz_questions (
+    id SERIAL PRIMARY KEY,
+    quiz_id INT NOT NULL REFERENCES quizzes(id) ON DELETE CASCADE,
+    question_text VARCHAR(500) NOT NULL,
+    question_order INT NOT NULL DEFAULT 1,
+    points INT DEFAULT 100
+);
+
+CREATE INDEX idx_quiz_questions_quiz ON quiz_questions(quiz_id);
+
+CREATE TABLE quiz_answers (
+    id SERIAL PRIMARY KEY,
+    question_id INT NOT NULL REFERENCES quiz_questions(id) ON DELETE CASCADE,
+    answer_text VARCHAR(300) NOT NULL,
+    is_correct BOOLEAN DEFAULT false,
+    answer_order INT NOT NULL DEFAULT 1
+);
+
+CREATE INDEX idx_quiz_answers_question ON quiz_answers(question_id);
+
+-- Student quiz attempts and results
+CREATE TABLE quiz_attempts (
+    id SERIAL PRIMARY KEY,
+    quiz_id INT NOT NULL REFERENCES quizzes(id) ON DELETE CASCADE,
+    student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    score INT DEFAULT 0,
+    total_points INT DEFAULT 0,
+    started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMP,
+    UNIQUE(quiz_id, student_id, started_at)
+);
+
+CREATE INDEX idx_quiz_attempts_student ON quiz_attempts(student_id);
+CREATE INDEX idx_quiz_attempts_quiz ON quiz_attempts(quiz_id);
+
+CREATE TABLE quiz_attempt_answers (
+    id SERIAL PRIMARY KEY,
+    attempt_id INT NOT NULL REFERENCES quiz_attempts(id) ON DELETE CASCADE,
+    question_id INT NOT NULL REFERENCES quiz_questions(id) ON DELETE CASCADE,
+    selected_answer_id INT REFERENCES quiz_answers(id) ON DELETE SET NULL,
+    is_correct BOOLEAN DEFAULT false,
+    time_taken INT, -- milliseconds to answer
+    points_earned INT DEFAULT 0,
+    UNIQUE(attempt_id, question_id)
+);

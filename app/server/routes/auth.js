@@ -234,14 +234,15 @@ router.post('/register-interests', verifyToken, async (req, res) => {
             [interests]
         );
 
-        const values = dbInterests.rows.map(i => `(${userId}, ${i.id})`).join(',');
-
-        if (values.length > 0) {
-            await pool.query(`
-                INSERT INTO user_interests (user_id, interest_id)
-                VALUES ${values}
-                ON CONFLICT DO NOTHING
-            `);
+        // Fixed SQL injection - use parameterized queries
+        if (dbInterests.rows.length > 0) {
+            const insertPromises = dbInterests.rows.map(i => 
+                pool.query(
+                    `INSERT INTO user_interests (user_id, interest_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+                    [userId, i.id]
+                )
+            );
+            await Promise.all(insertPromises);
         }
 
         return res.status(200).json({ message: "Interesi spremljeni." });

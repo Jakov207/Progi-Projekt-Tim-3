@@ -17,6 +17,9 @@ import Interests from "./pages/Interests.jsx";
 import Instructors from "./pages/Instructors.jsx";
 import InstructorProfile from "./pages/InstructorProfile.jsx";
 import Calendar from "./pages/Calendar.jsx";
+import Quizzes from "./pages/Quizzes.jsx";
+import CreateQuiz from "./pages/CreateQuiz.jsx";
+import TakeQuiz from "./pages/TakeQuiz.jsx";
 
 
 
@@ -39,8 +42,13 @@ function App() {
                 <Route path="/calendar" element={<Calendar />} />
                 <Route path="/instructors" element={<Instructors />} />
                 <Route path="/instructors/:id" element={<InstructorProfile />} />
+                <Route path="/quizzes" element={<Quizzes />} />
+                <Route path="/quizzes/create" element={<CreateQuiz />} />
                 {/* ... stavi ovdje sve ostale rute koje trebaju header ... */}
             </Route>
+
+            {/* Quiz taking page - full screen without navigation */}
+            <Route path="/quizzes/:id" element={<TakeQuiz />} />
 
         </Routes>
     );
