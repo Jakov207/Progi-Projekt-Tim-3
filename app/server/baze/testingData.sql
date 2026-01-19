@@ -63,3 +63,265 @@ FROM users u
         OR (u.email = 'maja.juric@test.hr' AND i.name IN ('Fizika Osnovna Škola'))
         OR (u.email = 'nikola.tomic@test.hr' AND i.name IN ('Informatika Srednja Škola'))
         OR (u.email = 'tea.pavic@test.hr' AND i.name IN ('Matematika Osnovna Škola'));
+
+-- =====================================================
+-- SAMPLE QUIZZES FOR TESTING
+-- =====================================================
+
+-- Quiz 1: Matematika Osnovna Škola
+INSERT INTO quizzes (title, description, interest_id, professor_id, time_limit, is_published)
+SELECT 'Osnove matematike - Razlomci', 'Testiraj svoje znanje o razlomcima!', i.id, u.id, 30, true
+FROM interests i, users u WHERE i.name = 'Matematika Osnovna Škola' AND u.email = 'ivan.horvat@test.hr';
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Koliko je 1/2 + 1/4?', 1, 100 FROM quizzes q WHERE q.title = 'Osnove matematike - Razlomci';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, '3/4', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove matematike - Razlomci' AND qq.question_order = 1;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, '2/6', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove matematike - Razlomci' AND qq.question_order = 1;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, '1/6', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove matematike - Razlomci' AND qq.question_order = 1;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, '2/4', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove matematike - Razlomci' AND qq.question_order = 1;
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Koji razlomak je jednak 0.5?', 2, 100 FROM quizzes q WHERE q.title = 'Osnove matematike - Razlomci';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, '1/2', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove matematike - Razlomci' AND qq.question_order = 2;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, '1/3', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove matematike - Razlomci' AND qq.question_order = 2;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, '1/4', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove matematike - Razlomci' AND qq.question_order = 2;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, '2/3', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove matematike - Razlomci' AND qq.question_order = 2;
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Koliko je 3/4 - 1/4?', 3, 100 FROM quizzes q WHERE q.title = 'Osnove matematike - Razlomci';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, '2/4 ili 1/2', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove matematike - Razlomci' AND qq.question_order = 3;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, '4/4', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove matematike - Razlomci' AND qq.question_order = 3;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, '2/8', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove matematike - Razlomci' AND qq.question_order = 3;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, '3/8', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove matematike - Razlomci' AND qq.question_order = 3;
+
+-- Quiz 2: Fizika Osnovna Škola
+INSERT INTO quizzes (title, description, interest_id, professor_id, time_limit, is_published)
+SELECT 'Osnove fizike - Sile i gibanje', 'Provjeri svoje znanje o silama!', i.id, u.id, 30, true
+FROM interests i, users u WHERE i.name = 'Fizika Osnovna Škola' AND u.email = 'ana.kovac@test.hr';
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Koja je mjerna jedinica za silu?', 1, 100 FROM quizzes q WHERE q.title = 'Osnove fizike - Sile i gibanje';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Newton (N)', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove fizike - Sile i gibanje' AND qq.question_order = 1;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Kilogram (kg)', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove fizike - Sile i gibanje' AND qq.question_order = 1;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Metar (m)', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove fizike - Sile i gibanje' AND qq.question_order = 1;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Sekunda (s)', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove fizike - Sile i gibanje' AND qq.question_order = 1;
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Što je gravitacija?', 2, 100 FROM quizzes q WHERE q.title = 'Osnove fizike - Sile i gibanje';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Sila privlačenja između masa', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove fizike - Sile i gibanje' AND qq.question_order = 2;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Vrsta energije', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove fizike - Sile i gibanje' AND qq.question_order = 2;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Magnetska sila', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove fizike - Sile i gibanje' AND qq.question_order = 2;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Električna sila', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove fizike - Sile i gibanje' AND qq.question_order = 2;
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Koliko iznosi gravitacijsko ubrzanje na Zemlji?', 3, 100 FROM quizzes q WHERE q.title = 'Osnove fizike - Sile i gibanje';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, '9.81 m/s²', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove fizike - Sile i gibanje' AND qq.question_order = 3;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, '10 km/h', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove fizike - Sile i gibanje' AND qq.question_order = 3;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, '5 m/s', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove fizike - Sile i gibanje' AND qq.question_order = 3;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, '100 N', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove fizike - Sile i gibanje' AND qq.question_order = 3;
+
+-- Quiz 3: Informatika Osnovna Škola
+INSERT INTO quizzes (title, description, interest_id, professor_id, time_limit, is_published)
+SELECT 'Osnove informatike', 'Testiraj osnovno znanje o računalima!', i.id, u.id, 25, true
+FROM interests i, users u WHERE i.name = 'Informatika Osnovna Škola' AND u.email = 'ivana.novak@test.hr';
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Što je CPU?', 1, 100 FROM quizzes q WHERE q.title = 'Osnove informatike';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Procesor - mozak računala', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove informatike' AND qq.question_order = 1;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Memorija računala', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove informatike' AND qq.question_order = 1;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Tipkovnica', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove informatike' AND qq.question_order = 1;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Monitor', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove informatike' AND qq.question_order = 1;
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Koja je kratica za RAM?', 2, 100 FROM quizzes q WHERE q.title = 'Osnove informatike';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Random Access Memory', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove informatike' AND qq.question_order = 2;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Read Always Memory', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove informatike' AND qq.question_order = 2;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Run All Memory', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove informatike' AND qq.question_order = 2;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Really Awesome Machine', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove informatike' AND qq.question_order = 2;
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Što je internet preglednik?', 3, 100 FROM quizzes q WHERE q.title = 'Osnove informatike';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Program za pregledavanje web stranica', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove informatike' AND qq.question_order = 3;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Vrsta računala', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove informatike' AND qq.question_order = 3;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Operativni sustav', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove informatike' AND qq.question_order = 3;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Antivirusni program', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove informatike' AND qq.question_order = 3;
+
+-- Quiz 4: Matematika Srednja Škola
+INSERT INTO quizzes (title, description, interest_id, professor_id, time_limit, is_published)
+SELECT 'Kvadratne jednadžbe', 'Testiraj znanje o kvadratnim jednadžbama!', i.id, u.id, 45, true
+FROM interests i, users u WHERE i.name = 'Matematika Srednja Škola' AND u.email = 'ivan.horvat@test.hr';
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Koja je formula za rješavanje kvadratne jednadžbe ax² + bx + c = 0?', 1, 150 FROM quizzes q WHERE q.title = 'Kvadratne jednadžbe';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'x = (-b ± √(b²-4ac)) / 2a', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kvadratne jednadžbe' AND qq.question_order = 1;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'x = -b / 2a', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kvadratne jednadžbe' AND qq.question_order = 1;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'x = b² - 4ac', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kvadratne jednadžbe' AND qq.question_order = 1;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'x = a + b + c', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kvadratne jednadžbe' AND qq.question_order = 1;
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Što je diskriminanta?', 2, 100 FROM quizzes q WHERE q.title = 'Kvadratne jednadžbe';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'D = b² - 4ac', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kvadratne jednadžbe' AND qq.question_order = 2;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'D = a + b + c', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kvadratne jednadžbe' AND qq.question_order = 2;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'D = 2a', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kvadratne jednadžbe' AND qq.question_order = 2;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'D = √(a² + b²)', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kvadratne jednadžbe' AND qq.question_order = 2;
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Ako je D < 0, koliko realnih rješenja ima jednadžba?', 3, 100 FROM quizzes q WHERE q.title = 'Kvadratne jednadžbe';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Nema realnih rješenja', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kvadratne jednadžbe' AND qq.question_order = 3;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Jedno rješenje', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kvadratne jednadžbe' AND qq.question_order = 3;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Dva rješenja', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kvadratne jednadžbe' AND qq.question_order = 3;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Beskonačno rješenja', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kvadratne jednadžbe' AND qq.question_order = 3;
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Riješi: x² - 5x + 6 = 0', 4, 150 FROM quizzes q WHERE q.title = 'Kvadratne jednadžbe';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'x = 2 i x = 3', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kvadratne jednadžbe' AND qq.question_order = 4;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'x = 1 i x = 6', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kvadratne jednadžbe' AND qq.question_order = 4;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'x = -2 i x = -3', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kvadratne jednadžbe' AND qq.question_order = 4;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'x = 5', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kvadratne jednadžbe' AND qq.question_order = 4;
+
+-- Quiz 5: Fizika Srednja Škola
+INSERT INTO quizzes (title, description, interest_id, professor_id, time_limit, is_published)
+SELECT 'Kinematika i dinamika', 'Provjeri svoje znanje iz mehanike!', i.id, u.id, 40, true
+FROM interests i, users u WHERE i.name = 'Fizika Srednja Škola' AND u.email = 'luka.peric@test.hr';
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Koja je formula za brzinu u jednolikog gibanja?', 1, 100 FROM quizzes q WHERE q.title = 'Kinematika i dinamika';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'v = s / t', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kinematika i dinamika' AND qq.question_order = 1;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'v = a × t', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kinematika i dinamika' AND qq.question_order = 1;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'v = m × a', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kinematika i dinamika' AND qq.question_order = 1;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'v = F / m', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kinematika i dinamika' AND qq.question_order = 1;
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Newtonov drugi zakon glasi:', 2, 150 FROM quizzes q WHERE q.title = 'Kinematika i dinamika';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'F = m × a', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kinematika i dinamika' AND qq.question_order = 2;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'E = m × c²', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kinematika i dinamika' AND qq.question_order = 2;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'p = m × v', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kinematika i dinamika' AND qq.question_order = 2;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'W = F × s', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kinematika i dinamika' AND qq.question_order = 2;
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Što je impuls sile?', 3, 100 FROM quizzes q WHERE q.title = 'Kinematika i dinamika';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Umnožak sile i vremena djelovanja (F × t)', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kinematika i dinamika' AND qq.question_order = 3;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Umnožak mase i brzine', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kinematika i dinamika' AND qq.question_order = 3;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Kinetička energija', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kinematika i dinamika' AND qq.question_order = 3;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Potencijalna energija', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Kinematika i dinamika' AND qq.question_order = 3;
+
+-- Quiz 6: Informatika Srednja Škola
+INSERT INTO quizzes (title, description, interest_id, professor_id, time_limit, is_published)
+SELECT 'Osnove programiranja', 'Testiraj znanje o programiranju!', i.id, u.id, 35, true
+FROM interests i, users u WHERE i.name = 'Informatika Srednja Škola' AND u.email = 'marko.babic@test.hr';
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Što je varijabla u programiranju?', 1, 100 FROM quizzes q WHERE q.title = 'Osnove programiranja';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Imenovano mjesto u memoriji za pohranu podataka', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove programiranja' AND qq.question_order = 1;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Vrsta petlje', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove programiranja' AND qq.question_order = 1;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Programski jezik', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove programiranja' AND qq.question_order = 1;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Tip funkcije', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove programiranja' AND qq.question_order = 1;
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Koja petlja se koristi kada znamo točan broj ponavljanja?', 2, 100 FROM quizzes q WHERE q.title = 'Osnove programiranja';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'for petlja', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove programiranja' AND qq.question_order = 2;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'while petlja', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove programiranja' AND qq.question_order = 2;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'do-while petlja', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove programiranja' AND qq.question_order = 2;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'if naredba', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove programiranja' AND qq.question_order = 2;
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Što ispisuje: console.log(5 + "3")?', 3, 150 FROM quizzes q WHERE q.title = 'Osnove programiranja';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, '"53" (string)', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove programiranja' AND qq.question_order = 3;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, '8 (number)', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove programiranja' AND qq.question_order = 3;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Error', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove programiranja' AND qq.question_order = 3;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'undefined', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove programiranja' AND qq.question_order = 3;
+
+INSERT INTO quiz_questions (quiz_id, question_text, question_order, points)
+SELECT q.id, 'Što je funkcija u programiranju?', 4, 100 FROM quizzes q WHERE q.title = 'Osnove programiranja';
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Blok koda koji obavlja određeni zadatak', true, 1 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove programiranja' AND qq.question_order = 4;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Vrsta varijable', false, 2 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove programiranja' AND qq.question_order = 4;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Tip podatka', false, 3 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove programiranja' AND qq.question_order = 4;
+INSERT INTO quiz_answers (question_id, answer_text, is_correct, answer_order)
+SELECT qq.id, 'Matematički operator', false, 4 FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.title = 'Osnove programiranja' AND qq.question_order = 4;
+
+-- Also add a test student user so you can test quizzes
+INSERT INTO users (email, password_hash, is_professor, name, surname)
+VALUES ('student.test@test.hr', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.BNe.v9P7F5W/EW', false, 'Test', 'Student');
+
+INSERT INTO students (user_id, sex, city, education, date_of_birth)
+SELECT id, 'M', 'Zagreb', 'Srednja škola', '2005-05-15'
+FROM users WHERE email = 'student.test@test.hr';
