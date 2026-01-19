@@ -678,7 +678,7 @@ export default function Calendar() {
                                             <div className={styles.slotMeta}>
                                                 <button
                                                     className={styles.cancelBtn}
-                                                    onClick={() => handleCancel(booking.id)}
+                                                    onClick={() => handleCancel(booking.slot_id)}
                                                 >
                                                     ❌ Otkaži
                                                 </button>
