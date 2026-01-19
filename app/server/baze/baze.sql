@@ -41,6 +41,11 @@ CREATE TABLE professors (
         CHECK (date_of_birth <= CURRENT_DATE)
 );
 
+CREATE TYPE lesson_type_enum AS ENUM (
+    '1na1',
+    'Grupno'
+);
+
 CREATE TABLE interests (
                            id SERIAL PRIMARY KEY,
                            name VARCHAR(100) UNIQUE NOT NULL
@@ -70,11 +75,23 @@ CREATE TABLE professor_slots (
         teaching_type teaching_type_enum NOT NULL,
         price NUMERIC(10,2) NOT NULL,
         location VARCHAR(150),
+        lesson_type lesson_type_enum NOT NULL DEFAULT '1na1',
+        interest_id INT REFERENCES interests(id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CHECK (end_time > start_time),
         CHECK (
         teaching_type <> 'Uživo'
         OR location IS NOT NULL
+        ),
+        CHECK (
+            (lesson_type = '1na1' AND capacity = 1)
+                OR
+            (lesson_type = 'Grupno' AND capacity >= 2)
+        ),
+        CHECK (
+            (lesson_type = '1na1' AND interest_id IS NULL)
+                OR
+            (lesson_type = 'Grupno' AND interest_id IS NOT NULL)
         )
 );
 

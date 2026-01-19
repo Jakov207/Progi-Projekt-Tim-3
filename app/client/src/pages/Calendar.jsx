@@ -11,12 +11,15 @@ export default function Calendar() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [interests, setInterests] = useState([]);
     const [form, setForm] = useState({
         date: "",
         start: "",
         end: "",
-        capacity: 1,
+        capacity: 2,
         teaching_type: "Online",
+        lesson_type: "1na1",
+        interest_id: "",
         price: "",
         location: ""
     });
@@ -59,14 +62,26 @@ export default function Calendar() {
     const dayNames = ["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"];
 
     useEffect(() => {
-        if (user?.is_professor) {
+        if (!user) return;
+
+        const loadInterests = async () => {
+            try {
+                const res = await api.get("/calendar/my-interests");
+                setInterests(res.data.interests || []);
+            } catch (err) {
+                console.error("Greška pri dohvaćanju predmeta:", err);
+            }
+        };
+
+        loadInterests();
+
+        if (user.is_professor) {
             loadSlots();
-        } else if (user) {
-            loadBookings();
         } else {
-            setLoading(false);
+            loadBookings();
         }
     }, [user]);
+
 
     const showSuccess = (msg) => {
         setSuccess(msg);
@@ -115,6 +130,11 @@ export default function Calendar() {
             return;
         }
 
+        if (form.lesson_type === "Grupno" && !form.interest_id) {
+            setError("Predmet je obavezan za grupnu nastavu.");
+            return;
+        }
+
         const start_time = `${form.date}T${form.start}`;
         const end_time = `${form.date}T${form.end}`;
 
@@ -122,19 +142,23 @@ export default function Calendar() {
             await api.post("/calendar/slots", {
                 start_time,
                 end_time,
-                capacity: Number(form.capacity) || 1,
                 teaching_type: form.teaching_type,
+                lesson_type: form.lesson_type,
+                capacity: form.lesson_type === "1na1" ? 1 : Number(form.capacity),
+                interest_id: form.lesson_type === "Grupno" ? Number(form.interest_id) : null, // ✅ PROSLIJEDENO
                 price: Number(form.price),
                 location: form.teaching_type === "Uživo" ? form.location : null
             });
 
-            // 🔥 KLJUČNO: reset cijelog statea
+            // 🔥 KLJUČNO: reset cijelog statea (uključujući interest_id)
             setForm({
                 date: "",
                 start: "",
                 end: "",
-                capacity: 1,
+                capacity: 2,
                 teaching_type: "Online",
+                lesson_type: "1na1",
+                interest_id: "",
                 price: "",
                 location: ""
             });
@@ -145,7 +169,6 @@ export default function Calendar() {
             setError(err.response?.data?.message || "Greška pri spremanju termina.");
         }
     };
-
     const handleDelete = async (slotId) => {
         try {
             await api.delete(`/calendar/slots/${slotId}`);
@@ -515,16 +538,59 @@ export default function Calendar() {
                                         />
                                     </div>
                                     <div className={styles.field}>
-                                        <label>👥 Kapacitet (broj studenata)</label>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            max="50"
-                                            value={form.capacity}
-                                            onChange={(e) => setForm(prev => ({ ...prev, capacity: e.target.value }))}
-                                        />
+                                        <label>👥 Tip predavanja</label>
+                                        <select
+                                            value={form.lesson_type}
+                                            onChange={(e) =>
+                                                setForm(prev => ({
+                                                    ...prev,
+                                                    lesson_type: e.target.value,
+                                                    capacity: e.target.value === "1na1" ? 1 : 2,
+                                                    interest_id: ""
+                                                }))
+                                            }
+                                        >
+                                            <option value="1na1">1 na 1</option>
+                                            <option value="Grupno">Grupno</option>
+                                        </select>
                                     </div>
-
+                                    {form.lesson_type === "Grupno" && (
+                                        <div className={styles.field}>
+                                            <label>👥 Kapacitet</label>
+                                            <input
+                                                type="number"
+                                                min="2"
+                                                value={form.capacity}
+                                                onChange={(e) =>
+                                                    setForm(prev => ({ ...prev, capacity: e.target.value }))
+                                                }
+                                            />
+                                        </div>
+                                    )}
+                                    {form.lesson_type === "Grupno" && (
+                                        <div className={styles.field}>
+                                            <label>📘 Predmet</label>
+                                            {interests.length === 0 ? (
+                                                <div className={styles.formHint}>
+                                                    Nemate dodanih predmeta
+                                                </div>
+                                            ) : (
+                                                <select
+                                                    value={form.interest_id}
+                                                    onChange={(e) =>
+                                                        setForm(prev => ({ ...prev, interest_id: e.target.value }))
+                                                    }
+                                                >
+                                                    <option value="">Odaberite predmet</option>
+                                                    {interests.map(i => (
+                                                        <option key={i.id} value={i.id}>
+                                                            {i.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            )}
+                                        </div>
+                                    )}
                                     <div className={styles.field}>
                                         <label>🎓 Način predavanja</label>
                                         <select
@@ -626,6 +692,10 @@ export default function Calendar() {
                                                     🎓 {slot.teaching_type} · 💰 {slot.price} €
                                                     {slot.location && <div>📍 {slot.location}</div>}
                                                 </div>
+                                                <div className={styles.slotMetaInfo}>
+                                                    👥 {slot.lesson_type}
+                                                    {slot.interest_name && <div>📘 {slot.interest_name}</div>}
+                                                </div>
 
                                             </div>
                                             <div className={styles.slotMeta}>
@@ -673,6 +743,7 @@ export default function Calendar() {
                                                     {booking.interest_name && (
                                                         <div>📘 {booking.interest_name}</div>
                                                     )}
+                                                    👥 {booking.lesson_type}
                                                 </div>
                                             </div>
                                             <div className={styles.slotMeta}>

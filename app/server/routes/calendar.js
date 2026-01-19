@@ -29,8 +29,45 @@ router.post("/slots", verifyToken, async (req, res) => {
             capacity,
             teaching_type,
             price,
-            location
+            location,
+            lesson_type,
+            interest_id
         } = req.body;
+
+        if (!lesson_type || !['1na1', 'Grupno'].includes(lesson_type)) {
+            return res.status(400).json({ message: "Neispravan tip predavanja." });
+        }
+
+        let finalCapacity = 1;
+
+        if (lesson_type === "1na1") {
+            finalCapacity = 1;
+        } else {
+            if (!interest_id) {
+                return res.status(400).json({ message: "Predmet je obavezan za grupnu nastavu." });
+            }
+
+            finalCapacity = Number(capacity);
+            if (!Number.isInteger(finalCapacity) || finalCapacity < 2) {
+                return res.status(400).json({
+                    message: "Kapacitet za grupnu nastavu mora biti ≥ 2."
+                });
+            }
+
+            // Provjera da instruktor ima taj predmet
+            const interestCheck = await pool.query(
+                `SELECT 1
+         FROM user_interests
+         WHERE user_id = $1 AND interest_id = $2`,
+                [userId, interest_id]
+            );
+
+            if (interestCheck.rows.length === 0) {
+                return res.status(403).json({
+                    message: "Nemate pravo predavati odabrani predmet."
+                });
+            }
+        }
 
         if (!start_time || !end_time || !teaching_type || price == null) {
             return res.status(400).json({ message: "Nedostaju obavezni podaci termina." });
@@ -65,17 +102,19 @@ router.post("/slots", verifyToken, async (req, res) => {
 
         const result = await pool.query(
             `INSERT INTO professor_slots
-             (professor_id, start_time, end_time, capacity, teaching_type, price, location)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)
+             (professor_id, start_time, end_time, capacity, teaching_type, price, location, lesson_type, interest_id)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
                  RETURNING *`,
             [
                 userId,
                 start_time,
                 end_time,
-                slotCapacity,
+                finalCapacity,
                 teaching_type,
                 price,
-                teaching_type === "Uživo" ? location : null
+                teaching_type === "Uživo" ? location : null,
+                lesson_type,
+                lesson_type === "Grupno" ? interest_id : null
             ]
         );
 
@@ -99,22 +138,17 @@ router.get("/slots/:professorId", async (req, res) => {
                  s.end_time,
                  s.capacity,
                  s.teaching_type,
+                 s.lesson_type,
                  s.price,
                  s.location,
+                 i.name AS interest_name,
                  COUNT(b.id) AS booked_count
              FROM professor_slots s
-                      LEFT JOIN professor_slot_bookings b
-                                ON b.slot_id = s.id
+                      LEFT JOIN professor_slot_bookings b ON b.slot_id = s.id
+                      LEFT JOIN interests i ON i.id = s.interest_id
              WHERE s.professor_id = $1
                AND s.start_time >= NOW()
-             GROUP BY
-                 s.id,
-                 s.start_time,
-                 s.end_time,
-                 s.capacity,
-                 s.teaching_type,
-                 s.price,
-                 s.location
+             GROUP BY s.id, i.name
                  ${includeBooked ? "" : "HAVING COUNT(b.id) < s.capacity"}
              ORDER BY s.start_time`,
             [professorId]
@@ -137,18 +171,22 @@ router.get("/my-slots", verifyToken, async (req, res) => {
         }
 
         const result = await pool.query(
-            `SELECT s.id,
-                    s.start_time,
-                    s.end_time,
-                    s.capacity,
-                    s.teaching_type,
-                    s.price,
-                    s.location,
-                    COUNT(b.id) AS booked_count
+            `SELECT
+                 s.id,
+                 s.start_time,
+                 s.end_time,
+                 s.capacity,
+                 s.teaching_type,
+                 s.lesson_type,
+                 s.price,
+                 s.location,
+                 i.name AS interest_name,
+                 COUNT(b.id) AS booked_count
              FROM professor_slots s
-             LEFT JOIN professor_slot_bookings b ON b.slot_id = s.id
+                      LEFT JOIN professor_slot_bookings b ON b.slot_id = s.id
+                      LEFT JOIN interests i ON i.id = s.interest_id
              WHERE s.professor_id = $1
-             GROUP BY s.id
+             GROUP BY s.id, i.name
              ORDER BY s.start_time`,
             [userId]
         );
@@ -199,17 +237,13 @@ router.post("/book/:slotId", verifyToken, async (req, res) => {
         const { slotId } = req.params;
         const { note, interest_id } = req.body;
 
-        if (!interest_id) {
-            return res.status(400).json({ message: "Predmet je obavezan." });
-        }
-
         const isStudent = await requireStudent(userId);
         if (!isStudent) {
             return res.status(403).json({ message: "Samo studenti mogu rezervirati termine." });
         }
 
         const slotResult = await pool.query(
-            `SELECT s.capacity, COUNT(b.id) AS booked_count
+            `SELECT s.capacity, COUNT(b.id) AS booked_count, s.lesson_type, s.interest_id AS slot_interest_id
              FROM professor_slots s
              LEFT JOIN professor_slot_bookings b ON b.slot_id = s.id
              WHERE s.id = $1
@@ -221,16 +255,23 @@ router.post("/book/:slotId", verifyToken, async (req, res) => {
             return res.status(404).json({ message: "Termin nije pronađen." });
         }
 
-        const { capacity, booked_count } = slotResult.rows[0];
+        const { capacity, booked_count, lesson_type, slot_interest_id } = slotResult.rows[0];
         if (Number(booked_count) >= Number(capacity)) {
             return res.status(409).json({ message: "Termin je popunjen." });
+        }
+
+        // Za grupne termine student ne bira predmet
+        const finalInterestId = lesson_type === "Grupno" ? slot_interest_id : interest_id;
+
+        if (!finalInterestId) {
+            return res.status(400).json({ message: "Predmet je obavezan." });
         }
 
         await pool.query(
             `INSERT INTO professor_slot_bookings (slot_id, student_id, note, interest_id)
              VALUES ($1, $2, $3, $4)
-             ON CONFLICT DO NOTHING`,
-            [slotId, userId, note || null, interest_id]
+                 ON CONFLICT DO NOTHING`,
+            [slotId, userId, note || null, finalInterestId]
         );
 
         res.json({ message: "Termin rezerviran." });
@@ -279,17 +320,19 @@ router.get("/my-bookings", verifyToken, async (req, res) => {
         }
 
         const result = await pool.query(
-            `SELECT b.id,
-                    s.id AS slot_id,
-                    s.start_time,
-                    s.end_time,
-                    s.teaching_type,
-                    s.price,
-                    s.location,
-                    u.name AS professor_name,
-                    u.surname AS professor_surname,
-                    i.id AS interest_id,
-                    i.name AS interest_name
+            `SELECT
+                 b.id,
+                 s.id AS slot_id,
+                 s.start_time,
+                 s.end_time,
+                 s.teaching_type,
+                 s.lesson_type,
+                 s.price,
+                 s.location,
+                 u.name AS professor_name,
+                 u.surname AS professor_surname,
+                 i.id AS interest_id,
+                 i.name AS interest_name
              FROM professor_slot_bookings b
                       JOIN professor_slots s ON s.id = b.slot_id
                       JOIN users u ON u.id = s.professor_id
@@ -299,10 +342,32 @@ router.get("/my-bookings", verifyToken, async (req, res) => {
             [userId]
         );
 
+
         res.json({ bookings: result.rows });
     } catch (err) {
         console.error("Error fetching bookings:", err);
         res.status(500).json({ message: "Greška pri dohvaćanju rezervacija." });
+    }
+});
+
+// Get interests for current user (professor or student)
+router.get("/my-interests", verifyToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const result = await pool.query(
+            `SELECT i.id, i.name
+             FROM user_interests ui
+             JOIN interests i ON i.id = ui.interest_id
+             WHERE ui.user_id = $1
+             ORDER BY i.name`,
+            [userId]
+        );
+
+        res.json({ interests: result.rows });
+    } catch (err) {
+        console.error("Error fetching user interests:", err);
+        res.status(500).json({ message: "Greška pri dohvaćanju predmeta." });
     }
 });
 
