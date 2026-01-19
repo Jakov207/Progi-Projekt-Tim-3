@@ -57,6 +57,13 @@ export default function InstructorProfile() {
         }
     };
 
+    // Minimalna cijena među svim dostupnim terminima instruktora
+    const minSlotPrice = slots
+        .filter(s => Number(s.booked_count || 0) < Number(s.capacity)) // samo dostupni termini
+        .map(s => s.price)
+        .filter(p => p != null) // ukloni null/undefined
+        .reduce((min, price) => (min === null || price < min ? price : min), null);
+
     const handleBook = async (slotId, note, interest_id) => {
         setBookingError("");
         setBookingMessage("");
@@ -323,9 +330,9 @@ export default function InstructorProfile() {
                     </div>
 
                     <div className={styles.statsRow}>
-                        {instructor.price && (
+                        {minSlotPrice != null && (
                             <div className={styles.statItem}>
-                                <span className={styles.statValue}>{instructor.price}€</span>
+                                <span className={styles.statValue}>Od {minSlotPrice}€</span>
                                 <span className={styles.statLabel}>po satu</span>
                             </div>
                         )}
