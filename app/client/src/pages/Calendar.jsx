@@ -12,6 +12,14 @@ export default function Calendar() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [interests, setInterests] = useState([]);
+    const [detailsOpen, setDetailsOpen] = useState(false);
+    const [slotDetails, setSlotDetails] = useState(null);
+    const [detailsLoading, setDetailsLoading] = useState(false);
+    const [bookingDetailsOpen, setBookingDetailsOpen] = useState(false);
+    const [bookingDetails, setBookingDetails] = useState(null);
+    const [bookingDetailsLoading, setBookingDetailsLoading] = useState(false);
+    const [noteDraft, setNoteDraft] = useState("");
+    const [noteSaving, setNoteSaving] = useState(false);
     const [form, setForm] = useState({
         date: "",
         start: "",
@@ -169,6 +177,7 @@ export default function Calendar() {
             setError(err.response?.data?.message || "Greška pri spremanju termina.");
         }
     };
+
     const handleDelete = async (slotId) => {
         try {
             await api.delete(`/calendar/slots/${slotId}`);
@@ -186,6 +195,61 @@ export default function Calendar() {
             loadBookings();
         } catch (err) {
             setError(err.response?.data?.message || "Greška pri otkazivanju termina.");
+        }
+    };
+
+    const openDetails = async (slotId) => {
+        setDetailsLoading(true);
+        setDetailsOpen(true);
+
+        try {
+            const res = await api.get(`/calendar/slots/${slotId}/details`);
+            setSlotDetails(res.data);
+        } catch (err) {
+            setError("Greška pri dohvaćanju detalja termina.");
+            setDetailsOpen(false);
+        } finally {
+            setDetailsLoading(false);
+        }
+    };
+
+    const openBookingDetails = async (bookingId) => {
+        setBookingDetailsLoading(true);
+        setBookingDetailsOpen(true);
+
+        try {
+            const res = await api.get(`/calendar/bookings/${bookingId}/details`);
+            setBookingDetails(res.data.booking);
+            setNoteDraft(res.data.booking.note || "");
+        } catch (err) {
+            setError("Greška pri dohvaćanju detalja rezervacije.");
+            setBookingDetailsOpen(false);
+        } finally {
+            setBookingDetailsLoading(false);
+        }
+    };
+
+    const saveNote = async () => {
+        if (!bookingDetails) return;
+
+        setNoteSaving(true);
+        try {
+            const res = await api.patch(
+                `/calendar/bookings/${bookingDetails.id}/note`,
+                { note: noteDraft }
+            );
+
+            // update lokalnog statea
+            setBookingDetails(prev => ({
+                ...prev,
+                note: res.data.note
+            }));
+
+            showSuccess("Napomena spremljena ✓");
+        } catch (err) {
+            setError("Greška pri spremanju napomene.");
+        } finally {
+            setNoteSaving(false);
         }
     };
 
@@ -710,7 +774,12 @@ export default function Calendar() {
                                                         🗑️ Obriši
                                                     </button>
                                                 ) : (
-                                                    <span className={styles.lockedBadge}>🔒</span>
+                                                    <button
+                                                        className={styles.detailsBtn}
+                                                        onClick={() => openDetails(slot.id)}
+                                                    >
+                                                        📋 Detalji
+                                                    </button>
                                                 )}
                                             </div>
                                         </div>
@@ -753,6 +822,13 @@ export default function Calendar() {
                                                 >
                                                     ❌ Otkaži
                                                 </button>
+
+                                                <button
+                                                    className={styles.detailsBtn}
+                                                    onClick={() => openBookingDetails(booking.id)}
+                                                >
+                                                    📋 Detalji
+                                                </button>
                                             </div>
                                         </div>
                                     ))
@@ -762,6 +838,142 @@ export default function Calendar() {
                     </div>
                 </div>
             </div>
+            {detailsOpen && (
+                <div className={styles.modalOverlay} onClick={() => setDetailsOpen(false)}>
+                    <div className={styles.modal} onClick={e => e.stopPropagation()}>
+                        {detailsLoading ? (
+                            <p>Učitavanje...</p>
+                        ) : slotDetails && (
+                            <>
+                                <h2>📋 Detalji termina</h2>
+
+                                <div className={styles.modalSection}>
+                                    <p><strong>📅 Datum:</strong> {formatFullDate(slotDetails.slot.start_time)}</p>
+                                    <p><strong>🕐 Vrijeme:</strong> {formatTime(slotDetails.slot.start_time)} – {formatTime(slotDetails.slot.end_time)}</p>
+                                    <p><strong>🎓 Tip:</strong> {slotDetails.slot.lesson_type}</p>
+                                    <p><strong>💻 Način:</strong> {slotDetails.slot.teaching_type}</p>
+                                    <p><strong>💰 Cijena:</strong> {slotDetails.slot.price} €</p>
+                                    {slotDetails.slot.location && (
+                                        <p><strong>📍 Lokacija:</strong> {slotDetails.slot.location}</p>
+                                    )}
+                                    {slotDetails.slot.interest_name && (
+                                        <p><strong>📘 Predmet:</strong> {slotDetails.slot.interest_name}</p>
+                                    )}
+                                </div>
+
+                                <div className={styles.modalSection}>
+                                    <h3>👥 Studenti ({slotDetails.students.length}):</h3>
+
+                                    {slotDetails.students.length === 0 ? (
+                                        <p>Nema rezervacija.</p>
+                                    ) : (
+                                        slotDetails.students.map(s => (
+                                            <div key={s.id} className={styles.studentItem}>
+                                                <strong>{s.name} {s.surname}</strong>
+                                                {s.note && (
+                                                    <div className={styles.note}>
+                                                        💬 {s.note}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+
+                                <button
+                                    className={styles.closeBtn}
+                                    onClick={() => setDetailsOpen(false)}
+                                >
+                                    Zatvori
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
+            {bookingDetailsOpen && (
+                <div className={styles.modalOverlay} onClick={() => setBookingDetailsOpen(false)}>
+                    <div className={styles.modal} onClick={e => e.stopPropagation()}>
+                        {bookingDetailsLoading ? (
+                            <p>Učitavanje...</p>
+                        ) : bookingDetails && (
+                            <>
+                                <h2>📋 Detalji rezervacije</h2>
+
+                                <div className={styles.modalSection}>
+                                    <p>
+                                        <strong>📅 Datum:</strong>{" "}
+                                        {formatFullDate(bookingDetails.start_time)}
+                                    </p>
+                                    <p>
+                                        <strong>🕐 Vrijeme:</strong>{" "}
+                                        {formatTime(bookingDetails.start_time)} –{" "}
+                                        {formatTime(bookingDetails.end_time)}
+                                    </p>
+                                    <p>
+                                        <strong>👨‍🏫 Profesor:</strong>{" "}
+                                        {bookingDetails.professor_name}{" "}
+                                        {bookingDetails.professor_surname}
+                                    </p>
+                                    <p>
+                                        <strong>🎓 Tip:</strong>{" "}
+                                        {bookingDetails.lesson_type}
+                                    </p>
+                                    <p>
+                                        <strong>💻 Način:</strong>{" "}
+                                        {bookingDetails.teaching_type}
+                                    </p>
+                                    <p>
+                                        <strong>💰 Cijena:</strong>{" "}
+                                        {bookingDetails.price} €
+                                    </p>
+
+                                    {bookingDetails.location && (
+                                        <p>
+                                            <strong>📍 Lokacija:</strong>{" "}
+                                            {bookingDetails.location}
+                                        </p>
+                                    )}
+
+                                    {bookingDetails.interest_name && (
+                                        <p>
+                                            <strong>📘 Predmet:</strong>{" "}
+                                            {bookingDetails.interest_name}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className={styles.modalSection}>
+                                    <h3>💬 Vaša napomena</h3>
+
+                                    <textarea
+                                        className={styles.noteTextarea}
+                                        value={noteDraft}
+                                        onChange={(e) => setNoteDraft(e.target.value)}
+                                        placeholder="Unesite napomenu za instruktora..."
+                                        maxLength={500}
+                                    />
+
+                                    <button
+                                        className={styles.saveBtn}
+                                        onClick={saveNote}
+                                        disabled={noteSaving}
+                                    >
+                                        {noteSaving ? "Spremanje..." : "💾 Spremi napomenu"}
+                                    </button>
+                                </div>
+
+                                <button
+                                    className={styles.closeBtn}
+                                    onClick={() => setBookingDetailsOpen(false)}
+                                >
+                                    Zatvori
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

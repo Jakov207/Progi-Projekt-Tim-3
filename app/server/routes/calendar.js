@@ -225,6 +225,64 @@ router.get("/my-slots", verifyToken, async (req, res) => {
     }
 });
 
+// Get slot details with students & notes (professor)
+router.get("/slots/:slotId/details", verifyToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { slotId } = req.params;
+
+        const isProfessor = await requireProfessor(userId);
+        if (!isProfessor) {
+            return res.status(403).json({ message: "Samo profesori imaju pristup." });
+        }
+
+        // Provjera da termin pripada profesoru
+        const slotResult = await pool.query(
+            `SELECT
+                 s.id,
+                 s.start_time,
+                 s.end_time,
+                 s.capacity,
+                 s.teaching_type,
+                 s.lesson_type,
+                 s.price,
+                 s.location,
+                 i.name AS interest_name
+             FROM professor_slots s
+             LEFT JOIN interests i ON i.id = s.interest_id
+             WHERE s.id = $1 AND s.professor_id = $2`,
+            [slotId, userId]
+        );
+
+        if (slotResult.rows.length === 0) {
+            return res.status(404).json({ message: "Termin nije pronađen." });
+        }
+
+        // Studenti + note
+        const studentsResult = await pool.query(
+            `SELECT
+                 u.id,
+                 u.name,
+                 u.surname,
+                 b.note,
+                 b.booked_at
+             FROM professor_slot_bookings b
+             JOIN users u ON u.id = b.student_id
+             WHERE b.slot_id = $1
+             ORDER BY b.booked_at`,
+            [slotId]
+        );
+
+        res.json({
+            slot: slotResult.rows[0],
+            students: studentsResult.rows
+        });
+    } catch (err) {
+        console.error("Error fetching slot details:", err);
+        res.status(500).json({ message: "Greška pri dohvaćanju detalja termina." });
+    }
+});
+
 // Delete available slot (professor)
 router.delete("/slots/:slotId", verifyToken, async (req, res) => {
     try {
@@ -377,6 +435,50 @@ router.get("/my-bookings", verifyToken, async (req, res) => {
     }
 });
 
+// Get booking details (student)
+router.get("/bookings/:bookingId/details", verifyToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { bookingId } = req.params;
+
+        const isStudent = await requireStudent(userId);
+        if (!isStudent) {
+            return res.status(403).json({ message: "Samo studenti imaju pristup." });
+        }
+
+        const result = await pool.query(
+            `SELECT
+                 b.id,
+                 b.note,
+                 b.booked_at,
+                 s.start_time,
+                 s.end_time,
+                 s.teaching_type,
+                 s.lesson_type,
+                 s.price,
+                 s.location,
+                 i.name AS interest_name,
+                 u.name AS professor_name,
+                 u.surname AS professor_surname
+             FROM professor_slot_bookings b
+             JOIN professor_slots s ON s.id = b.slot_id
+             JOIN users u ON u.id = s.professor_id
+             JOIN interests i ON i.id = b.interest_id
+             WHERE b.id = $1 AND b.student_id = $2`,
+            [bookingId, userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: "Rezervacija nije pronađena." });
+        }
+
+        res.json({ booking: result.rows[0] });
+    } catch (err) {
+        console.error("Error fetching booking details:", err);
+        res.status(500).json({ message: "Greška pri dohvaćanju detalja rezervacije." });
+    }
+});
+
 // Get interests for current user (professor or student)
 router.get("/my-interests", verifyToken, async (req, res) => {
     try {
@@ -395,6 +497,41 @@ router.get("/my-interests", verifyToken, async (req, res) => {
     } catch (err) {
         console.error("Error fetching user interests:", err);
         res.status(500).json({ message: "Greška pri dohvaćanju predmeta." });
+    }
+});
+
+// Update booking note (student)
+router.patch("/bookings/:bookingId/note", verifyToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { bookingId } = req.params;
+        const { note } = req.body;
+
+        const isStudent = await requireStudent(userId);
+        if (!isStudent) {
+            return res.status(403).json({ message: "Samo studenti mogu uređivati napomenu." });
+        }
+
+        if (note && note.length > 500) {
+            return res.status(400).json({ message: "Napomena je predugačka." });
+        }
+
+        const result = await pool.query(
+            `UPDATE professor_slot_bookings
+             SET note = $1
+             WHERE id = $2 AND student_id = $3
+             RETURNING note`,
+            [note || null, bookingId, userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: "Rezervacija nije pronađena." });
+        }
+
+        res.json({ note: result.rows[0].note });
+    } catch (err) {
+        console.error("Error updating note:", err);
+        res.status(500).json({ message: "Greška pri spremanju napomene." });
     }
 });
 
