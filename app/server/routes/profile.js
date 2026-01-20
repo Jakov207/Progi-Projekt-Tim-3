@@ -17,7 +17,7 @@ router.get('/', verifyToken, async (req, res) => {
 
         if(user.is_professor){
             const resP = await pool.query(
-                'SELECT sex, city, teaching, date_of_birth, biography, video_url, reference, teaching_type, price FROM professors WHERE user_id = $1',
+                'SELECT sex, city, teaching, date_of_birth, biography, video_url, reference, teaching_type FROM professors WHERE user_id = $1',
                 [req.user.id]
             );
             profile = resP.rows[0] ?? {};
@@ -182,8 +182,7 @@ router.post("/public", verifyToken, async (req, res) => {
             biography,
             video_url,
             reference,
-            teaching_type,
-            price
+            teaching_type
         } = req.body;
 
         await pool.query(`
@@ -191,15 +190,13 @@ router.post("/public", verifyToken, async (req, res) => {
             SET biography = $1,
                 video_url = $2,
                 reference = $3,
-                teaching_type = $4,
-                price = $5
-            WHERE user_id = $6
+                teaching_type = $4
+            WHERE user_id = $5
         `, [
             biography,
             video_url,
             reference,
             teaching_type,
-            price,
             req.user.id
         ]);
 

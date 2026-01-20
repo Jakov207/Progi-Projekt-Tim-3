@@ -83,8 +83,7 @@ export function Profile() {
         biography: "",
         video_url: "",
         reference: "",
-        teaching_type: "",
-        price: ""
+        teaching_type: ""
     });
 
     useEffect(() => {
@@ -121,8 +120,7 @@ export function Profile() {
                     biography: profile.biography || "",
                     video_url: profile.video_url || "",
                     reference: profile.reference || "",
-                    teaching_type: profile.teaching_type || "",
-                    price: profile.price || ""
+                    teaching_type: profile.teaching_type || ""
                 });
             }
 
@@ -448,17 +446,6 @@ export function Profile() {
                                             <option value="Online">💻 Online</option>
                                             <option value="Uživo i Online">🏫💻 Uživo i Online</option>
                                         </select>
-                                    </div>
-
-                                    <div className={styles.field}>
-                                        <label>💰 Cijena po satu (€)</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            value={publicProfile.price}
-                                            onChange={e => setPublicProfile(p => ({ ...p, price: e.target.value }))}
-                                            placeholder="20"
-                                        />
                                     </div>
                                 </div>
 
