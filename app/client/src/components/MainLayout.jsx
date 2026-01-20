@@ -35,12 +35,12 @@ function MainLayout() {
                         </>
                     )}
 
-                    {user && <Link to="/profile">Profil</Link>}
                     {user && (
                         <Link to="/calendar">
                             {user.is_professor ? "Moj kalendar" : "Moji termini"}
                         </Link>
                     )}
+                    {user && <Link to="/profile">Profil</Link>}
                 </nav>
 
 
