@@ -105,10 +105,6 @@ router.post("/slots", verifyToken, async (req, res) => {
             return res.status(403).json({ message: "Samo profesori mogu kreirati termine." });
         }
 
-        const slotCapacity = Number.isFinite(Number(capacity)) && Number(capacity) > 0
-            ? Number(capacity)
-            : 1;
-
         const overlap = await pool.query(
             `SELECT 1
              FROM professor_slots
