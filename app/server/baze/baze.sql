@@ -36,6 +36,7 @@ CREATE TABLE professors (
         video_url VARCHAR(255),
         reference VARCHAR(500),
         teaching_type teaching_type_enum,
+        is_published BOOLEAN DEFAULT FALSE,
         CHECK (sex IN ('M', 'F', 'X')),
         CHECK (date_of_birth <= CURRENT_DATE)
 );

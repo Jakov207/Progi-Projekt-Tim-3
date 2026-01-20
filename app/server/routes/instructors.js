@@ -12,7 +12,7 @@ router.get("/", async (req, res) => {
         } = req.query;
 
         let values = [];
-        let where = ["u.is_professor = true"];
+        let where = ["u.is_professor = true", "p.is_published = true"];
 
         if (search) {
             values.push(`%${search}%`);
