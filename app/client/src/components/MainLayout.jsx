@@ -1,6 +1,6 @@
 // src/components/MainLayout.jsx
-import React, { useContext } from "react";
-import { Link, Outlet } from "react-router-dom"; // <--- Outlet je ključan
+import React, { useContext, useMemo } from "react";
+import { Link, Outlet } from "react-router-dom";
 import styles from "./MainLayout.module.css";
 import logo from "../assets/images/logo.png";
 import { getImageUrl } from "../api";
@@ -8,6 +8,13 @@ import { AuthContext } from "../context/AuthContext";
 
 function MainLayout() {
     const { user, logout } = useContext(AuthContext);
+
+    const initials = useMemo(() => {
+        if (!user) return "";
+        const first = (user.name || "").trim().charAt(0);
+        const last = (user.surname || "").trim().charAt(0);
+        return `${first}${last}`.toUpperCase() || "U";
+    }, [user]);
 
     return (
         <>
@@ -19,7 +26,6 @@ function MainLayout() {
                 <nav className={styles.navLinks}>
                     <Link to="/">Početna</Link>
 
-                    {/* Only show for NON-professors */}
                     {user && !user.is_professor && (
                         <>
                             <Link to="/instructors">Instruktori</Link>
@@ -27,7 +33,6 @@ function MainLayout() {
                         </>
                     )}
 
-                    {/* Optional: show for guests (not logged in) */}
                     {!user && (
                         <>
                             <Link to="/instructors">Instruktori</Link>
@@ -36,13 +41,13 @@ function MainLayout() {
                     )}
 
                     {user && <Link to="/profile">Profil</Link>}
+
                     {user && (
                         <Link to="/calendar">
                             {user.is_professor ? "Moj kalendar" : "Moji termini"}
                         </Link>
                     )}
                 </nav>
-
 
                 <div className={styles.rightSide}>
                     {!user ? (
@@ -52,12 +57,9 @@ function MainLayout() {
                         </>
                     ) : (
                         <>
-                            <span className={styles.userName}>
-                                {user.name}
-                            </span>
-                            <span className={styles.separator}>
-                                |
-                            </span>
+                            <span className={styles.userName}>{user.name}</span>
+                            <span className={styles.separator}>|</span>
+
                             <div className={styles.userInfo}>
                                 <div className={styles.avatarWrapper}>
                                     {user.profile_picture ? (
@@ -67,7 +69,9 @@ function MainLayout() {
                                             className={styles.avatar}
                                         />
                                     ) : (
-                                        <i className="fa-solid fa-user"></i>
+                                        <div className={styles.avatarPlaceholder}>
+                                            {initials}
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -78,12 +82,10 @@ function MainLayout() {
                         </>
                     )}
                 </div>
-
             </header>
 
-            {/* GLAVNI SADRŽAJ STRANICE */}
             <main className={styles.pageContent}>
-                <Outlet /> {/* <-- React Router ovdje ubacuje Home, Profile itd */}
+                <Outlet />
             </main>
         </>
     );

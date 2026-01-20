@@ -2,7 +2,7 @@
 
 .page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #f8fafc 0%, #e8f4f8 100%);
+    background: #5EA2AF; /* zadnja boja */
 }
 
 /* Loading */
@@ -97,7 +97,7 @@
 
 /* Sidebar */
 .sidebar {
-    background: #fff;
+    background: #90DDF0;   /* predzadnja boja – LIJEVI VELIKI KVADRAT */
     border-radius: 20px;
     padding: 24px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
@@ -241,11 +241,12 @@
 
 /* Content */
 .content {
-    background: #fff;
+    background: #90DDF0;   /* predzadnja boja */
     border-radius: 20px;
     padding: 32px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
 }
+
 
 .section {
     animation: fadeIn 0.3s ease;

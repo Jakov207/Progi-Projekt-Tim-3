@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import axios from "../api";
 import ProfileImageModal from "../components/ProfileImageModal";
 import { getImageUrl } from "../api";
 import styles from "./Profile.module.css";
+import { AuthContext } from "../context/AuthContext"; // ✅ DODANO
 
 export function Profile() {
+    const { updateUser } = useContext(AuthContext); // ✅ DODANO
+
     const [activeTab, setActiveTab] = useState("osobni");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -159,6 +162,10 @@ export function Profile() {
                 education: form.education,
                 teaching: form.teaching
             });
+
+            // ✅ Ako promijeniš ime/prezime, updateaj i navbar odmah
+            updateUser({ name: form.name, surname: form.surname });
+
             showMessage("Promjene uspješno spremljene! ✓");
         } catch (err) {
             setError(err.response?.data?.message || "Greška kod spremanja");
@@ -181,8 +188,10 @@ export function Profile() {
         }
     };
 
+    // ✅ KLJUČNA PROMJENA: update i local form i AuthContext
     const handleImageUpdated = (newFilename) => {
         setForm(prev => ({ ...prev, profile_picture: newFilename }));
+        updateUser({ profile_picture: newFilename }); // ✅ da navbar odmah dobije sliku
         showMessage("Slika profila ažurirana! ✓");
     };
 
@@ -205,14 +214,12 @@ export function Profile() {
 
     return (
         <div className={styles.page}>
-            {/* Success Banner */}
             {message && (
                 <div className={styles.successBanner}>
                     {message}
                 </div>
             )}
 
-            {/* Error Banner */}
             {error && (
                 <div className={styles.errorBanner}>
                     ⚠️ {error}
@@ -221,7 +228,6 @@ export function Profile() {
             )}
 
             <div className={styles.container}>
-                {/* Sidebar */}
                 <aside className={styles.sidebar}>
                     <div className={styles.sidebarHeader}>
                         <div className={styles.avatarLarge} onClick={() => setIsImageModalOpen(true)}>
@@ -259,8 +265,9 @@ export function Profile() {
                     </nav>
                 </aside>
 
-                {/* Content */}
                 <main className={styles.content}>
+                    {/* ... ostatak tvog koda ostaje isti ... */}
+
                     {/* Osobni podaci */}
                     {activeTab === "osobni" && (
                         <div className={styles.section}>
@@ -273,8 +280,8 @@ export function Profile() {
                                 <div className={styles.formGrid}>
                                     <div className={styles.field}>
                                         <label>Ime</label>
-                                        <input 
-                                            value={form.name} 
+                                        <input
+                                            value={form.name}
                                             onChange={e => updateField("name", e.target.value)}
                                             placeholder="Vaše ime"
                                         />
@@ -282,8 +289,8 @@ export function Profile() {
 
                                     <div className={styles.field}>
                                         <label>Prezime</label>
-                                        <input 
-                                            value={form.surname} 
+                                        <input
+                                            value={form.surname}
                                             onChange={e => updateField("surname", e.target.value)}
                                             placeholder="Vaše prezime"
                                         />
@@ -291,8 +298,8 @@ export function Profile() {
 
                                     <div className={styles.field}>
                                         <label>📅 Datum rođenja</label>
-                                        <input 
-                                            type="date" 
+                                        <input
+                                            type="date"
                                             value={form.date_of_birth}
                                             onChange={e => updateField("date_of_birth", e.target.value)}
                                         />
@@ -313,8 +320,8 @@ export function Profile() {
 
                                     <div className={styles.field}>
                                         <label>📍 Mjesto / Grad</label>
-                                        <input 
-                                            value={form.city} 
+                                        <input
+                                            value={form.city}
                                             onChange={e => updateField("city", e.target.value)}
                                             placeholder="npr. Zagreb"
                                         />
@@ -323,7 +330,7 @@ export function Profile() {
                                     {!form.is_professor && (
                                         <div className={styles.field}>
                                             <label>🏫 Škola / Fakultet</label>
-                                            <input 
+                                            <input
                                                 value={form.education}
                                                 onChange={e => updateField("education", e.target.value)}
                                                 placeholder="Naziv obrazovne ustanove"
@@ -334,7 +341,7 @@ export function Profile() {
                                     {form.is_professor && (
                                         <div className={styles.field}>
                                             <label>🎓 Edukacija / Stručna sprema</label>
-                                            <input 
+                                            <input
                                                 value={form.teaching}
                                                 onChange={e => updateField("teaching", e.target.value)}
                                                 placeholder="npr. Magistar matematike"

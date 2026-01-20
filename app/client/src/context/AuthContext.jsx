@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
+    // Dohvati trenutno prijavljenog usera
     const refreshUser = async () => {
         try {
             const res = await api.get("/auth/me");
@@ -25,6 +26,17 @@ export const AuthProvider = ({ children }) => {
         refreshUser();
     }, []);
 
+    // 🔥 NOVO: helper za ručno ažuriranje usera (npr. nakon upload-a slike)
+    const updateUser = (partialUser) => {
+        setUser(prev => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                ...partialUser
+            };
+        });
+    };
+
     const logout = async () => {
         try {
             await api.post("/auth/logout");
@@ -37,7 +49,14 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider
-            value={{ user, setUser, refreshUser, logout, loading }}
+            value={{
+                user,
+                setUser,
+                updateUser,   // 👈 bitno
+                refreshUser,
+                logout,
+                loading
+            }}
         >
             {children}
         </AuthContext.Provider>

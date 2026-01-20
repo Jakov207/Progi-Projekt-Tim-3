@@ -15,12 +15,12 @@ export default function Instructors() {
     });
 
     const interestsList = [
-        "Matematika Osnovna Škola",
-        "Fizika Osnovna Škola",
-        "Informatika Osnovna Škola",
-        "Matematika Srednja Škola",
-        "Fizika Srednja Škola",
-        "Informatika Srednja Škola"
+        "📐 Matematika Osnovna Škola",
+        "🔬 Fizika Osnovna Škola",
+        "💻 Informatika Osnovna Škola",
+        "📐 Matematika Srednja Škola",
+        "🔬 Fizika Srednja Škola",
+        "💻 Informatika Srednja Škola"
     ];
 
     useEffect(() => {
@@ -37,11 +37,13 @@ export default function Instructors() {
     };
 
     const toggleInterest = (value) => {
+        const cleanValue = value.replace(/^[^\s]+\s/, ""); // makne emoji
+
         setFilters(f => ({
             ...f,
-            interests: f.interests.includes(value)
-                ? f.interests.filter(i => i !== value)
-                : [...f.interests, value]
+            interests: f.interests.includes(cleanValue)
+                ? f.interests.filter(i => i !== cleanValue)
+                : [...f.interests, cleanValue]
         }));
     };
 
@@ -50,8 +52,9 @@ export default function Instructors() {
             <h1>Instruktori</h1>
 
             <div className={styles.filters}>
+                <div className={styles.filtersRow}>
                 <input
-                    placeholder="Pretraži ime..."
+                    placeholder="🔎 Pretraži ime..."
                     value={filters.search}
                     onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
                 />
@@ -60,30 +63,33 @@ export default function Instructors() {
                     value={filters.teaching_type}
                     onChange={e => setFilters(f => ({ ...f, teaching_type: e.target.value }))}
                 >
-                    <option value="">Način predavanja</option>
-                    <option value="Uživo">Uživo</option>
-                    <option value="Online">Online</option>
-                    <option value="Uživo i Online">Uživo i Online</option>
+                    <option value="">🎓 Način predavanja</option>
+                    <option value="Uživo">🏫 Uživo</option>
+                    <option value="Online">💻 Online</option>
+                    <option value="Uživo i Online">🏫💻 Uživo i Online</option>
                 </select>
 
                 <input
                     type="number"
-                    placeholder="Max cijena (€)"
+                    placeholder="💰 Max cijena (€)"
                     value={filters.max_price}
                     onChange={e => setFilters(f => ({ ...f, max_price: e.target.value }))}
                 />
-
+                </div>
                 <div className={styles.interests}>
-                    {interestsList.map(i => (
-                        <label key={i}>
-                            <input
-                                type="checkbox"
-                                checked={filters.interests.includes(i)}
-                                onChange={() => toggleInterest(i)}
-                            />
-                            {i}
-                        </label>
-                    ))}
+                    {interestsList.map(i => {
+                        const clean = i.replace(/^[^\s]+\s/, "");
+                        return (
+                            <label key={i}>
+                                <input
+                                    type="checkbox"
+                                    checked={filters.interests.includes(clean)}
+                                    onChange={() => toggleInterest(i)}
+                                />
+                                {i}
+                            </label>
+                        );
+                    })}
                 </div>
             </div>
 

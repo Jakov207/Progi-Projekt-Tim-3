@@ -1,6 +1,6 @@
 .page {
-    max-width: 1200px;
-    margin: 0 auto;
+    min-height: 100vh;
+    background: #5EA2AF;
     padding: 40px 20px;
 }
 
@@ -8,83 +8,129 @@
     font-size: 2rem;
     margin-bottom: 25px;
     text-align: center;
+    color: #000;
 }
 
 /* ================= FILTERS ================= */
-
+/* ISTA širina kao grid kartica (4 komada) -> 1320px i centrirano */
 .filters {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 15px;
-    margin-bottom: 30px;
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    max-width: 1320px;              /* ista širina kao grid */
+    margin: 0 auto 30px;
+    background: #90DDF0;
+    padding: 22px;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
 }
 
+/* GORNJI RED – 3 POLJA U JEDNOM REDU */
+.filtersRow {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+}
+
+/* Inputi i selecti */
 .filters input,
 .filters select {
-    width: 100%;
+    height: 42px;
     padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.15);
     font-size: 0.95rem;
-    background: #fafafa;
+    background: rgba(255,255,255,0.85);
+    box-sizing: border-box;
 }
 
+/* Točne širine kao prije */
+.filters input[type="text"] {
+    width: 260px;
+}
+
+.filters select {
+    width: 230px;
+}
+
+.filters input[type="number"] {
+    width: 230px;
+    margin-left: 8px;
+}
+
+/* Fokus efekt */
 .filters input:focus,
 .filters select:focus {
     outline: none;
-    border-color: #6c63ff;
+    border-color: #1a4a5e;
     background: #fff;
+    box-shadow: 0 0 0 3px rgba(26, 74, 94, 0.12);
 }
 
 /* ================= INTERESTS ================= */
-
 .interests {
-    grid-column: 1 / -1;
+    width: 100%;                   /* da bude u širini boxa */
+    margin-top: 6px;
+
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 10px;
-    margin-top: 10px;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    align-items: stretch;
 }
 
 .interests label {
-    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+
+    display: grid;
+    grid-template-columns: 14px 1fr;
     align-items: center;
-    gap: 8px;
-    background: #f5f5f5;
-    padding: 8px 10px;
-    border-radius: 8px;
-    font-size: 0.9rem;
+    justify-items: center;
+    gap: 10px;
+
+    background: rgba(255,255,255,0.55);
+    padding: 10px 12px;
+    border-radius: 12px;
+
+    font-size: 0.82rem;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: 0.2s ease;
+
+    min-height: 54px;
+    text-align: center;
 }
 
 .interests label:hover {
-    background: #ececff;
+    background: rgba(255,255,255,0.75);
 }
 
-.interests input {
-    accent-color: #6c63ff;
+.interests input[type="checkbox"] {
+    accent-color: #1a4a5e;
+    transform: none !important;
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    padding: 0;
 }
 
 /* ================= GRID ================= */
-
 .grid {
+    max-width: 1320px;
+    margin: 0 auto;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(4, minmax(280px, 1fr));
+    gap: 24px;
 }
 
-/* ================= CARD ================= */
-
 .card {
-    background: #ffffff;
+    background: #90DDF0;
     border-radius: 14px;
-    padding: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.10);
     text-align: center;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
@@ -92,37 +138,68 @@
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.14);
 }
 
 .card img {
-    width: 90px;
-    height: 90px;
+    width: 96px;
+    height: 96px;
     object-fit: cover;
     border-radius: 50%;
     margin-bottom: 12px;
-    border: 3px solid #eee;
+    border: 3px solid rgba(255,255,255,0.9);
+    background: #ffffff;
 }
 
 .card h3 {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     margin-bottom: 6px;
+    color: #0A090C;
 }
 
 .card p {
     font-size: 0.9rem;
-    color: #555;
+    color: #07393C;
     margin: 3px 0;
 }
 
+.noPrice {
+    color: #1a5055;
+    font-weight: 600;
+}
+
 /* ================= RESPONSIVE ================= */
+@media (max-width: 1100px) {
+    .filters {
+        max-width: 1000px;
+        align-items: stretch;
+    }
+
+    .filters input[type="text"],
+    .filters select,
+    .filters input[type="number"] {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .interests {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grid {
+        max-width: 1000px;
+        grid-template-columns: repeat(3, minmax(240px, 1fr));
+    }
+}
+
+@media (max-width: 820px) {
+    .filters { max-width: 720px; padding: 18px; }
+    .interests { grid-template-columns: repeat(2, 1fr); }
+    .grid { max-width: 720px; grid-template-columns: repeat(2, minmax(240px, 1fr)); }
+}
 
 @media (max-width: 600px) {
-    .page {
-        padding: 25px 15px;
-    }
-
-    .filters {
-        padding: 15px;
-    }
+    .page { padding: 25px 15px; }
+    .filters { max-width: 520px; padding: 15px; }
+    .grid { max-width: 520px; grid-template-columns: 1fr; }
 }
