@@ -70,6 +70,28 @@ router.post("/slots", verifyToken, async (req, res) => {
             }
         }
 
+        // Dohvati teaching_type instruktora iz profila
+        const profResult = await pool.query(
+            "SELECT teaching_type FROM professors WHERE user_id = $1",
+            [userId]
+        );
+
+        const profileTeachingType = profResult.rows[0]?.teaching_type;
+
+        if (!profileTeachingType) {
+            return res.status(400).json({ message: "Instruktor nema definiran tip predavanja u profilu." });
+        }
+
+        // Provjera da li je odabrani termin dopušten
+        if (
+            (profileTeachingType === "Uživo" && teaching_type !== "Uživo") ||
+            (profileTeachingType === "Online" && teaching_type !== "Online")
+        ) {
+            return res.status(403).json({
+                message: `Ne možete kreirati termin tipa ${teaching_type}. Vaš profil dopušta samo ${profileTeachingType}.`
+            });
+        }
+
         if (!start_time || !end_time || !teaching_type || price == null) {
             return res.status(400).json({ message: "Nedostaju obavezni podaci termina." });
         }
