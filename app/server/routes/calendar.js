@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../config/db");
 const verifyToken = require("../middleware/verifyToken");
+const verifyTokenOptional = require("../middleware/verifyTokenOptional");
 
 const requireProfessor = async (userId) => {
     const result = await pool.query(
@@ -126,37 +127,45 @@ router.post("/slots", verifyToken, async (req, res) => {
 });
 
 // List public slots for a professor (available only)
-router.get("/slots/:professorId", async (req, res) => {
+router.get("/slots/:professorId", verifyTokenOptional, async (req, res) => {
     try {
         const { professorId } = req.params;
         const includeBooked = req.query.includeBooked === "true";
 
+        const userId = req.user?.id || null;
+
         const result = await pool.query(
-            `SELECT
-                 s.id,
-                 s.start_time,
-                 s.end_time,
-                 s.capacity,
-                 s.teaching_type,
-                 s.lesson_type,
-                 s.price,
-                 s.location,
-                 i.name AS interest_name,
-                 COUNT(b.id) AS booked_count
-             FROM professor_slots s
-                      LEFT JOIN professor_slot_bookings b ON b.slot_id = s.id
-                      LEFT JOIN interests i ON i.id = s.interest_id
-             WHERE s.professor_id = $1
-               AND s.start_time >= NOW()
-             GROUP BY s.id, i.name
-                 ${includeBooked ? "" : "HAVING COUNT(b.id) < s.capacity"}
-             ORDER BY s.start_time`,
-            [professorId]
+            `
+            SELECT
+                s.id,
+                s.start_time,
+                s.end_time,
+                s.capacity,
+                s.teaching_type,
+                s.lesson_type,
+                s.price,
+                s.location,
+                i.name AS interest_name,
+                COUNT(b.id) AS booked_count,
+                (b_me.id IS NOT NULL) AS is_booked_by_me
+            FROM professor_slots s
+            LEFT JOIN professor_slot_bookings b ON b.slot_id = s.id
+            LEFT JOIN professor_slot_bookings b_me
+                ON b_me.slot_id = s.id
+               AND b_me.student_id = $2
+            LEFT JOIN interests i ON i.id = s.interest_id
+            WHERE s.professor_id = $1
+              AND s.start_time >= NOW()
+            GROUP BY s.id, i.name, b_me.id
+            ${includeBooked ? "" : "HAVING COUNT(b.id) < s.capacity"}
+            ORDER BY s.start_time
+            `,
+            [professorId, userId]
         );
 
         res.json({ slots: result.rows });
     } catch (err) {
-        console.error("Error fetching slots:", err);
+        console.error(err);
         res.status(500).json({ message: "Greška pri dohvaćanju termina." });
     }
 });

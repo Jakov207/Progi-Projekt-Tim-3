@@ -165,8 +165,15 @@ export default function InstructorProfile() {
         return acc;
     }, {});
 
-    const availableSlots = slots.filter(s => Number(s.booked_count || 0) < Number(s.capacity));
-    
+    const availableSlots = slots.filter(s => {
+        const hasFreeSpace = Number(s.booked_count || 0) < Number(s.capacity);
+
+        // ako je student već rezervirao → sakrij samo njemu
+        if (s.is_booked_by_me) return false;
+
+        return hasFreeSpace;
+    });
+
     const filteredSlots = selectedDate
         ? availableSlots.filter(s => dateKey(s.start_time) === selectedDate)
         : availableSlots;
@@ -384,7 +391,6 @@ export default function InstructorProfile() {
                                 <iframe
                                     src={`https://www.youtube.com/embed/${youtubeId}`}
                                     title="YouTube video"
-                                    frameBorder="0"
                                     allowFullScreen
                                 />
                             </div>
