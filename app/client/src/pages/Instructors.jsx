@@ -96,7 +96,11 @@ export default function Instructors() {
                         />
                         <h3>{i.name} {i.surname}</h3>
                         <p>{i.teaching_type}</p>
-                        <p>{i.price} € / sat</p>
+                        {i.min_price != null ? (
+                            <p>{i.min_price} € / sat</p>
+                        ) : (
+                            <p className={styles.noPrice}>Nema slobodnih termina</p>
+                        )}
                         <p>{i.city}</p>
                     </div>
                 ))}

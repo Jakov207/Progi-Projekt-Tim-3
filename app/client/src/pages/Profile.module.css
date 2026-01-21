@@ -367,6 +367,40 @@
     animation: spin 0.8s linear infinite;
 }
 
+/* Publish Button */
+.fieldPublish {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.publishBtn {
+    padding: 14px 140px;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    color: #fff;
+    align-self: center;
+}
+
+.publishBtn.published {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.publishBtn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.publishBtn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
 /* Interests */
 .interestsGrid {
     display: grid;
@@ -464,7 +498,6 @@
 
 .comingSoon p {
     color: #64748b;
-    margin: 0;
     max-width: 400px;
     margin: 0 auto;
 }

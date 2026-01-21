@@ -83,8 +83,7 @@ export function Profile() {
         biography: "",
         video_url: "",
         reference: "",
-        teaching_type: "",
-        price: ""
+        teaching_type: ""
     });
 
     useEffect(() => {
@@ -122,7 +121,7 @@ export function Profile() {
                     video_url: profile.video_url || "",
                     reference: profile.reference || "",
                     teaching_type: profile.teaching_type || "",
-                    price: profile.price || ""
+                    is_published: profile.is_published || false
                 });
             }
 
@@ -437,11 +436,14 @@ export function Profile() {
                                 </div>
 
                                 <div className={styles.formRow}>
+                                    {/* Način predavanja */}
                                     <div className={styles.field}>
                                         <label>💻 Način predavanja</label>
                                         <select
                                             value={publicProfile.teaching_type}
-                                            onChange={e => setPublicProfile(p => ({ ...p, teaching_type: e.target.value }))}
+                                            onChange={e =>
+                                                setPublicProfile(p => ({ ...p, teaching_type: e.target.value }))
+                                            }
                                         >
                                             <option value="">Odaberi</option>
                                             <option value="Uživo">🏫 Uživo</option>
@@ -450,15 +452,25 @@ export function Profile() {
                                         </select>
                                     </div>
 
-                                    <div className={styles.field}>
-                                        <label>💰 Cijena po satu (€)</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            value={publicProfile.price}
-                                            onChange={e => setPublicProfile(p => ({ ...p, price: e.target.value }))}
-                                            placeholder="20"
-                                        />
+                                    {/* Objavi profil */}
+                                    <div className={styles.fieldPublish}>
+                                        <label>&nbsp;</label> {/* prazni label za poravnanje */}
+                                        <button
+                                            type="button"
+                                            className={`${styles.publishBtn} ${publicProfile.is_published ? styles.published : ""}`}
+                                            onClick={async () => {
+                                                const newState = !publicProfile.is_published;
+                                                try {
+                                                    await axios.post("/profile/public/publish", { publish: newState });
+                                                    setPublicProfile(p => ({ ...p, is_published: newState }));
+                                                    showMessage(newState ? "Profil objavljen!" : "Profil skriven!");
+                                                } catch {
+                                                    showMessage("Greška kod promjene statusa publikacije");
+                                                }
+                                            }}
+                                        >
+                                            {publicProfile.is_published ? "✅ Objavljen" : "❌ Skriven"}
+                                        </button>
                                     </div>
                                 </div>
 

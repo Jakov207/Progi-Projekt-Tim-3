@@ -11,12 +11,23 @@ export default function Calendar() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [interests, setInterests] = useState([]);
+    const [detailsOpen, setDetailsOpen] = useState(false);
+    const [slotDetails, setSlotDetails] = useState(null);
+    const [detailsLoading, setDetailsLoading] = useState(false);
+    const [bookingDetailsOpen, setBookingDetailsOpen] = useState(false);
+    const [bookingDetails, setBookingDetails] = useState(null);
+    const [bookingDetailsLoading, setBookingDetailsLoading] = useState(false);
+    const [noteDraft, setNoteDraft] = useState("");
+    const [noteSaving, setNoteSaving] = useState(false);
     const [form, setForm] = useState({
         date: "",
         start: "",
         end: "",
-        capacity: 1,
+        capacity: 2,
         teaching_type: "Online",
+        lesson_type: "1na1",
+        interest_id: "",
         price: "",
         location: ""
     });
@@ -59,12 +70,23 @@ export default function Calendar() {
     const dayNames = ["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"];
 
     useEffect(() => {
-        if (user?.is_professor) {
+        if (!user) return;
+
+        const loadInterests = async () => {
+            try {
+                const res = await api.get("/calendar/my-interests");
+                setInterests(res.data.interests || []);
+            } catch (err) {
+                console.error("Greška pri dohvaćanju predmeta:", err);
+            }
+        };
+
+        loadInterests();
+
+        if (user.is_professor) {
             loadSlots();
-        } else if (user) {
-            loadBookings();
         } else {
-            setLoading(false);
+            loadBookings();
         }
     }, [user]);
 
@@ -115,6 +137,11 @@ export default function Calendar() {
             return;
         }
 
+        if (form.lesson_type === "Grupno" && !form.interest_id) {
+            setError("Predmet je obavezan za grupnu nastavu.");
+            return;
+        }
+
         const start_time = `${form.date}T${form.start}`;
         const end_time = `${form.date}T${form.end}`;
 
@@ -122,19 +149,23 @@ export default function Calendar() {
             await api.post("/calendar/slots", {
                 start_time,
                 end_time,
-                capacity: Number(form.capacity) || 1,
                 teaching_type: form.teaching_type,
+                lesson_type: form.lesson_type,
+                capacity: form.lesson_type === "1na1" ? 1 : Number(form.capacity),
+                interest_id: form.lesson_type === "Grupno" ? Number(form.interest_id) : null, // ✅ PROSLIJEDENO
                 price: Number(form.price),
                 location: form.teaching_type === "Uživo" ? form.location : null
             });
 
-            // 🔥 KLJUČNO: reset cijelog statea
+            // 🔥 KLJUČNO: reset cijelog statea (uključujući interest_id)
             setForm({
                 date: "",
                 start: "",
                 end: "",
-                capacity: 1,
+                capacity: 2,
                 teaching_type: "Online",
+                lesson_type: "1na1",
+                interest_id: "",
                 price: "",
                 location: ""
             });
@@ -163,6 +194,61 @@ export default function Calendar() {
             await loadBookings();
         } catch (err) {
             setError(err.response?.data?.message || "Greška pri otkazivanju termina.");
+        }
+    };
+
+    const openDetails = async (slotId) => {
+        setDetailsLoading(true);
+        setDetailsOpen(true);
+
+        try {
+            const res = await api.get(`/calendar/slots/${slotId}/details`);
+            setSlotDetails(res.data);
+        } catch (err) {
+            setError("Greška pri dohvaćanju detalja termina.");
+            setDetailsOpen(false);
+        } finally {
+            setDetailsLoading(false);
+        }
+    };
+
+    const openBookingDetails = async (bookingId) => {
+        setBookingDetailsLoading(true);
+        setBookingDetailsOpen(true);
+
+        try {
+            const res = await api.get(`/calendar/bookings/${bookingId}/details`);
+            setBookingDetails(res.data.booking);
+            setNoteDraft(res.data.booking.note || "");
+        } catch (err) {
+            setError("Greška pri dohvaćanju detalja rezervacije.");
+            setBookingDetailsOpen(false);
+        } finally {
+            setBookingDetailsLoading(false);
+        }
+    };
+
+    const saveNote = async () => {
+        if (!bookingDetails) return;
+
+        setNoteSaving(true);
+        try {
+            const res = await api.patch(
+                `/calendar/bookings/${bookingDetails.id}/note`,
+                { note: noteDraft }
+            );
+
+            // update lokalnog statea
+            setBookingDetails(prev => ({
+                ...prev,
+                note: res.data.note
+            }));
+
+            showSuccess("Napomena spremljena ✓");
+        } catch (err) {
+            setError("Greška pri spremanju napomene.");
+        } finally {
+            setNoteSaving(false);
         }
     };
 
@@ -313,6 +399,11 @@ export default function Calendar() {
     const hoveredData = user?.is_professor 
         ? (hoveredKey && slotCountByDay[hoveredKey])
         : (hoveredKey && bookingCountByDay[hoveredKey]);
+
+    const isOngoing = (start, end) => {
+        const now = new Date();
+        return now >= new Date(start) && now <= new Date(end);
+    };
 
     return (
         <div className={styles.page}>
@@ -515,16 +606,59 @@ export default function Calendar() {
                                         />
                                     </div>
                                     <div className={styles.field}>
-                                        <label>👥 Kapacitet (broj studenata)</label>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            max="50"
-                                            value={form.capacity}
-                                            onChange={(e) => setForm(prev => ({ ...prev, capacity: e.target.value }))}
-                                        />
+                                        <label>👥 Tip predavanja</label>
+                                        <select
+                                            value={form.lesson_type}
+                                            onChange={(e) =>
+                                                setForm(prev => ({
+                                                    ...prev,
+                                                    lesson_type: e.target.value,
+                                                    capacity: e.target.value === "1na1" ? 1 : 2,
+                                                    interest_id: ""
+                                                }))
+                                            }
+                                        >
+                                            <option value="1na1">1 na 1</option>
+                                            <option value="Grupno">Grupno</option>
+                                        </select>
                                     </div>
-
+                                    {form.lesson_type === "Grupno" && (
+                                        <div className={styles.field}>
+                                            <label>👥 Kapacitet</label>
+                                            <input
+                                                type="number"
+                                                min="2"
+                                                value={form.capacity}
+                                                onChange={(e) =>
+                                                    setForm(prev => ({ ...prev, capacity: e.target.value }))
+                                                }
+                                            />
+                                        </div>
+                                    )}
+                                    {form.lesson_type === "Grupno" && (
+                                        <div className={styles.field}>
+                                            <label>📘 Predmet</label>
+                                            {interests.length === 0 ? (
+                                                <div className={styles.formHint}>
+                                                    Nemate dodanih predmeta
+                                                </div>
+                                            ) : (
+                                                <select
+                                                    value={form.interest_id}
+                                                    onChange={(e) =>
+                                                        setForm(prev => ({ ...prev, interest_id: e.target.value }))
+                                                    }
+                                                >
+                                                    <option value="">Odaberite predmet</option>
+                                                    {interests.map(i => (
+                                                        <option key={i.id} value={i.id}>
+                                                            {i.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            )}
+                                        </div>
+                                    )}
                                     <div className={styles.field}>
                                         <label>🎓 Način predavanja</label>
                                         <select
@@ -614,8 +748,13 @@ export default function Calendar() {
                                     </div>
                                 ) : (
                                     selectedDaySlots.map(slot => (
-                                        <div key={slot.id} className={styles.slotCard}>
-                                            <div className={styles.slotMain}>
+                                        <div
+                                            key={slot.id}
+                                            className={`${styles.slotCard} ${
+                                                isOngoing(slot.start_time, slot.end_time) ? styles.ongoing : ""
+                                            }`}
+                                        >
+                                        <div className={styles.slotMain}>
                                                 <div className={styles.slotDate}>
                                                     {formatShortDate(slot.start_time)}
                                                 </div>
@@ -626,23 +765,47 @@ export default function Calendar() {
                                                     🎓 {slot.teaching_type} · 💰 {slot.price} €
                                                     {slot.location && <div>📍 {slot.location}</div>}
                                                 </div>
+                                                <div className={styles.slotMetaInfo}>
+                                                    👥 {slot.lesson_type}
+                                                    {slot.interest_name && <div>📘 {slot.interest_name}</div>}
+                                                </div>
 
                                             </div>
-                                            <div className={styles.slotMeta}>
-                                                <div className={`${styles.capacityBadge} ${Number(slot.booked_count) >= Number(slot.capacity) ? styles.full : ""}`}>
-                                                    👥 {slot.booked_count || 0} / {slot.capacity}
-                                                </div>
-                                                {Number(slot.booked_count || 0) === 0 ? (
+                                            {!isOngoing(slot.start_time, slot.end_time) && (
+                                                <>
+                                                    <div className={styles.slotMeta}>
+                                                        <div className={`${styles.capacityBadge} ${Number(slot.booked_count) >= Number(slot.capacity) ? styles.full : ""}`}>
+                                                            👥 {slot.booked_count || 0} / {slot.capacity}
+                                                        </div>
+                                                            {Number(slot.booked_count || 0) === 0 ? (
+                                                                <button
+                                                                    className={styles.deleteBtn}
+                                                                    onClick={() => handleDelete(slot.id)}
+                                                                >
+                                                                    🗑️ Obriši
+                                                                </button>
+
+                                                            ) : (
+                                                                <button
+                                                                    className={styles.detailsBtn}
+                                                                    onClick={() => openDetails(slot.id)}
+                                                                >
+                                                                    📋 Detalji
+                                                                </button>
+                                                            )}
+                                                    </div>
+                                                </>
+                                            )}
+
+                                            {isOngoing(slot.start_time, slot.end_time) &&
+                                                slot.teaching_type === "Online" && (
                                                     <button
-                                                        className={styles.deleteBtn}
-                                                        onClick={() => handleDelete(slot.id)}
+                                                        className={styles.joinBtn}
+                                                        onClick={() => navigate(`/video/${slot.id}`)}
                                                     >
-                                                        🗑️ Obriši
+                                                        🎥 Pridruži se
                                                     </button>
-                                                ) : (
-                                                    <span className={styles.lockedBadge}>🔒</span>
                                                 )}
-                                            </div>
                                         </div>
                                     ))
                                 )}
@@ -657,8 +820,15 @@ export default function Calendar() {
                                     </div>
                                 ) : (
                                     selectedDayBookings.map(booking => (
-                                        <div key={booking.id} className={styles.slotCard}>
-                                            <div className={styles.slotMain}>
+                                        <div
+                                            key={booking.id}
+                                            className={`${styles.slotCard} ${
+                                                isOngoing(booking.start_time, booking.end_time)
+                                                    ? styles.ongoing
+                                                    : ""
+                                            }`}
+                                        >
+                                        <div className={styles.slotMain}>
                                                 <div className={styles.slotDate}>
                                                     {formatShortDate(booking.start_time)}
                                                 </div>
@@ -673,16 +843,38 @@ export default function Calendar() {
                                                     {booking.interest_name && (
                                                         <div>📘 {booking.interest_name}</div>
                                                     )}
+                                                    👥 {booking.lesson_type}
                                                 </div>
                                             </div>
-                                            <div className={styles.slotMeta}>
-                                                <button
-                                                    className={styles.cancelBtn}
-                                                    onClick={() => handleCancel(booking.slot_id)}
-                                                >
-                                                    ❌ Otkaži
-                                                </button>
-                                            </div>
+                                            {!isOngoing(booking.start_time, booking.end_time) && (
+                                                <>
+                                                    <div className={styles.slotMeta}>
+                                                        <button
+                                                            className={styles.cancelBtn}
+                                                            onClick={() => handleCancel(booking.slot_id)}
+                                                        >
+                                                            ❌ Otkaži
+                                                        </button>
+
+                                                        <button
+                                                            className={styles.detailsBtn}
+                                                            onClick={() => openBookingDetails(booking.id)}
+                                                        >
+                                                            📋 Detalji
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )}
+                                            {isOngoing(booking.start_time, booking.end_time) &&
+                                                booking.teaching_type === "Online" && (
+                                                    <button
+                                                        className={styles.joinBtn}
+                                                        onClick={() => navigate(`/video/${booking.slot_id}`)}
+                                                    >
+                                                        🎥 Pridruži se
+                                                    </button>
+                                                )}
+
                                         </div>
                                     ))
                                 )}
@@ -691,6 +883,142 @@ export default function Calendar() {
                     </div>
                 </div>
             </div>
+            {detailsOpen && (
+                <div className={styles.modalOverlay} onClick={() => setDetailsOpen(false)}>
+                    <div className={styles.modal} onClick={e => e.stopPropagation()}>
+                        {detailsLoading ? (
+                            <p>Učitavanje...</p>
+                        ) : slotDetails && (
+                            <>
+                                <h2>📋 Detalji termina</h2>
+
+                                <div className={styles.modalSection}>
+                                    <p><strong>📅 Datum:</strong> {formatFullDate(slotDetails.slot.start_time)}</p>
+                                    <p><strong>🕐 Vrijeme:</strong> {formatTime(slotDetails.slot.start_time)} – {formatTime(slotDetails.slot.end_time)}</p>
+                                    <p><strong>🎓 Tip:</strong> {slotDetails.slot.lesson_type}</p>
+                                    <p><strong>💻 Način:</strong> {slotDetails.slot.teaching_type}</p>
+                                    <p><strong>💰 Cijena:</strong> {slotDetails.slot.price} €</p>
+                                    {slotDetails.slot.location && (
+                                        <p><strong>📍 Lokacija:</strong> {slotDetails.slot.location}</p>
+                                    )}
+                                    {slotDetails.slot.interest_name && (
+                                        <p><strong>📘 Predmet:</strong> {slotDetails.slot.interest_name}</p>
+                                    )}
+                                </div>
+
+                                <div className={styles.modalSection}>
+                                    <h3>👥 Studenti ({slotDetails.students.length}):</h3>
+
+                                    {slotDetails.students.length === 0 ? (
+                                        <p>Nema rezervacija.</p>
+                                    ) : (
+                                        slotDetails.students.map(s => (
+                                            <div key={s.id} className={styles.studentItem}>
+                                                <strong>{s.name} {s.surname}</strong>
+                                                {s.note && (
+                                                    <div className={styles.note}>
+                                                        💬 {s.note}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+
+                                <button
+                                    className={styles.closeBtn}
+                                    onClick={() => setDetailsOpen(false)}
+                                >
+                                    Zatvori
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
+            {bookingDetailsOpen && (
+                <div className={styles.modalOverlay} onClick={() => setBookingDetailsOpen(false)}>
+                    <div className={styles.modal} onClick={e => e.stopPropagation()}>
+                        {bookingDetailsLoading ? (
+                            <p>Učitavanje...</p>
+                        ) : bookingDetails && (
+                            <>
+                                <h2>📋 Detalji rezervacije</h2>
+
+                                <div className={styles.modalSection}>
+                                    <p>
+                                        <strong>📅 Datum:</strong>{" "}
+                                        {formatFullDate(bookingDetails.start_time)}
+                                    </p>
+                                    <p>
+                                        <strong>🕐 Vrijeme:</strong>{" "}
+                                        {formatTime(bookingDetails.start_time)} –{" "}
+                                        {formatTime(bookingDetails.end_time)}
+                                    </p>
+                                    <p>
+                                        <strong>👨‍🏫 Profesor:</strong>{" "}
+                                        {bookingDetails.professor_name}{" "}
+                                        {bookingDetails.professor_surname}
+                                    </p>
+                                    <p>
+                                        <strong>🎓 Tip:</strong>{" "}
+                                        {bookingDetails.lesson_type}
+                                    </p>
+                                    <p>
+                                        <strong>💻 Način:</strong>{" "}
+                                        {bookingDetails.teaching_type}
+                                    </p>
+                                    <p>
+                                        <strong>💰 Cijena:</strong>{" "}
+                                        {bookingDetails.price} €
+                                    </p>
+
+                                    {bookingDetails.location && (
+                                        <p>
+                                            <strong>📍 Lokacija:</strong>{" "}
+                                            {bookingDetails.location}
+                                        </p>
+                                    )}
+
+                                    {bookingDetails.interest_name && (
+                                        <p>
+                                            <strong>📘 Predmet:</strong>{" "}
+                                            {bookingDetails.interest_name}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className={styles.modalSection}>
+                                    <h3>💬 Vaša napomena</h3>
+
+                                    <textarea
+                                        className={styles.noteTextarea}
+                                        value={noteDraft}
+                                        onChange={(e) => setNoteDraft(e.target.value)}
+                                        placeholder="Unesite napomenu za instruktora..."
+                                        maxLength={500}
+                                    />
+
+                                    <button
+                                        className={styles.saveBtn}
+                                        onClick={saveNote}
+                                        disabled={noteSaving}
+                                    >
+                                        {noteSaving ? "Spremanje..." : "💾 Spremi napomenu"}
+                                    </button>
+                                </div>
+
+                                <button
+                                    className={styles.closeBtn}
+                                    onClick={() => setBookingDetailsOpen(false)}
+                                >
+                                    Zatvori
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

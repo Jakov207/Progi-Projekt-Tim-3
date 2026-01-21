@@ -57,6 +57,13 @@ export default function InstructorProfile() {
         }
     };
 
+    // Minimalna cijena među svim dostupnim terminima instruktora
+    const minSlotPrice = slots
+        .filter(s => Number(s.booked_count || 0) < Number(s.capacity)) // samo dostupni termini
+        .map(s => s.price)
+        .filter(p => p != null) // ukloni null/undefined
+        .reduce((min, price) => (min === null || price < min ? price : min), null);
+
     const handleBook = async (slotId, note, interest_id) => {
         setBookingError("");
         setBookingMessage("");
@@ -158,8 +165,15 @@ export default function InstructorProfile() {
         return acc;
     }, {});
 
-    const availableSlots = slots.filter(s => Number(s.booked_count || 0) < Number(s.capacity));
-    
+    const availableSlots = slots.filter(s => {
+        const hasFreeSpace = Number(s.booked_count || 0) < Number(s.capacity);
+
+        // ako je student već rezervirao → sakrij samo njemu
+        if (s.is_booked_by_me) return false;
+
+        return hasFreeSpace;
+    });
+
     const filteredSlots = selectedDate
         ? availableSlots.filter(s => dateKey(s.start_time) === selectedDate)
         : availableSlots;
@@ -219,26 +233,37 @@ export default function InstructorProfile() {
                         <div className={styles.modalInfo}>
                             <p>📅 {formatFullDate(selectedSlot.start_time)}</p>
                             <p>🕐 {formatTime(selectedSlot.start_time)} – {formatTime(selectedSlot.end_time)}</p>
-                            <p>🎓 {selectedSlot.teaching_type}</p>
-                            <p>💰 {selectedSlot.price}€</p>
 
+                            {selectedSlot.lesson_type === "1na1" ? (
+                                <p>👤 {selectedSlot.lesson_type}</p>
+                            ):(
+                                <p>👥 {selectedSlot.lesson_type}</p>
+                            )}
+                            {selectedSlot.lesson_type === "Grupno" && selectedSlot.interest_name && (
+                                <p>📘 {selectedSlot.interest_name}</p>
+                            )}
+                            <p>🎓 {selectedSlot.teaching_type}</p>
                             {selectedSlot.teaching_type === "Uživo" && selectedSlot.location && (
                                 <p>📍 {selectedSlot.location}</p>
                             )}
+
+                            <p>💰 {selectedSlot.price}€</p>
                         </div>
 
-                        <label>Predmet</label>
-                        <select
-                            value={selectedInterest}
-                            onChange={(e) => setSelectedInterest(e.target.value)}
-                        >
-                            <option value="">-- Odaberi predmet --</option>
-                            {instructor.interests.map(i => (
-                                <option key={i.id} value={i.id}>
-                                    {i.name}
-                                </option>
-                            ))}
-                        </select>
+                        {selectedSlot.lesson_type === "1na1" && (
+                            <>
+                                <label>Predmet</label>
+                                <select
+                                    value={selectedInterest}
+                                    onChange={(e) => setSelectedInterest(e.target.value)}
+                                >
+                                    <option value="">-- Odaberi predmet --</option>
+                                    {instructor.interests.map(i => (
+                                        <option key={i.id} value={i.id}>{i.name}</option>
+                                    ))}
+                                </select>
+                            </>
+                        )}
 
                         <label>Bilješka za instruktora</label>
                         <textarea
@@ -263,7 +288,7 @@ export default function InstructorProfile() {
                                     setNote("");
                                     setSelectedInterest("");
                                 }}
-                                disabled={!selectedInterest}
+                                disabled={!selectedInterest && selectedSlot.lesson_type === "1na1"}
                             >
                                 Rezerviraj
                             </button>
@@ -312,9 +337,9 @@ export default function InstructorProfile() {
                     </div>
 
                     <div className={styles.statsRow}>
-                        {instructor.price && (
+                        {minSlotPrice != null && (
                             <div className={styles.statItem}>
-                                <span className={styles.statValue}>{instructor.price}€</span>
+                                <span className={styles.statValue}>Od {minSlotPrice}€</span>
                                 <span className={styles.statLabel}>po satu</span>
                             </div>
                         )}
@@ -366,7 +391,6 @@ export default function InstructorProfile() {
                                 <iframe
                                     src={`https://www.youtube.com/embed/${youtubeId}`}
                                     title="YouTube video"
-                                    frameBorder="0"
                                     allowFullScreen
                                 />
                             </div>
@@ -527,11 +551,23 @@ export default function InstructorProfile() {
                                                             {slot.teaching_type === "Online" && "💻 Online"}
                                                             {slot.teaching_type === "Uživo" && "🏫 Uživo"}
                                                         </span>
+
                                                             {slot.price != null && (
                                                                 <span className={styles.slotPrice}>
                                                                 💰 {slot.price}€
                                                                 </span>
                                                             )}
+                                                    </div>
+                                                    <div className={styles.slotMeta}>
+                                                        <span className={styles.slotLessonType}>
+                                                            🎓 {slot.lesson_type === "1na1" ? "1 na 1" : "Grupno"}
+                                                        </span>
+
+                                                        {slot.lesson_type === "Grupno" && slot.interest_name && (
+                                                            <span className={styles.slotInterest}>
+                                                                📘 {slot.interest_name}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                     <div className={styles.slotCapacity}>
                                                         👥 {Number(slot.capacity) - Number(slot.booked_count || 0)} mjesta preostalo

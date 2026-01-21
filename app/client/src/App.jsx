@@ -20,6 +20,7 @@ import Calendar from "./pages/Calendar.jsx";
 import Quizzes from "./pages/Quizzes.jsx";
 import CreateQuiz from "./pages/CreateQuiz.jsx";
 import TakeQuiz from "./pages/TakeQuiz.jsx";
+import Gugugaga from "./pages/GuguGaga.jsx";
 
 
 
@@ -34,7 +35,7 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/interests-register" element={<Interests />} />
-
+            <Route path="/secret/gugu/gaga" element={<Gugugaga/> } />
             {/* Rute koje KORISTE MainLayout (s navigacijom) */}
             <Route element={<MainLayout />}>
                 <Route path="/" element={<Home />} />
