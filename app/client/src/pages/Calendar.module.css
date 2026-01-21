@@ -722,6 +722,26 @@
     cursor: not-allowed;
 }
 
+.ongoing {
+    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+    border-left: 6px solid #0097a7;
+}
+
+.joinBtn {
+    background: #1976d2;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s ease;
+}
+
+.joinBtn:hover {
+    background: #0d47a1;
+}
+
 /* Loading State */
 .loadingState {
     text-align: center;

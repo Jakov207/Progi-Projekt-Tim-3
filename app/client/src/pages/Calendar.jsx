@@ -90,7 +90,6 @@ export default function Calendar() {
         }
     }, [user]);
 
-
     const showSuccess = (msg) => {
         setSuccess(msg);
         setTimeout(() => setSuccess(""), 3000);
@@ -400,6 +399,11 @@ export default function Calendar() {
     const hoveredData = user?.is_professor 
         ? (hoveredKey && slotCountByDay[hoveredKey])
         : (hoveredKey && bookingCountByDay[hoveredKey]);
+
+    const isOngoing = (start, end) => {
+        const now = new Date();
+        return now >= new Date(start) && now <= new Date(end);
+    };
 
     return (
         <div className={styles.page}>
@@ -744,8 +748,13 @@ export default function Calendar() {
                                     </div>
                                 ) : (
                                     selectedDaySlots.map(slot => (
-                                        <div key={slot.id} className={styles.slotCard}>
-                                            <div className={styles.slotMain}>
+                                        <div
+                                            key={slot.id}
+                                            className={`${styles.slotCard} ${
+                                                isOngoing(slot.start_time, slot.end_time) ? styles.ongoing : ""
+                                            }`}
+                                        >
+                                        <div className={styles.slotMain}>
                                                 <div className={styles.slotDate}>
                                                     {formatShortDate(slot.start_time)}
                                                 </div>
@@ -762,26 +771,41 @@ export default function Calendar() {
                                                 </div>
 
                                             </div>
-                                            <div className={styles.slotMeta}>
-                                                <div className={`${styles.capacityBadge} ${Number(slot.booked_count) >= Number(slot.capacity) ? styles.full : ""}`}>
-                                                    👥 {slot.booked_count || 0} / {slot.capacity}
-                                                </div>
-                                                {Number(slot.booked_count || 0) === 0 ? (
+                                            {!isOngoing(slot.start_time, slot.end_time) && (
+                                                <>
+                                                    <div className={styles.slotMeta}>
+                                                        <div className={`${styles.capacityBadge} ${Number(slot.booked_count) >= Number(slot.capacity) ? styles.full : ""}`}>
+                                                            👥 {slot.booked_count || 0} / {slot.capacity}
+                                                        </div>
+                                                            {Number(slot.booked_count || 0) === 0 ? (
+                                                                <button
+                                                                    className={styles.deleteBtn}
+                                                                    onClick={() => handleDelete(slot.id)}
+                                                                >
+                                                                    🗑️ Obriši
+                                                                </button>
+
+                                                            ) : (
+                                                                <button
+                                                                    className={styles.detailsBtn}
+                                                                    onClick={() => openDetails(slot.id)}
+                                                                >
+                                                                    📋 Detalji
+                                                                </button>
+                                                            )}
+                                                    </div>
+                                                </>
+                                            )}
+
+                                            {isOngoing(slot.start_time, slot.end_time) &&
+                                                slot.teaching_type === "Online" && (
                                                     <button
-                                                        className={styles.deleteBtn}
-                                                        onClick={() => handleDelete(slot.id)}
+                                                        className={styles.joinBtn}
+                                                        onClick={() => navigate(`/video/${slot.id}`)}
                                                     >
-                                                        🗑️ Obriši
-                                                    </button>
-                                                ) : (
-                                                    <button
-                                                        className={styles.detailsBtn}
-                                                        onClick={() => openDetails(slot.id)}
-                                                    >
-                                                        📋 Detalji
+                                                        🎥 Pridruži se
                                                     </button>
                                                 )}
-                                            </div>
                                         </div>
                                     ))
                                 )}
@@ -796,8 +820,15 @@ export default function Calendar() {
                                     </div>
                                 ) : (
                                     selectedDayBookings.map(booking => (
-                                        <div key={booking.id} className={styles.slotCard}>
-                                            <div className={styles.slotMain}>
+                                        <div
+                                            key={booking.id}
+                                            className={`${styles.slotCard} ${
+                                                isOngoing(booking.start_time, booking.end_time)
+                                                    ? styles.ongoing
+                                                    : ""
+                                            }`}
+                                        >
+                                        <div className={styles.slotMain}>
                                                 <div className={styles.slotDate}>
                                                     {formatShortDate(booking.start_time)}
                                                 </div>
@@ -815,21 +846,35 @@ export default function Calendar() {
                                                     👥 {booking.lesson_type}
                                                 </div>
                                             </div>
-                                            <div className={styles.slotMeta}>
-                                                <button
-                                                    className={styles.cancelBtn}
-                                                    onClick={() => handleCancel(booking.slot_id)}
-                                                >
-                                                    ❌ Otkaži
-                                                </button>
+                                            {!isOngoing(booking.start_time, booking.end_time) && (
+                                                <>
+                                                    <div className={styles.slotMeta}>
+                                                        <button
+                                                            className={styles.cancelBtn}
+                                                            onClick={() => handleCancel(booking.slot_id)}
+                                                        >
+                                                            ❌ Otkaži
+                                                        </button>
 
-                                                <button
-                                                    className={styles.detailsBtn}
-                                                    onClick={() => openBookingDetails(booking.id)}
-                                                >
-                                                    📋 Detalji
-                                                </button>
-                                            </div>
+                                                        <button
+                                                            className={styles.detailsBtn}
+                                                            onClick={() => openBookingDetails(booking.id)}
+                                                        >
+                                                            📋 Detalji
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )}
+                                            {isOngoing(booking.start_time, booking.end_time) &&
+                                                booking.teaching_type === "Online" && (
+                                                    <button
+                                                        className={styles.joinBtn}
+                                                        onClick={() => navigate(`/video/${booking.slot_id}`)}
+                                                    >
+                                                        🎥 Pridruži se
+                                                    </button>
+                                                )}
+
                                         </div>
                                     ))
                                 )}
