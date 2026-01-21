@@ -140,3 +140,6 @@ vite.config.ts.timestamp-*
 
 #.idea folder
 .idea/
+
+# User profile pictures
+app/server/uploads/profiles/

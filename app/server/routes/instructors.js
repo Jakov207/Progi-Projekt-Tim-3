@@ -12,7 +12,7 @@ router.get("/", async (req, res) => {
         } = req.query;
 
         let values = [];
-        let where = ["u.is_professor = true"];
+        let where = ["u.is_professor = true", "p.is_published = true"];
 
         if (search) {
             values.push(`%${search}%`);
@@ -26,8 +26,22 @@ router.get("/", async (req, res) => {
 
         if (max_price) {
             values.push(max_price);
-            where.push(`p.price <= $${values.length}`);
+            where.push(`
+            EXISTS (
+                SELECT 1
+                FROM professor_slots ps2
+                WHERE ps2.professor_id = u.id
+                  AND ps2.start_time >= NOW()
+                  AND ps2.price <= $${values.length}
+                  AND (
+                      SELECT COUNT(*)
+                      FROM professor_slot_bookings b
+                      WHERE b.slot_id = ps2.id
+                  ) < ps2.capacity
+            )
+        `);
         }
+
 
         if (interests) {
             values.push(interests.split(","));
@@ -48,12 +62,25 @@ router.get("/", async (req, res) => {
                 u.surname,
                 u.profile_picture,
                 p.teaching_type,
-                p.price,
                 p.city,
-                p.biography
+                p.biography,
+                MIN(
+                        CASE
+                            WHEN ps.start_time >= NOW()
+                                AND (
+                                        SELECT COUNT(*)
+                                        FROM professor_slot_bookings b
+                                        WHERE b.slot_id = ps.id
+                                    ) < ps.capacity
+                                THEN ps.price
+                            ELSE NULL
+                            END
+                ) AS min_price
             FROM users u
-            JOIN professors p ON p.user_id = u.id
+                     JOIN professors p ON p.user_id = u.id
+                     LEFT JOIN professor_slots ps ON ps.professor_id = u.id
             WHERE ${where.join(" AND ")}
+            GROUP BY u.id, p.teaching_type, p.city, p.biography
             ORDER BY u.surname
         `;
 
@@ -78,12 +105,16 @@ router.get("/:id", async (req, res) => {
                 u.profile_picture,
                 p.city,
                 p.teaching,
-                p.price,
                 p.teaching_type,
                 p.biography,
                 p.reference,
                 p.video_url,
-                ARRAY_AGG(i.name) FILTER (WHERE i.name IS NOT NULL) AS interests
+                ARRAY_AGG(
+                        json_build_object(
+                                'id', i.id,
+                                'name', i.name
+                        )
+                ) FILTER (WHERE i.id IS NOT NULL) AS interests
             FROM users u
                      JOIN professors p ON p.user_id = u.id
                      LEFT JOIN user_interests ui ON ui.user_id = u.id
@@ -91,7 +122,6 @@ router.get("/:id", async (req, res) => {
             WHERE u.id = $1 AND u.is_professor = true
             GROUP BY u.id, p.user_id
         `;
-
 
         const result = await pool.query(query, [id]);
 

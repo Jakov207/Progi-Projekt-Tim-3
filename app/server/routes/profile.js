@@ -17,7 +17,7 @@ router.get('/', verifyToken, async (req, res) => {
 
         if(user.is_professor){
             const resP = await pool.query(
-                'SELECT sex, city, teaching, date_of_birth, biography, video_url, reference, teaching_type, price, location FROM professors WHERE user_id = $1',
+                'SELECT sex, city, teaching, date_of_birth, biography, video_url, reference, teaching_type, is_published FROM professors WHERE user_id = $1',
                 [req.user.id]
             );
             profile = resP.rows[0] ?? {};
@@ -182,9 +182,7 @@ router.post("/public", verifyToken, async (req, res) => {
             biography,
             video_url,
             reference,
-            teaching_type,
-            price,
-            location
+            teaching_type
         } = req.body;
 
         await pool.query(`
@@ -192,17 +190,13 @@ router.post("/public", verifyToken, async (req, res) => {
             SET biography = $1,
                 video_url = $2,
                 reference = $3,
-                teaching_type = $4,
-                price = $5,
-                location = $6
-            WHERE user_id = $7
+                teaching_type = $4
+            WHERE user_id = $5
         `, [
             biography,
             video_url,
             reference,
             teaching_type,
-            price,
-            location,
             req.user.id
         ]);
 
@@ -210,6 +204,26 @@ router.post("/public", verifyToken, async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Greška kod spremanja javnog profila" });
+    }
+});
+
+// Toggle public profile
+router.post("/public/publish", verifyToken, async (req, res) => {
+    try {
+        const { publish } = req.body; // očekuje true/false
+        if (typeof publish !== "boolean") {
+            return res.status(400).json({ message: "Neispravan format" });
+        }
+
+        await pool.query(
+            "UPDATE professors SET is_published = $1 WHERE user_id = $2",
+            [publish, req.user.id]
+        );
+
+        res.json({ message: publish ? "Profil je objavljen" : "Profil je skriven", is_published: publish });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Greška kod ažuriranja publikacije profila" });
     }
 });
 

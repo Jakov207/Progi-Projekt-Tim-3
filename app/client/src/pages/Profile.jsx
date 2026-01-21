@@ -10,6 +10,7 @@ export function Profile() {
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+    const [saving, setSaving] = useState(false);
 
     const [interests, setInterests] = useState([]);
 
@@ -44,17 +45,24 @@ export function Profile() {
         );
     };
 
+    const showMessage = (msg) => {
+        setMessage(msg);
+        setTimeout(() => setMessage(""), 4000);
+    };
+
     const saveInterests = async () => {
         setError("");
-        setMessage("");
+        setSaving(true);
 
         try {
             await axios.post("/profile/interests", {
                 interests: interests.map(i => interestMap[i])
             });
-            setMessage("Interesi uspješno spremljeni!");
+            showMessage("Interesi uspješno spremljeni! ✓");
         } catch {
             setError("Greška kod spremanja interesa");
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -75,9 +83,7 @@ export function Profile() {
         biography: "",
         video_url: "",
         reference: "",
-        teaching_type: "",
-        price: "",
-        location: ""
+        teaching_type: ""
     });
 
     useEffect(() => {
@@ -103,7 +109,7 @@ export function Profile() {
                 email,
                 is_professor,
                 profile_picture,
-                date_of_birth: formatDateForInput(profile.date_of_birth), // ✅ FIX
+                date_of_birth: formatDateForInput(profile.date_of_birth),
                 sex: profile.sex || "",
                 city: profile.city || "",
                 education: profile.education || "",
@@ -115,8 +121,7 @@ export function Profile() {
                     video_url: profile.video_url || "",
                     reference: profile.reference || "",
                     teaching_type: profile.teaching_type || "",
-                    price: profile.price || "",
-                    location: profile.location || ""
+                    is_published: profile.is_published || false
                 });
             }
 
@@ -134,10 +139,11 @@ export function Profile() {
     async function saveChanges(e) {
         e.preventDefault();
         setError("");
-        setMessage("");
+        setSaving(true);
 
         if (!form.name || !form.surname || !form.date_of_birth) {
             setError("Molimo ispunite polja Ime, Prezime i Datum rođenja.");
+            setSaving(false);
             return;
         }
 
@@ -153,203 +159,286 @@ export function Profile() {
                 education: form.education,
                 teaching: form.teaching
             });
-            setMessage("Promjene uspješno spremljene!");
+            showMessage("Promjene uspješno spremljene! ✓");
         } catch (err) {
             setError(err.response?.data?.message || "Greška kod spremanja");
+        } finally {
+            setSaving(false);
         }
     }
 
     const savePublicProfile = async () => {
         setError("");
-        setMessage("");
+        setSaving(true);
 
         try {
             await axios.post("/profile/public", publicProfile);
-            setMessage("Javni profil spremljen!");
+            showMessage("Javni profil spremljen! ✓");
         } catch {
             setError("Greška kod spremanja javnog profila");
+        } finally {
+            setSaving(false);
         }
     };
 
     const handleImageUpdated = (newFilename) => {
         setForm(prev => ({ ...prev, profile_picture: newFilename }));
+        showMessage("Slika profila ažurirana! ✓");
     };
 
-    if (loading) return <p style={{textAlign: "center", marginTop: 40}}>Učitavanje…</p>;
+    const tabs = [
+        { id: "osobni", icon: "👤", label: "Osobni podaci", desc: "Osnovne informacije" },
+        { id: "interesi", icon: "⭐", label: "Interesi", desc: "Područja učenja" },
+        ...(form.is_professor ? [{ id: "javni", icon: "🌍", label: "Javni profil", desc: "Vidljivo drugima" }] : []),
+        { id: "sigurnost", icon: "🔒", label: "Sigurnost", desc: "Lozinka i pristup" },
+        { id: "privatnost", icon: "🛡️", label: "Privatnost", desc: "Postavke privatnosti" }
+    ];
+
+    if (loading) {
+        return (
+            <div className={styles.loadingPage}>
+                <div className={styles.spinner}></div>
+                <p>Učitavanje profila...</p>
+            </div>
+        );
+    }
 
     return (
-        <div className={styles.pageWrapper}>
-            <main className={styles.mainContainer}>
+        <div className={styles.page}>
+            {/* Success Banner */}
+            {message && (
+                <div className={styles.successBanner}>
+                    {message}
+                </div>
+            )}
 
+            {/* Error Banner */}
+            {error && (
+                <div className={styles.errorBanner}>
+                    ⚠️ {error}
+                    <button onClick={() => setError("")} className={styles.dismissBtn}>×</button>
+                </div>
+            )}
+
+            <div className={styles.container}>
+                {/* Sidebar */}
                 <aside className={styles.sidebar}>
-                    <button className={activeTab === "osobni" ? styles.active : ""} onClick={() => setActiveTab("osobni")}>
-                        👤 Osobni podaci
-                    </button>
-                    <button
-                        className={activeTab === "interesi" ? styles.active : ""}
-                        onClick={() => setActiveTab("interesi")}
-                    >
-                        ⭐ Osobni interesi
-                    </button>
-                    {form.is_professor && (
-                        <button
-                            className={activeTab === "javni" ? styles.active : ""}
-                            onClick={() => setActiveTab("javni")}
-                        >
-                            🌍 Javni profil
-                        </button>
-                    )}
-                    <button className={activeTab === "sigurnost" ? styles.active : ""} onClick={() => setActiveTab("sigurnost")}>
-                        🔒 Sigurnost
-                    </button>
-                    <button className={activeTab === "privatnost" ? styles.active : ""} onClick={() => setActiveTab("privatnost")}>
-                        🛡️ Privatnost
-                    </button>
+                    <div className={styles.sidebarHeader}>
+                        <div className={styles.avatarLarge} onClick={() => setIsImageModalOpen(true)}>
+                            {form.profile_picture ? (
+                                <img src={getImageUrl(form.profile_picture)} alt="Profil" />
+                            ) : (
+                                <div className={styles.avatarPlaceholder}>
+                                    <span>{form.name?.[0]}{form.surname?.[0]}</span>
+                                </div>
+                            )}
+                            <div className={styles.avatarOverlay}>
+                                <span>📷</span>
+                            </div>
+                        </div>
+                        <h2>{form.name} {form.surname}</h2>
+                        <span className={styles.roleBadge}>
+                            {form.is_professor ? "👨‍🏫 Instruktor" : "🎓 Student"}
+                        </span>
+                    </div>
+
+                    <nav className={styles.tabNav}>
+                        {tabs.map(tab => (
+                            <button
+                                key={tab.id}
+                                className={`${styles.tabBtn} ${activeTab === tab.id ? styles.tabActive : ""}`}
+                                onClick={() => setActiveTab(tab.id)}
+                            >
+                                <span className={styles.tabIcon}>{tab.icon}</span>
+                                <div className={styles.tabText}>
+                                    <span className={styles.tabLabel}>{tab.label}</span>
+                                    <span className={styles.tabDesc}>{tab.desc}</span>
+                                </div>
+                            </button>
+                        ))}
+                    </nav>
                 </aside>
 
-                <section className={styles.content}>
+                {/* Content */}
+                <main className={styles.content}>
+                    {/* Osobni podaci */}
                     {activeTab === "osobni" && (
-                        <div className={styles.pageActive}>
-                            <h2>Tvoji osobni podaci</h2>
-
-                            <div className={styles.role}>
-                                {form.is_professor ? "Instruktor" : "Student"}
+                        <div className={styles.section}>
+                            <div className={styles.sectionHeader}>
+                                <h1>👤 Osobni podaci</h1>
+                                <p>Upravljajte svojim osnovnim informacijama</p>
                             </div>
 
-                            <form className={styles.editForm} onSubmit={saveChanges}>
-                                <div className={styles.formFields}>
-                                    <label>Ime</label>
-                                    <input value={form.name} onChange={e => updateField("name", e.target.value)}/>
+                            <form className={styles.form} onSubmit={saveChanges}>
+                                <div className={styles.formGrid}>
+                                    <div className={styles.field}>
+                                        <label>Ime</label>
+                                        <input 
+                                            value={form.name} 
+                                            onChange={e => updateField("name", e.target.value)}
+                                            placeholder="Vaše ime"
+                                        />
+                                    </div>
 
-                                    <label>Prezime</label>
-                                    <input value={form.surname} onChange={e => updateField("surname", e.target.value)}/>
+                                    <div className={styles.field}>
+                                        <label>Prezime</label>
+                                        <input 
+                                            value={form.surname} 
+                                            onChange={e => updateField("surname", e.target.value)}
+                                            placeholder="Vaše prezime"
+                                        />
+                                    </div>
 
-                                    <label>Datum rođenja</label>
-                                    <input type="date" value={form.date_of_birth}
-                                           onChange={e => updateField("date_of_birth", e.target.value)}/>
+                                    <div className={styles.field}>
+                                        <label>📅 Datum rođenja</label>
+                                        <input 
+                                            type="date" 
+                                            value={form.date_of_birth}
+                                            onChange={e => updateField("date_of_birth", e.target.value)}
+                                        />
+                                    </div>
 
-                                    <label>Spol</label>
-                                    <select
-                                        value={form.sex}
-                                        onChange={e => updateField("sex", e.target.value)}
-                                    >
-                                        <option value="M">Muško</option>
-                                        <option value="F">Žensko</option>
-                                        <option value="X">Ostalo / Ne želim reći</option>
-                                    </select>
+                                    <div className={styles.field}>
+                                        <label>⚧ Spol</label>
+                                        <select
+                                            value={form.sex}
+                                            onChange={e => updateField("sex", e.target.value)}
+                                        >
+                                            <option value="">Odaberi</option>
+                                            <option value="M">Muško</option>
+                                            <option value="F">Žensko</option>
+                                            <option value="X">Ostalo / Ne želim reći</option>
+                                        </select>
+                                    </div>
 
-
-                                    <label>Mjesto/Grad</label>
-                                    <input value={form.city} onChange={e => updateField("city", e.target.value)}/>
-
-
+                                    <div className={styles.field}>
+                                        <label>📍 Mjesto / Grad</label>
+                                        <input 
+                                            value={form.city} 
+                                            onChange={e => updateField("city", e.target.value)}
+                                            placeholder="npr. Zagreb"
+                                        />
+                                    </div>
 
                                     {!form.is_professor && (
-                                        <>
-                                            <label>Škola / Fakultet</label>
-                                            <input value={form.education}
-                                                   onChange={e => updateField("education", e.target.value)}/>
-                                        </>
+                                        <div className={styles.field}>
+                                            <label>🏫 Škola / Fakultet</label>
+                                            <input 
+                                                value={form.education}
+                                                onChange={e => updateField("education", e.target.value)}
+                                                placeholder="Naziv obrazovne ustanove"
+                                            />
+                                        </div>
                                     )}
 
                                     {form.is_professor && (
-                                        <>
-                                            <label>Edukacija / Stručna sprema</label>
-                                            <input value={form.teaching}
-                                                   onChange={e => updateField("teaching", e.target.value)}/>
-                                        </>
+                                        <div className={styles.field}>
+                                            <label>🎓 Edukacija / Stručna sprema</label>
+                                            <input 
+                                                value={form.teaching}
+                                                onChange={e => updateField("teaching", e.target.value)}
+                                                placeholder="npr. Magistar matematike"
+                                            />
+                                        </div>
                                     )}
-
-                                    <button type="submit" className={styles.saveBtn}>💾 Spremi promjene</button>
                                 </div>
 
-                                <div className={styles.photoSection}>
-                                    <div className={styles.profileCircle}>
-                                        {form.profile_picture ? (
-                                            <img src={getImageUrl(form.profile_picture)} alt="Profil" />
-                                        ) : (
-                                            <i className="fa-solid fa-user"></i>
-                                        )}
-                                    </div>
-                                    <button
-                                        className={styles.editPhotoBtn}
-                                        type="button"
-                                        onClick={() => setIsImageModalOpen(true)}
-                                    >
-                                        <i className="fa-solid fa-pen"></i> Uredi
-                                    </button>
-                                </div>
+                                <button type="submit" className={styles.saveBtn} disabled={saving}>
+                                    {saving ? (
+                                        <><span className={styles.btnSpinner}></span> Spremanje...</>
+                                    ) : (
+                                        "💾 Spremi promjene"
+                                    )}
+                                </button>
                             </form>
-
-                            {error && <p className={styles.error}>{error}</p>}
-                            {message && <p className={styles.success}>{message}</p>}
                         </div>
                     )}
 
+                    {/* Interesi */}
                     {activeTab === "interesi" && (
-                        <div className={styles.pageActive}>
-                            <h2>Osobni interesi</h2>
+                        <div className={styles.section}>
+                            <div className={styles.sectionHeader}>
+                                <h1>⭐ Osobni interesi</h1>
+                                <p>Odaberite predmete koji vas zanimaju</p>
+                            </div>
 
                             <div className={styles.interestsGrid}>
                                 {Object.entries(interestMap).map(([key, label]) => (
-                                    <label key={key} className={styles.interestCard}>
-                                        <input
-                                            type="checkbox"
-                                            checked={interests.includes(key)}
-                                            onChange={() => toggleInterest(key)}
-                                        />
-                                        <span>{label}</span>
-                                    </label>
+                                    <button
+                                        key={key}
+                                        type="button"
+                                        className={`${styles.interestCard} ${interests.includes(key) ? styles.interestActive : ""}`}
+                                        onClick={() => toggleInterest(key)}
+                                    >
+                                        <span className={styles.interestCheck}>
+                                            {interests.includes(key) ? "✓" : ""}
+                                        </span>
+                                        <span className={styles.interestLabel}>{label}</span>
+                                    </button>
                                 ))}
                             </div>
 
-                            <button
-                                className={styles.saveBtn}
-                                onClick={saveInterests}
-                            >
-                                💾 Spremi interese
-                            </button>
-                            {error && <p className={styles.error}>{error}</p>}
-                            {message && <p className={styles.success}>{message}</p>}
+                            <div className={styles.interestsFooter}>
+                                <span className={styles.selectedCount}>
+                                    {interests.length} odabrano
+                                </span>
+                                <button
+                                    className={styles.saveBtn}
+                                    onClick={saveInterests}
+                                    disabled={saving}
+                                >
+                                    {saving ? (
+                                        <><span className={styles.btnSpinner}></span> Spremanje...</>
+                                    ) : (
+                                        "💾 Spremi interese"
+                                    )}
+                                </button>
+                            </div>
                         </div>
                     )}
 
+                    {/* Javni profil */}
                     {activeTab === "javni" && (
-                        <div className={styles.pageActive}>
-                            <h2>Uredite izgled vašeg profila</h2>
+                        <div className={styles.section}>
+                            <div className={styles.sectionHeader}>
+                                <h1>🌍 Javni profil</h1>
+                                <p>Informacije vidljive studentima koji traže instruktore</p>
+                            </div>
 
                             <div className={styles.publicForm}>
+                                <div className={styles.field}>
+                                    <label>📝 Biografija</label>
+                                    <textarea
+                                        value={publicProfile.biography}
+                                        onChange={e => setPublicProfile(p => ({ ...p, biography: e.target.value }))}
+                                        placeholder="Opišite svoje iskustvo, pristup podučavanju i zašto ste dobar izbor za studente..."
+                                        rows={4}
+                                    />
+                                </div>
 
-                                <label>Biografija</label>
-                                <textarea
-                                    className={styles.textArea}
-                                    value={publicProfile.biography}
-                                    onChange={e =>
-                                        setPublicProfile(p => ({ ...p, biography: e.target.value }))
-                                    }
-                                />
+                                <div className={styles.field}>
+                                    <label>🎬 Video prezentacija (YouTube link)</label>
+                                    <input
+                                        value={publicProfile.video_url}
+                                        onChange={e => setPublicProfile(p => ({ ...p, video_url: e.target.value }))}
+                                        placeholder="https://www.youtube.com/watch?v=..."
+                                    />
+                                </div>
 
-                                <label>Video-biografija</label>
-                                <input
-                                    value={publicProfile.video_url}
-                                    onChange={e =>
-                                        setPublicProfile(p => ({ ...p, video_url: e.target.value }))
-                                    }
-                                    placeholder="https://www.youtube.com/..."
-                                />
+                                <div className={styles.field}>
+                                    <label>🏆 Reference</label>
+                                    <textarea
+                                        value={publicProfile.reference}
+                                        onChange={e => setPublicProfile(p => ({ ...p, reference: e.target.value }))}
+                                        placeholder="Navedite svoje kvalifikacije, certifikate, uspjehe učenika..."
+                                        rows={3}
+                                    />
+                                </div>
 
-                                <label>Reference</label>
-                                <textarea
-                                    className={styles.textArea}
-                                    value={publicProfile.reference}
-                                    onChange={e =>
-                                        setPublicProfile(p => ({ ...p, reference: e.target.value }))
-                                    }
-                                />
-
-                                <div className={styles.row}>
-                                    <div>
-                                        <label>Način predavanja</label>
+                                <div className={styles.formRow}>
+                                    {/* Način predavanja */}
+                                    <div className={styles.field}>
+                                        <label>💻 Način predavanja</label>
                                         <select
                                             value={publicProfile.teaching_type}
                                             onChange={e =>
@@ -357,61 +446,82 @@ export function Profile() {
                                             }
                                         >
                                             <option value="">Odaberi</option>
-                                            <option value="Uživo">Uživo</option>
-                                            <option value="Online">Online</option>
-                                            <option value="Uživo i Online">Uživo i Online</option>
+                                            <option value="Uživo">🏫 Uživo</option>
+                                            <option value="Online">💻 Online</option>
+                                            <option value="Uživo i Online">🏫💻 Uživo i Online</option>
                                         </select>
                                     </div>
 
-                                    <div>
-                                        <label>Cijena po satu</label>
-                                        <input
-                                            type="number"
-                                            value={publicProfile.price}
-                                            onChange={e =>
-                                                setPublicProfile(p => ({ ...p, price: e.target.value }))
-                                            }
-                                        />
+                                    {/* Objavi profil */}
+                                    <div className={styles.fieldPublish}>
+                                        <label>&nbsp;</label> {/* prazni label za poravnanje */}
+                                        <button
+                                            type="button"
+                                            className={`${styles.publishBtn} ${publicProfile.is_published ? styles.published : ""}`}
+                                            onClick={async () => {
+                                                const newState = !publicProfile.is_published;
+                                                try {
+                                                    await axios.post("/profile/public/publish", { publish: newState });
+                                                    setPublicProfile(p => ({ ...p, is_published: newState }));
+                                                    showMessage(newState ? "Profil objavljen!" : "Profil skriven!");
+                                                } catch {
+                                                    showMessage("Greška kod promjene statusa publikacije");
+                                                }
+                                            }}
+                                        >
+                                            {publicProfile.is_published ? "✅ Objavljen" : "❌ Skriven"}
+                                        </button>
                                     </div>
                                 </div>
 
-                                {(publicProfile.teaching_type === "Uživo" ||
-                                    publicProfile.teaching_type === "Uživo i Online") && (
-                                    <>
-                                        <label>Lokacija</label>
-                                        <input
-                                            value={publicProfile.location}
-                                            onChange={e =>
-                                                setPublicProfile(p => ({ ...p, location: e.target.value }))
-                                            }
-                                            placeholder="Zagreb – Knežija"
-                                        />
-                                    </>
-                                )}
-
-                                <button className={styles.saveBtn} onClick={savePublicProfile}>
-                                    💾 Spremi
+                                <button 
+                                    className={styles.saveBtn} 
+                                    onClick={savePublicProfile}
+                                    disabled={saving}
+                                >
+                                    {saving ? (
+                                        <><span className={styles.btnSpinner}></span> Spremanje...</>
+                                    ) : (
+                                        "💾 Spremi javni profil"
+                                    )}
                                 </button>
                             </div>
-                            {error && <p className={styles.error}>{error}</p>}
-                            {message && <p className={styles.success}>{message}</p>}
                         </div>
                     )}
 
-
+                    {/* Sigurnost */}
                     {activeTab === "sigurnost" && (
-                        <div className={styles.pageBlank}>
-                            <p style={{opacity: 0.6}}>⚙️ Ova sekcija još nije implementirana.</p>
+                        <div className={styles.section}>
+                            <div className={styles.sectionHeader}>
+                                <h1>🔒 Sigurnost</h1>
+                                <p>Upravljajte pristupom svom računu</p>
+                            </div>
+
+                            <div className={styles.comingSoon}>
+                                <div className={styles.comingSoonIcon}>🔐</div>
+                                <h3>Uskoro dostupno</h3>
+                                <p>Promjena lozinke i dvofaktorska autentikacija bit će dostupne u sljedećoj verziji.</p>
+                            </div>
                         </div>
                     )}
 
+                    {/* Privatnost */}
                     {activeTab === "privatnost" && (
-                        <div className={styles.pageBlank}>
-                            <p style={{opacity: 0.6}}>⚙️ Ova sekcija još nije implementirana.</p>
+                        <div className={styles.section}>
+                            <div className={styles.sectionHeader}>
+                                <h1>🛡️ Privatnost</h1>
+                                <p>Kontrolirajte vidljivost svojih podataka</p>
+                            </div>
+
+                            <div className={styles.comingSoon}>
+                                <div className={styles.comingSoonIcon}>🛡️</div>
+                                <h3>Uskoro dostupno</h3>
+                                <p>Postavke privatnosti i upravljanje podacima bit će dostupni u sljedećoj verziji.</p>
+                            </div>
                         </div>
                     )}
-                </section>
-            </main>
+                </main>
+            </div>
 
             <ProfileImageModal
                 isOpen={isImageModalOpen}

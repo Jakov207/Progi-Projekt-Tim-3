@@ -32,6 +32,7 @@ app.get("/finish-register", (req, res) => {
 });
 
 app.use("/api/instructors", require("./routes/instructors"));
+app.use("/api/calendar", require("./routes/calendar"));
 
 const PORT = process.env.PORT || 8080;
 
