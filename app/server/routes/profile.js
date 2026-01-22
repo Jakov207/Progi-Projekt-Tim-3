@@ -6,7 +6,7 @@ const { upload, deleteOldImage } = require('../middleware/upload');
 
 router.get('/', verifyToken, async (req, res) => {
     try{
-        const result = await pool.query('SELECT name, surname, email, is_professor, profile_picture FROM users WHERE id = $1', [req.user.id]);
+        const result = await pool.query('SELECT id, name, surname, email, is_professor, profile_picture FROM users WHERE id = $1', [req.user.id]);
 
         if(result.rows.length === 0){
             return res.status(404).json({message: 'Korisnik ne postoji'});

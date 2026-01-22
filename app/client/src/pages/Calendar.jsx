@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api";
 import { Autocomplete, useLoadScript } from "@react-google-maps/api";
 import { AuthContext } from "../context/AuthContext";
@@ -6,6 +7,7 @@ import styles from "./Calendar.module.css";
 
 export default function Calendar() {
     const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
     const [slots, setSlots] = useState([]);
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -20,6 +22,18 @@ export default function Calendar() {
     const [bookingDetailsLoading, setBookingDetailsLoading] = useState(false);
     const [noteDraft, setNoteDraft] = useState("");
     const [noteSaving, setNoteSaving] = useState(false);
+    
+    // Review modal state
+    const [reviewModalOpen, setReviewModalOpen] = useState(false);
+    const [reviewBooking, setReviewBooking] = useState(null);
+    const [reviewRating, setReviewRating] = useState(0);
+    const [reviewComment, setReviewComment] = useState("");
+    const [reviewSubmitting, setReviewSubmitting] = useState(false);
+    const [reviewError, setReviewError] = useState("");
+    
+    // Create lesson modal state
+    const [createLessonModalOpen, setCreateLessonModalOpen] = useState(false);
+    
     const [form, setForm] = useState({
         date: "",
         start: "",
@@ -171,6 +185,7 @@ export default function Calendar() {
             });
 
             showSuccess("Termin uspješno dodan! ✓");
+            setCreateLessonModalOpen(false);
             loadSlots();
         } catch (err) {
             setError(err.response?.data?.message || "Greška pri spremanju termina.");
@@ -405,19 +420,66 @@ export default function Calendar() {
         return now >= new Date(start) && now <= new Date(end);
     };
 
+    const isPastLesson = (end) => {
+        const now = new Date();
+        return now > new Date(end);
+    };
+
+    // Review functions
+    const openReviewModal = (booking) => {
+        setReviewBooking(booking);
+        setReviewRating(0);
+        setReviewComment("");
+        setReviewError("");
+        setReviewModalOpen(true);
+    };
+
+    const submitReview = async () => {
+        if (reviewRating === 0) {
+            setReviewError("Molimo odaberite ocjenu (1-5 zvjezdica)");
+            return;
+        }
+
+        setReviewSubmitting(true);
+        setReviewError("");
+
+        try {
+            await api.post("/reviews", {
+                booking_id: reviewBooking.id,
+                rating: reviewRating,
+                comment: reviewComment.trim() || null
+            });
+
+            setReviewModalOpen(false);
+            showSuccess("Recenzija uspješno dodana!");
+            // Reload bookings to reflect the change
+            loadBookings();
+        } catch (err) {
+            setReviewError(err.response?.data?.message || "Greška pri dodavanju recenzije");
+        } finally {
+            setReviewSubmitting(false);
+        }
+    };
+
+    const renderStars = (interactive = false) => {
+        return [1, 2, 3, 4, 5].map((star) => (
+            <span
+                key={star}
+                className={`${styles.star} ${star <= reviewRating ? styles.starFilled : styles.starEmpty} ${interactive ? styles.starInteractive : ""}`}
+                onClick={interactive ? () => setReviewRating(star) : undefined}
+            >
+                ★
+            </span>
+        ));
+    };
+
     return (
         <div className={styles.page}>
-            <header className={styles.pageHeader}>
+            <header className={styles.pageHeaderCompact}>
                 <div className={styles.headerContent}>
                     <h1>
                         {user?.is_professor ? "📅 Moj Kalendar" : "📋 Moji Termini"}
                     </h1>
-                    <p className={styles.subtitle}>
-                        {user?.is_professor 
-                            ? "Upravljajte svojom dostupnošću i pratite rezervacije studenata"
-                            : "Pregledajte svoje rezervirane termine i upravljajte njima"
-                        }
-                    </p>
                 </div>
             </header>
 
@@ -434,7 +496,7 @@ export default function Calendar() {
                 </div>
             )}
 
-            <div className={styles.mainContent}>
+            <div className={user?.is_professor ? styles.mainContentProfessor : styles.mainContent}>
                 <div className={styles.calendarCard}>
                     <div className={styles.calendarHeader}>
                         <button
@@ -555,163 +617,18 @@ export default function Calendar() {
                             </div>
                         )}
                     </div>
+
+                    {user?.is_professor && (
+                        <button 
+                            className={styles.createLessonBtn}
+                            onClick={() => setCreateLessonModalOpen(true)}
+                        >
+                            ➕ Kreiraj novi termin
+                        </button>
+                    )}
                 </div>
 
                 <div className={styles.sidePanel}>
-                    {user?.is_professor && (
-                        <div className={styles.formCard}>
-                            <h3>➕ Dodaj novi termin</h3>
-                            <p className={styles.formHint}>
-                                Kliknite na dan u kalendaru ili ručno unesite datum
-                            </p>
-                            <form onSubmit={handleCreate}>
-                                <div className={styles.formGrid}>
-                                    <div className={styles.field}>
-                                        <label>📅 Datum</label>
-                                        <input
-                                            type="date"
-                                            value={form.date}
-                                            onChange={(e) => setForm(prev => ({ ...prev, date: e.target.value }))}
-                                        />
-                                    </div>
-                                    <div className={styles.fieldRow}>
-                                        <div className={styles.field}>
-                                            <label>🕐 Od</label>
-                                            <input
-                                                type="time"
-                                                value={form.start}
-                                                onChange={(e) => setForm(prev => ({ ...prev, start: e.target.value }))}
-                                            />
-                                        </div>
-                                        <div className={styles.field}>
-                                            <label>🕐 Do</label>
-                                            <input
-                                                type="time"
-                                                value={form.end}
-                                                onChange={(e) => setForm(prev => ({ ...prev, end: e.target.value }))}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className={styles.field}>
-                                        <label>💰 Cijena (€)</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
-                                            value={form.price}
-                                            onChange={(e) =>
-                                                setForm(prev => ({ ...prev, price: e.target.value }))
-                                            }
-                                        />
-                                    </div>
-                                    <div className={styles.field}>
-                                        <label>👥 Tip predavanja</label>
-                                        <select
-                                            value={form.lesson_type}
-                                            onChange={(e) =>
-                                                setForm(prev => ({
-                                                    ...prev,
-                                                    lesson_type: e.target.value,
-                                                    capacity: e.target.value === "1na1" ? 1 : 2,
-                                                    interest_id: ""
-                                                }))
-                                            }
-                                        >
-                                            <option value="1na1">1 na 1</option>
-                                            <option value="Grupno">Grupno</option>
-                                        </select>
-                                    </div>
-                                    {form.lesson_type === "Grupno" && (
-                                        <div className={styles.field}>
-                                            <label>👥 Kapacitet</label>
-                                            <input
-                                                type="number"
-                                                min="2"
-                                                value={form.capacity}
-                                                onChange={(e) =>
-                                                    setForm(prev => ({ ...prev, capacity: e.target.value }))
-                                                }
-                                            />
-                                        </div>
-                                    )}
-                                    {form.lesson_type === "Grupno" && (
-                                        <div className={styles.field}>
-                                            <label>📘 Predmet</label>
-                                            {interests.length === 0 ? (
-                                                <div className={styles.formHint}>
-                                                    Nemate dodanih predmeta
-                                                </div>
-                                            ) : (
-                                                <select
-                                                    value={form.interest_id}
-                                                    onChange={(e) =>
-                                                        setForm(prev => ({ ...prev, interest_id: e.target.value }))
-                                                    }
-                                                >
-                                                    <option value="">Odaberite predmet</option>
-                                                    {interests.map(i => (
-                                                        <option key={i.id} value={i.id}>
-                                                            {i.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            )}
-                                        </div>
-                                    )}
-                                    <div className={styles.field}>
-                                        <label>🎓 Način predavanja</label>
-                                        <select
-                                            value={form.teaching_type}
-                                            onChange={(e) =>
-                                                setForm(prev => ({ ...prev, teaching_type: e.target.value }))
-                                            }
-                                        >
-                                            <option value="Online">Online</option>
-                                            <option value="Uživo">Uživo</option>
-                                        </select>
-                                    </div>
-
-                                    {form.teaching_type === "Uživo" && (
-                                        <div className={styles.field}>
-                                            <label>📍 Lokacija</label>
-
-                                            {!isLoaded ? (
-                                                <input
-                                                    disabled
-                                                    placeholder="Učitavanje mape..."
-                                                    className={styles.inputField}
-                                                />
-                                            ) : (
-                                                <Autocomplete
-                                                    options={{
-                                                        types: ["address"],
-                                                        componentRestrictions: { country: "hr" }
-                                                    }}
-                                                    onLoad={onLoadAutocomplete}
-                                                    onPlaceChanged={onPlaceChanged}
-                                                >
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Unesite adresu"
-                                                        value={form.location}
-                                                        onChange={(e) =>
-                                                            setForm(prev => ({ ...prev, location: e.target.value }))
-                                                        }
-                                                        className={styles.inputField}
-                                                    />
-                                                </Autocomplete>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                                <button type="submit" className={styles.createBtn}>
-                                    Dodaj termin
-                                </button>
-                            </form>
-                        </div>
-                    )}
-
                     <div className={styles.listCard}>
                         <div className={styles.listHeader}>
                             <h3>
@@ -853,8 +770,17 @@ export default function Calendar() {
                                                             className={styles.cancelBtn}
                                                             onClick={() => handleCancel(booking.slot_id)}
                                                         >
-                                                            ❌ Otkaži
+                                                            {isPastLesson(booking.end_time) ? "🗑️ Obriši" : "❌ Otkaži"}
                                                         </button>
+
+                                                        {isPastLesson(booking.end_time) && (
+                                                            <button
+                                                                className={styles.reviewBtn}
+                                                                onClick={() => openReviewModal(booking)}
+                                                            >
+                                                                ⭐ Recenzija
+                                                            </button>
+                                                        )}
 
                                                         <button
                                                             className={styles.detailsBtn}
@@ -1016,6 +942,214 @@ export default function Calendar() {
                                 </button>
                             </>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* Review Modal */}
+            {reviewModalOpen && reviewBooking && (
+                <div className={styles.modalOverlay} onClick={() => setReviewModalOpen(false)}>
+                    <div className={styles.reviewModal} onClick={e => e.stopPropagation()}>
+                        <h2>⭐ Ocijeni instruktora</h2>
+                        
+                        <div className={styles.reviewInstructorInfo}>
+                            <p><strong>👨‍🏫 Instruktor:</strong> {reviewBooking.professor_name} {reviewBooking.professor_surname}</p>
+                            <p><strong>📅 Datum:</strong> {formatFullDate(reviewBooking.start_time)}</p>
+                            {reviewBooking.interest_name && (
+                                <p><strong>📘 Predmet:</strong> {reviewBooking.interest_name}</p>
+                            )}
+                        </div>
+
+                        <div className={styles.ratingSection}>
+                            <label>Vaša ocjena:</label>
+                            <div className={styles.starsContainer}>
+                                {renderStars(true)}
+                            </div>
+                            <span className={styles.ratingLabel}>
+                                {reviewRating > 0 ? `${reviewRating}/5` : "Odaberite ocjenu"}
+                            </span>
+                        </div>
+
+                        <div className={styles.commentSection}>
+                            <label>Komentar (opcionalno):</label>
+                            <textarea
+                                className={styles.reviewTextarea}
+                                value={reviewComment}
+                                onChange={(e) => setReviewComment(e.target.value)}
+                                placeholder="Napišite svoja iskustva s ovim instruktorom..."
+                                maxLength={500}
+                                rows={4}
+                            />
+                            <span className={styles.charCount}>{reviewComment.length}/500</span>
+                        </div>
+
+                        {reviewError && (
+                            <div className={styles.reviewError}>{reviewError}</div>
+                        )}
+
+                        <div className={styles.reviewActions}>
+                            <button
+                                className={styles.cancelReviewBtn}
+                                onClick={() => setReviewModalOpen(false)}
+                            >
+                                Odustani
+                            </button>
+                            <button
+                                className={styles.submitReviewBtn}
+                                onClick={submitReview}
+                                disabled={reviewSubmitting || reviewRating === 0}
+                            >
+                                {reviewSubmitting ? "Šaljem..." : "Objavi recenziju"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Create Lesson Modal */}
+            {createLessonModalOpen && (
+                <div className={styles.modalOverlay} onClick={() => setCreateLessonModalOpen(false)}>
+                    <div className={styles.createLessonModal} onClick={e => e.stopPropagation()}>
+                        <h2>➕ Kreiraj novi termin</h2>
+                        <p className={styles.formHint}>Ispunite detalje za novi termin</p>
+                        
+                        <form onSubmit={handleCreate}>
+                            <div className={styles.formGrid}>
+                                <div className={styles.field}>
+                                    <label>📅 Datum</label>
+                                    <input
+                                        type="date"
+                                        value={form.date}
+                                        onChange={(e) => setForm(prev => ({ ...prev, date: e.target.value }))}
+                                    />
+                                </div>
+                                <div className={styles.fieldRow}>
+                                    <div className={styles.field}>
+                                        <label>🕐 Od</label>
+                                        <input
+                                            type="time"
+                                            value={form.start}
+                                            onChange={(e) => setForm(prev => ({ ...prev, start: e.target.value }))}
+                                        />
+                                    </div>
+                                    <div className={styles.field}>
+                                        <label>🕐 Do</label>
+                                        <input
+                                            type="time"
+                                            value={form.end}
+                                            onChange={(e) => setForm(prev => ({ ...prev, end: e.target.value }))}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className={styles.field}>
+                                    <label>💰 Cijena (€)</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={form.price}
+                                        onChange={(e) => setForm(prev => ({ ...prev, price: e.target.value }))}
+                                    />
+                                </div>
+                                
+                                <div className={styles.field}>
+                                    <label>👥 Tip predavanja</label>
+                                    <select
+                                        value={form.lesson_type}
+                                        onChange={(e) =>
+                                            setForm(prev => ({
+                                                ...prev,
+                                                lesson_type: e.target.value,
+                                                capacity: e.target.value === "1na1" ? 1 : 2,
+                                                interest_id: ""
+                                            }))
+                                        }
+                                    >
+                                        <option value="1na1">1 na 1</option>
+                                        <option value="Grupno">Grupno</option>
+                                    </select>
+                                </div>
+                                
+                                {form.lesson_type === "Grupno" && (
+                                    <div className={styles.field}>
+                                        <label>👥 Kapacitet</label>
+                                        <input
+                                            type="number"
+                                            min="2"
+                                            value={form.capacity}
+                                            onChange={(e) => setForm(prev => ({ ...prev, capacity: e.target.value }))}
+                                        />
+                                    </div>
+                                )}
+                                
+                                {form.lesson_type === "Grupno" && (
+                                    <div className={styles.field}>
+                                        <label>📘 Predmet</label>
+                                        {interests.length === 0 ? (
+                                            <div className={styles.formHint}>Nemate dodanih predmeta</div>
+                                        ) : (
+                                            <select
+                                                value={form.interest_id}
+                                                onChange={(e) => setForm(prev => ({ ...prev, interest_id: e.target.value }))}
+                                            >
+                                                <option value="">Odaberite predmet</option>
+                                                {interests.map(i => (
+                                                    <option key={i.id} value={i.id}>{i.name}</option>
+                                                ))}
+                                            </select>
+                                        )}
+                                    </div>
+                                )}
+                                
+                                <div className={styles.field}>
+                                    <label>🎓 Način predavanja</label>
+                                    <select
+                                        value={form.teaching_type}
+                                        onChange={(e) => setForm(prev => ({ ...prev, teaching_type: e.target.value }))}
+                                    >
+                                        <option value="Online">Online</option>
+                                        <option value="Uživo">Uživo</option>
+                                    </select>
+                                </div>
+
+                                {form.teaching_type === "Uživo" && (
+                                    <div className={styles.field}>
+                                        <label>📍 Lokacija</label>
+                                        {!isLoaded ? (
+                                            <input disabled placeholder="Učitavanje mape..." className={styles.inputField} />
+                                        ) : (
+                                            <Autocomplete
+                                                options={{ types: ["address"], componentRestrictions: { country: "hr" } }}
+                                                onLoad={onLoadAutocomplete}
+                                                onPlaceChanged={onPlaceChanged}
+                                            >
+                                                <input
+                                                    type="text"
+                                                    placeholder="Unesite adresu"
+                                                    value={form.location}
+                                                    onChange={(e) => setForm(prev => ({ ...prev, location: e.target.value }))}
+                                                    className={styles.inputField}
+                                                />
+                                            </Autocomplete>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                            
+                            <div className={styles.modalActions}>
+                                <button 
+                                    type="button" 
+                                    className={styles.cancelReviewBtn}
+                                    onClick={() => setCreateLessonModalOpen(false)}
+                                >
+                                    Odustani
+                                </button>
+                                <button type="submit" className={styles.createLessonSubmitBtn}>
+                                    ✓ Kreiraj termin
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

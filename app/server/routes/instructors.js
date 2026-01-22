@@ -75,7 +75,12 @@ router.get("/", async (req, res) => {
                                 THEN ps.price
                             ELSE NULL
                             END
-                ) AS min_price
+                ) AS min_price,
+                COALESCE(
+                    (SELECT AVG(r.rating) FROM reviews r WHERE r.professor_id = u.id),
+                    0
+                ) AS average_rating,
+                (SELECT COUNT(*) FROM reviews r WHERE r.professor_id = u.id) AS review_count
             FROM users u
                      JOIN professors p ON p.user_id = u.id
                      LEFT JOIN professor_slots ps ON ps.professor_id = u.id

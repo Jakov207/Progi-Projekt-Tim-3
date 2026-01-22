@@ -13,6 +13,7 @@ export function Profile() {
     const [saving, setSaving] = useState(false);
 
     const [interests, setInterests] = useState([]);
+    const [instructorRating, setInstructorRating] = useState({ average: "0.0", count: 0 });
 
     const interestMap = {
         mat_os: "Matematika Osnovna Škola",
@@ -88,6 +89,25 @@ export function Profile() {
 
     useEffect(() => {
         loadProfile();
+    }, []);
+
+    // Fetch instructor rating when profile loads (for professors)
+    useEffect(() => {
+        const fetchRating = async () => {
+            try {
+                const res = await axios.get("/profile");
+                if (res.data.is_professor) {
+                    const ratingRes = await axios.get(`/reviews/instructor/${res.data.id}`);
+                    setInstructorRating({
+                        average: ratingRes.data.average_rating,
+                        count: ratingRes.data.total_reviews
+                    });
+                }
+            } catch (err) {
+                console.error("Error fetching rating:", err);
+            }
+        };
+        fetchRating();
     }, []);
 
     function formatDateForInput(dateString) {
@@ -240,6 +260,14 @@ export function Profile() {
                         <span className={styles.roleBadge}>
                             {form.is_professor ? "👨‍🏫 Instruktor" : "🎓 Student"}
                         </span>
+                        {form.is_professor && (
+                            <div className={styles.ratingBadge}>
+                                {instructorRating.count > 0 
+                                    ? `⭐ ${instructorRating.average} (${instructorRating.count} recenzija)`
+                                    : "⭐ Još nema recenzija"
+                                }
+                            </div>
+                        )}
                     </div>
 
                     <nav className={styles.tabNav}>

@@ -95,6 +95,11 @@ export default function Instructors() {
                             alt=""
                         />
                         <h3>{i.name} {i.surname}</h3>
+                        {i.review_count > 0 && (
+                            <p className={styles.rating}>
+                                ⭐ {parseFloat(i.average_rating).toFixed(1)} ({i.review_count})
+                            </p>
+                        )}
                         <p>{i.teaching_type}</p>
                         {i.min_price != null ? (
                             <p>{i.min_price} € / sat</p>

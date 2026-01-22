@@ -181,6 +181,17 @@
     font-weight: 600;
 }
 
+.ratingBadge {
+    display: inline-block;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    color: #b45309;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
 /* Tab Navigation */
 .tabNav {
     display: flex;
