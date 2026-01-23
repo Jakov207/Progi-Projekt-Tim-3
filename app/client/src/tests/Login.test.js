@@ -69,7 +69,7 @@ describe('Login component', () => {
 
     test('Test 1 - Successful login: calls api.post, sets user and navigates to "/" (homepage)', async () => {
         const testEmail = 'user@test.com';
-        const testPassword = 'Password123';
+        const testPassword = 'Password123!';
         const fakeUser = { id: 42, name: 'Test User', email: testEmail };
 
         api.post.mockResolvedValueOnce({ data: { user: fakeUser } });
@@ -147,7 +147,7 @@ describe('Login component', () => {
 
         // Simuliramo API rejection s 404 i porukom da korisnik ne postoji
         api.post.mockRejectedValueOnce({
-            response: { status: 404, data: { message: 'Korisnik ne postoji' } }
+            response: { status: 400, data: { message: 'Korisnik ne postoji' } }
         });
 
         renderLogin(mockSetUser);

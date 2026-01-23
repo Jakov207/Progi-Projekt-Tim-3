@@ -264,7 +264,7 @@ router.post('/login', async (req, res) => {
     //provjera postoji li korisnik
     const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     if (user.rows.length === 0) {
-        return res.status(400).json({message: 'ne postoji korisnik s tim emailom'});
+        return res.status(400).json({message: 'Ne postoji korisnik s tim emailom'});
     }
 
     //podaci o useru
