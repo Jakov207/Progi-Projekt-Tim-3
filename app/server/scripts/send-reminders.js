@@ -53,7 +53,8 @@ async function sendSessionReminders() {
             JOIN interests i ON i.id = b.interest_id
             LEFT JOIN email_reminders_sent ers 
                 ON ers.booking_id = b.id AND ers.reminder_type = '1hour'
-            WHERE s.start_time BETWEEN NOW() AND NOW() + INTERVAL '${REMINDER_WINDOW_MINUTES} minutes'
+            WHERE s.start_time BETWEEN (NOW() AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Zagreb') 
+                                   AND (NOW() AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Zagreb') + INTERVAL '${REMINDER_WINDOW_MINUTES} minutes'
               AND ers.id IS NULL
         `);
 
