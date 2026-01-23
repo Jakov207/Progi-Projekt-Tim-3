@@ -34,6 +34,14 @@ export default function InstructorProfile() {
     const [reviewMessage, setReviewMessage] = useState("");
     const [reviewError, setReviewError] = useState("");
 
+    // Payment
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [cardNumber, setCardNumber] = useState("");
+    const [cardName, setCardName] = useState("");
+    const [cardExpiry, setCardExpiry] = useState("");
+    const [cardCvc, setCardCvc] = useState("");
+
+
     const [currentMonth, setCurrentMonth] = useState(() => {
         const now = new Date();
         return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -62,6 +70,31 @@ export default function InstructorProfile() {
             checkCanReview();
         }
     }, [id, user]);
+
+    const formatCardNumber = (value) => {
+        return value
+            .replace(/\D/g, "")
+            .slice(0, 16)
+            .replace(/(.{4})/g, "$1 ")
+            .trim();
+    };
+
+    const formatExpiry = (value) => {
+        const cleaned = value.replace(/\D/g, "").slice(0, 4);
+        if (cleaned.length < 3) return cleaned;
+        return `${cleaned.slice(0, 2)}/${cleaned.slice(2)}`;
+    };
+
+    const isExpiryValid = (value) => {
+        if (!/^\d{2}\/\d{2}$/.test(value)) return false;
+
+        const [mm, yy] = value.split("/").map(Number);
+        if (mm < 1 || mm > 12) return false;
+
+        const now = new Date();
+        const expiry = new Date(2000 + yy, mm);
+        return expiry > now;
+    };
 
     const fetchReviews = async () => {
         try {
@@ -434,19 +467,122 @@ export default function InstructorProfile() {
                             <button
                                 className={styles.confirmBtn}
                                 onClick={() => {
-                                    handleBook(selectedSlot.id, note, selectedInterest);
                                     setShowBookingModal(false);
-                                    setNote("");
-                                    setSelectedInterest("");
+                                    setShowPaymentModal(true);
                                 }}
                                 disabled={!selectedInterest && selectedSlot.lesson_type === "1na1"}
                             >
-                                Rezerviraj
+                                Plati i rezerviraj
                             </button>
                         </div>
                     </div>
                 </div>
             )}
+            {showPaymentModal && selectedSlot && (
+                <div className={styles.modalOverlay}>
+                    <div className={`${styles.modal} ${styles.paymentModal}`}>
+                        <h1 className={styles.paymentName}>
+                            Kex<div>Pay</div>
+                        </h1>
+                        <h3 className={styles.paymentTitle}>
+                            Za platiti <span>{selectedSlot.price}€</span>
+                        </h3>
+
+                        <div className={styles.paymentField}>
+                            <label>Broj kartice</label>
+                            <input
+                                type="text"
+                                value={cardNumber}
+                                onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                                placeholder="1234 5678 9012 3456"
+                            />
+                            {cardNumber.replace(/\s/g, "").length > 0 &&
+                                cardNumber.replace(/\s/g, "").length !== 16 && (
+                                    <span className={styles.errorText}>
+                        Broj kartice mora imati 16 znamenki
+                    </span>
+                                )}
+                        </div>
+
+                        <div className={styles.paymentField}>
+                            <label>Ime vlasnika kartice</label>
+                            <input
+                                type="text"
+                                value={cardName}
+                                onChange={(e) => setCardName(e.target.value)}
+                                placeholder="IME PREZIME"
+                            />
+                        </div>
+
+                        <div className={styles.paymentRow}>
+                            <div className={styles.paymentField}>
+                                <label>Datum isteka</label>
+                                <input
+                                    type="text"
+                                    value={cardExpiry}
+                                    onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
+                                    placeholder="MM/YY"
+                                />
+                                {cardExpiry.length === 5 && !isExpiryValid(cardExpiry) && (
+                                    <span className={styles.errorText}>
+                            Datum isteka nije valjan
+                        </span>
+                                )}
+                            </div>
+
+                            <div className={styles.paymentField}>
+                                <label>CVC</label>
+                                <input
+                                    type="text"
+                                    value={cardCvc}
+                                    onChange={(e) =>
+                                        setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 3))
+                                    }
+                                    placeholder="123"
+                                />
+                                {cardCvc.length > 0 && cardCvc.length !== 3 && (
+                                    <span className={styles.errorText}>
+                            CVC mora imati 3 znamenke
+                        </span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.cancelBtn}
+                                onClick={() => setShowPaymentModal(false)}
+                            >
+                                Odustani
+                            </button>
+
+                            <button
+                                className={styles.confirmBtn}
+                                disabled={
+                                    cardNumber.replace(/\s/g, "").length !== 16 ||
+                                    cardCvc.length !== 3 ||
+                                    !isExpiryValid(cardExpiry) ||
+                                    !cardName
+                                }
+                                onClick={() => {
+                                    handleBook(selectedSlot.id, note, selectedInterest);
+
+                                    setShowPaymentModal(false);
+                                    setCardNumber("");
+                                    setCardName("");
+                                    setCardExpiry("");
+                                    setCardCvc("");
+                                    setNote("");
+                                    setSelectedInterest("");
+                                }}
+                            >
+                                Plati
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Success Banner */}
             {(bookingMessage || reviewMessage) && (
                 <div className={styles.successBanner}>

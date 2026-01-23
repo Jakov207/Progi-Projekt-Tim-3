@@ -621,6 +621,66 @@
     cursor: not-allowed;
 }
 
+.paymentName{
+    display: flex;
+    align-items: center;
+    font-style: italic;
+}
+
+.paymentName div{
+    color: blue;
+}
+
+.paymentModal {
+    max-width: 420px;
+}
+
+.paymentTitle {
+    font-size: 1.4rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.paymentTitle span {
+    color: #2ecc71;
+    font-weight: 700;
+}
+
+.paymentField {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.paymentField label {
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+}
+
+.paymentField input {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.paymentField input:focus {
+    outline: none;
+    border-color: #2ecc71;
+}
+
+.paymentRow {
+    display: flex;
+    gap: 12px;
+}
+
+.errorText {
+    color: #e74c3c;
+    font-size: 0.75rem;
+    margin-top: 4px;
+}
+
 .slotLocation {
     background: #fef3c7;
     color: #92400e;
