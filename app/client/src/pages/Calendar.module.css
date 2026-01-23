@@ -606,6 +606,11 @@
     gap: 12px;
 }
 
+.ongoing {
+    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+    border-left: 6px solid #0097a7;
+}
+
 .slotCard:hover {
     border-color: #1a4a5e;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
