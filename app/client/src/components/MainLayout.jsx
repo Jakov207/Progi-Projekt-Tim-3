@@ -23,7 +23,6 @@ function MainLayout() {
                     {user && !user.is_professor && (
                         <>
                             <Link to="/instructors">Instruktori</Link>
-                            <Link to="/quizzes">Kvizovi</Link>
                         </>
                     )}
 
@@ -31,9 +30,10 @@ function MainLayout() {
                     {!user && (
                         <>
                             <Link to="/instructors">Instruktori</Link>
-                            <Link to="/quizzes">Kvizovi</Link>
                         </>
                     )}
+
+                    <Link to="/quizzes">Kvizovi</Link>
 
                     {user && (
                         <Link to="/calendar">
