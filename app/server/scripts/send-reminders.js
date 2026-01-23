@@ -150,7 +150,7 @@ async function sendReminderEmail(session, recipientType) {
             .replace('{{/if}}', '-->');
     }
 
-    const subject = `Podsjetnik: Sesija po─ìinje za 1 sat - ${session.subject_name}`;
+    const subject = `Podsjetnik: Sesija počinje za 1 sat - ${session.subject_name}`;
 
     await sendEmail({
         from: 'FerTutor <mail@fertutor.xyz>',
