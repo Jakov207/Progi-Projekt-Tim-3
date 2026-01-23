@@ -223,9 +223,12 @@ export default function Instructors() {
                             src={i.profile_picture ? getImageUrl(i.profile_picture) : "/avatar.png"}
                             alt=""
                         />
-                        <h3>
-                            {i.name} {i.surname}
-                        </h3>
+                        <h3>{i.name} {i.surname}</h3>
+                        {i.review_count > 0 && (
+                            <p className={styles.rating}>
+                                ⭐ {parseFloat(i.average_rating).toFixed(1)} ({i.review_count})
+                            </p>
+                        )}
                         <p>{i.teaching_type}</p>
                         {i.min_price != null ? (
                             <p>{i.min_price} € / sat</p>
