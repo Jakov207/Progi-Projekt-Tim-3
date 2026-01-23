@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, {useState, useRef, useContext} from 'react';
 import { uploadProfileImage, deleteProfileImage } from '../api';
 import styles from './ProfileImageModal.module.css';
+import {AuthContext} from "../context/AuthContext.jsx";
 
 const ProfileImageModal = ({ isOpen, onClose, currentImage, onImageUpdated }) => {
     const [selectedImage, setSelectedImage] = useState(null);
@@ -8,6 +9,7 @@ const ProfileImageModal = ({ isOpen, onClose, currentImage, onImageUpdated }) =>
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const fileInputRef = useRef(null);
+    const { refreshUser } = useContext(AuthContext);
 
     const handleImageSelect = (e) => {
         const file = e.target.files[0];
@@ -39,6 +41,7 @@ const ProfileImageModal = ({ isOpen, onClose, currentImage, onImageUpdated }) =>
         try {
             const result = await uploadProfileImage(selectedImage);
             onImageUpdated(result.filename);
+            refreshUser();
             handleClose();
         } catch (err) {
             setError(err.response?.data?.message || 'Greška pri uploadu slike');
