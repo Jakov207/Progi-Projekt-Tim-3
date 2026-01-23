@@ -216,6 +216,8 @@ router.get("/my-slots", verifyToken, async (req, res) => {
                  s.lesson_type,
                  s.price,
                  s.location,
+                 s.meeting_url,
+                 s.meeting_password,
                  i.name AS interest_name,
                  COUNT(b.id) AS booked_count
              FROM professor_slots s
