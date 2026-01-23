@@ -21,8 +21,8 @@ const ProfileImageModal = ({ isOpen, onClose, currentImage, onImageUpdated }) =>
             return;
         }
 
-        if (file.size > 5 * 1024 * 1024) {
-            setError('Slika ne smije biti veća od 5MB');
+        if (file.size > 1024 * 1024) {
+            setError('Slika ne smije biti veća od 1MB');
             return;
         }
 
