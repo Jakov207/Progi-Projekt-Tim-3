@@ -26,7 +26,6 @@ export default function InstructorProfile() {
     const [reviews, setReviews] = useState([]);
     const [reviewStats, setReviewStats] = useState({ average_rating: "0.0", total_reviews: 0 });
     const [canReview, setCanReview] = useState(false);
-    const [reviewBooking, setReviewBooking] = useState(null);
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [reviewRating, setReviewRating] = useState(5);
     const [reviewComment, setReviewComment] = useState("");
@@ -112,22 +111,19 @@ export default function InstructorProfile() {
     const checkCanReview = async () => {
         try {
             const res = await axios.get(`/reviews/can-review/${id}`);
-            setCanReview(res.data.can_review);
-            setReviewBooking(res.data.booking);
+            setCanReview(res.data.can_review && !res.data.already_reviewed);
         } catch (err) {
             setCanReview(false);
         }
     };
 
     const handleSubmitReview = async () => {
-        if (!reviewBooking) return;
-
         setReviewSubmitting(true);
         setReviewError("");
 
         try {
             await axios.post("/reviews", {
-                booking_id: reviewBooking.booking_id,
+                professor_id: parseInt(id),
                 rating: reviewRating,
                 comment: reviewComment
             });
@@ -136,8 +132,8 @@ export default function InstructorProfile() {
             setShowReviewModal(false);
             setReviewRating(5);
             setReviewComment("");
+            setCanReview(false);
             fetchReviews();
-            checkCanReview();
             setTimeout(() => setReviewMessage(""), 4000);
         } catch (err) {
             setReviewError(err.response?.data?.message || "Greška kod dodavanja recenzije");
@@ -353,14 +349,13 @@ export default function InstructorProfile() {
     return (
         <div className={styles.page}>
             {/* Review Modal */}
-            {showReviewModal && reviewBooking && (
+            {showReviewModal && (
                 <div className={styles.modalOverlay}>
                     <div className={styles.modal}>
-                        <h3>Ostavi recenziju</h3>
+                        <h3>⭐ Ocijeni instruktora</h3>
 
                         <div className={styles.modalInfo}>
-                            <p>📘 {reviewBooking.interest_name}</p>
-                            <p>📅 {formatReviewDate(reviewBooking.end_time)}</p>
+                            <p>👨‍🏫 {instructor?.name} {instructor?.surname}</p>
                         </div>
 
                         <label>Ocjena</label>
@@ -396,7 +391,7 @@ export default function InstructorProfile() {
                             <button
                                 className={styles.confirmBtn}
                                 onClick={handleSubmitReview}
-                                disabled={reviewSubmitting}
+                                disabled={reviewSubmitting || reviewRating === 0}
                             >
                                 {reviewSubmitting ? (
                                     <span className={styles.btnSpinner}></span>
@@ -609,9 +604,11 @@ export default function InstructorProfile() {
                                     : "/avatar.png"}
                                 alt={`${instructor.name} ${instructor.surname}`}
                             />
-                            <div className={styles.statusBadge}>
-                                {availableSlots.length > 0 ? "🟢 Dostupan" : "🔴 Zauzet"}
-                            </div>
+                            {availableSlots.length > 0 && (
+                                <div className={styles.statusBadge}>
+                                    🟢 Dostupan
+                                </div>
+                            )}
                         </div>
                         
                         <h1>{instructor.name} {instructor.surname}</h1>

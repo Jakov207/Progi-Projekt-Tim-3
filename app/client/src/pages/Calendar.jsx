@@ -23,15 +23,6 @@ export default function Calendar() {
     const [noteDraft, setNoteDraft] = useState("");
     const [noteSaving, setNoteSaving] = useState(false);
 
-    // Review modal state
-    const [reviewModalOpen, setReviewModalOpen] = useState(false);
-    const [reviewBooking, setReviewBooking] = useState(null);
-    const [reviewRating, setReviewRating] = useState(0);
-    const [reviewComment, setReviewComment] = useState("");
-    const [reviewSubmitting, setReviewSubmitting] = useState(false);
-    const [reviewError, setReviewError] = useState("");
-    const [reviewedProfessors, setReviewedProfessors] = useState(new Set());
-
     // Create lesson modal state
     const [createLessonModalOpen, setCreateLessonModalOpen] = useState(false);
 
@@ -124,24 +115,7 @@ export default function Calendar() {
     const loadBookings = async () => {
         try {
             const res = await api.get("/calendar/my-bookings");
-            const bookingsData = res.data.bookings || [];
-            setBookings(bookingsData);
-            
-            // Check which professors have already been reviewed
-            const uniqueProfessorIds = [...new Set(bookingsData.map(b => b.professor_id))];
-            const reviewed = new Set();
-            
-            for (const profId of uniqueProfessorIds) {
-                try {
-                    const canReviewRes = await api.get(`/reviews/can-review/${profId}`);
-                    if (canReviewRes.data.already_reviewed) {
-                        reviewed.add(profId);
-                    }
-                } catch (err) {
-                    console.error("Error checking review status:", err);
-                }
-            }
-            setReviewedProfessors(reviewed);
+            setBookings(res.data.bookings || []);
         } catch (err) {
             setError(err.response?.data?.message || "Greška pri dohvaćanju rezervacija.");
         } finally {
@@ -450,54 +424,6 @@ export default function Calendar() {
         return now > new Date(end);
     };
 
-    // Review functions
-    const openReviewModal = (booking) => {
-        setReviewBooking(booking);
-        setReviewRating(0);
-        setReviewComment("");
-        setReviewError("");
-        setReviewModalOpen(true);
-    };
-
-    const submitReview = async () => {
-        if (reviewRating === 0) {
-            setReviewError("Molimo odaberite ocjenu (1-5 zvjezdica)");
-            return;
-        }
-
-        setReviewSubmitting(true);
-        setReviewError("");
-
-        try {
-            await api.post("/reviews", {
-                professor_id: reviewBooking.professor_id,
-                rating: reviewRating,
-                comment: reviewComment.trim() || null
-            });
-
-            setReviewModalOpen(false);
-            showSuccess("Recenzija uspješno dodana!");
-            // Mark this professor as reviewed
-            setReviewedProfessors(prev => new Set([...prev, reviewBooking.professor_id]));
-        } catch (err) {
-            setReviewError(err.response?.data?.message || "Greška pri dodavanju recenzije");
-        } finally {
-            setReviewSubmitting(false);
-        }
-    };
-
-    const renderStars = (interactive = false) => {
-        return [1, 2, 3, 4, 5].map((star) => (
-            <span
-                key={star}
-                className={`${styles.star} ${star <= reviewRating ? styles.starFilled : styles.starEmpty} ${interactive ? styles.starInteractive : ""}`}
-                onClick={interactive ? () => setReviewRating(star) : undefined}
-            >
-                ★
-            </span>
-        ));
-    };
-
     return (
         <div className={styles.page}>
             <header className={styles.pageHeaderCompact}>
@@ -799,35 +725,20 @@ export default function Calendar() {
                                                 </div>
                                             </div>
                                             {!isOngoing(booking.start_time, booking.end_time) && (
-                                                <>
-                                                    <div className={styles.slotMeta}>
-                                                        <button
-                                                            className={styles.cancelBtn}
-                                                            onClick={() => handleCancel(booking.slot_id)}
-                                                        >
-                                                            {isPastLesson(booking.end_time) ? "🗑️ Obriši" : "❌ Otkaži"}
-                                                        </button>
-
-                                                        {isPastLesson(booking.end_time) && !reviewedProfessors.has(booking.professor_id) && (
-                                                            <button
-                                                                className={styles.reviewBtn}
-                                                                onClick={() => openReviewModal(booking)}
-                                                            >
-                                                                ⭐ Recenzija
-                                                            </button>
-                                                        )}
-                                                        {isPastLesson(booking.end_time) && reviewedProfessors.has(booking.professor_id) && (
-                                                            <span className={styles.reviewedBadge}>✅ Ocijenjeno</span>
-                                                        )}
-
-                                                        <button
-                                                            className={styles.detailsBtn}
-                                                            onClick={() => openBookingDetails(booking.id)}
-                                                        >
-                                                            📋 Detalji
-                                                        </button>
-                                                    </div>
-                                                </>
+                                                <div className={styles.slotMeta}>
+                                                    <button
+                                                        className={styles.cancelBtn}
+                                                        onClick={() => handleCancel(booking.slot_id)}
+                                                    >
+                                                        {isPastLesson(booking.end_time) ? "🗑️ Obriši" : "❌ Otkaži"}
+                                                    </button>
+                                                    <button
+                                                        className={styles.detailsBtn}
+                                                        onClick={() => openBookingDetails(booking.id)}
+                                                    >
+                                                        📋 Detalji
+                                                    </button>
+                                                </div>
                                             )}
                                             {isOngoing(booking.start_time, booking.end_time) &&
                                                 booking.teaching_type === "Online" && (
@@ -986,66 +897,6 @@ export default function Calendar() {
                                 </button>
                             </>
                         )}
-                    </div>
-                </div>
-            )}
-
-            {/* Review Modal */}
-            {reviewModalOpen && reviewBooking && (
-                <div className={styles.modalOverlay} onClick={() => setReviewModalOpen(false)}>
-                    <div className={styles.reviewModal} onClick={e => e.stopPropagation()}>
-                        <h2>⭐ Ocijeni instruktora</h2>
-
-                        <div className={styles.reviewInstructorInfo}>
-                            <p><strong>👨‍🏫 Instruktor:</strong> {reviewBooking.professor_name} {reviewBooking.professor_surname}</p>
-                            <p><strong>📅 Datum:</strong> {formatFullDate(reviewBooking.start_time)}</p>
-                            {reviewBooking.interest_name && (
-                                <p><strong>📘 Predmet:</strong> {reviewBooking.interest_name}</p>
-                            )}
-                        </div>
-
-                        <div className={styles.ratingSection}>
-                            <label>Vaša ocjena:</label>
-                            <div className={styles.starsContainer}>
-                                {renderStars(true)}
-                            </div>
-                            <span className={styles.ratingLabel}>
-                                {reviewRating > 0 ? `${reviewRating}/5` : "Odaberite ocjenu"}
-                            </span>
-                        </div>
-
-                        <div className={styles.commentSection}>
-                            <label>Komentar (opcionalno):</label>
-                            <textarea
-                                className={styles.reviewTextarea}
-                                value={reviewComment}
-                                onChange={(e) => setReviewComment(e.target.value)}
-                                placeholder="Napišite svoja iskustva s ovim instruktorom..."
-                                maxLength={500}
-                                rows={4}
-                            />
-                            <span className={styles.charCount}>{reviewComment.length}/500</span>
-                        </div>
-
-                        {reviewError && (
-                            <div className={styles.reviewError}>{reviewError}</div>
-                        )}
-
-                        <div className={styles.reviewActions}>
-                            <button
-                                className={styles.cancelReviewBtn}
-                                onClick={() => setReviewModalOpen(false)}
-                            >
-                                Odustani
-                            </button>
-                            <button
-                                className={styles.submitReviewBtn}
-                                onClick={submitReview}
-                                disabled={reviewSubmitting || reviewRating === 0}
-                            >
-                                {reviewSubmitting ? "Šaljem..." : "Objavi recenziju"}
-                            </button>
-                        </div>
                     </div>
                 </div>
             )}
