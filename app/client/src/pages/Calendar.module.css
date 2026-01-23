@@ -860,7 +860,7 @@
 
     /* ovaj padding je "gap" od ruba ekrana (lijevo/desno i gore/dolje) */
     padding: 24px;
-    z-index: 9999;
+    z-index: 1;
 }
 
 .modal {
@@ -1223,4 +1223,8 @@
     .modal {
         padding: 16px;
     }
+}
+
+.pac-container {
+    z-index: 10 !important;
 }
