@@ -425,6 +425,8 @@ router.get("/my-bookings", verifyToken, async (req, res) => {
                  s.lesson_type,
                  s.price,
                  s.location,
+                 s.meeting_url,
+                 s.meeting_password,
                  s.professor_id,
                  u.name AS professor_name,
                  u.surname AS professor_surname,
