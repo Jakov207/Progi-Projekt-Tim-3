@@ -28,19 +28,9 @@ function MainLayout() {
                 <nav className={styles.navLinks}>
                     <Link to="/">Početna</Link>
 
-                    {/* Only show for NON-professors */}
-                    {user && !user.is_professor && (
-                        <>
-                            <Link to="/instructors">Instruktori</Link>
-                        </>
-                    )}
-
-                    {/* Optional: show for guests (not logged in) */}
-                    {!user && (
-                        <>
-                            <Link to="/instructors">Instruktori</Link>
-                        </>
-                    )}
+                    {(user && !user.is_professor) || !user ? (
+                        <Link to="/instructors">Instruktori</Link>
+                    ) : null}
 
                     <Link to="/quizzes">Kvizovi</Link>
 
@@ -49,9 +39,9 @@ function MainLayout() {
                             {user.is_professor ? "Moj kalendar" : "Moji termini"}
                         </Link>
                     )}
+
                     {user && <Link to="/profile">Profil</Link>}
                 </nav>
-
 
                 <div className={styles.rightSide}>
                     {!user ? (
@@ -61,12 +51,9 @@ function MainLayout() {
                         </>
                     ) : (
                         <>
-                            <span className={styles.userName}>
-                                {user.name}
-                            </span>
-                            <span className={styles.separator}>
-                                |
-                            </span>
+                            <span className={styles.userName}>{user.name}</span>
+                            <span className={styles.separator}>|</span>
+
                             <div className={styles.userInfo}>
                                 <div className={styles.avatarWrapper}>
                                     {user.profile_picture ? (
@@ -89,11 +76,12 @@ function MainLayout() {
                 </div>
             </header>
 
-            {/* GLAVNI SADRŽAJ STRANICE */}
             <main className={styles.pageContent}>
-                <Outlet /> {/* <-- React Router ovdje ubacuje Home, Profile itd */}
+                <Outlet />
             </main>
-        </>
+
+            <Footer />
+        </div>
     );
 }
 
