@@ -78,6 +78,8 @@ CREATE TABLE professor_slots (
         lesson_type lesson_type_enum NOT NULL DEFAULT '1na1',
         interest_id INT REFERENCES interests(id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        meeting_url VARCHAR(255),
+        meeting_password VARCHAR(20),
         CHECK (end_time > start_time),
         CHECK (
         teaching_type <> 'Uživo'
@@ -97,6 +99,7 @@ CREATE TABLE professor_slots (
 
 CREATE INDEX idx_professor_slots_professor ON professor_slots(professor_id);
 CREATE INDEX idx_professor_slots_start ON professor_slots(start_time);
+CREATE INDEX idx_professor_slots_meeting_url ON professor_slots(meeting_url) WHERE meeting_url IS NOT NULL;
 
 CREATE TABLE professor_slot_bookings (
         id SERIAL PRIMARY KEY,
@@ -170,4 +173,41 @@ CREATE TABLE quiz_attempt_answers (
     time_taken INT, -- milliseconds to answer
     points_earned INT DEFAULT 0,
     UNIQUE(attempt_id, question_id)
+);
+
+-- Reviews: students can rate instructors after attending a lesson
+CREATE TABLE reviews (
+    id SERIAL PRIMARY KEY,
+    professor_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    comment VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(booking_id) -- One review per booking
+);
+
+CREATE INDEX idx_reviews_professor ON reviews(professor_id);
+CREATE INDEX idx_reviews_student ON reviews(student_id);
+
+-- Session records: notes, summary, homework after sessions
+CREATE TABLE session_records (
+    id SERIAL PRIMARY KEY,
+    booking_id INT NOT NULL REFERENCES professor_slot_bookings(id) ON DELETE CASCADE,
+    student_notes TEXT,
+    instructor_summary TEXT,
+    homework TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(booking_id)
+);
+
+CREATE INDEX idx_session_records_booking ON session_records(booking_id);
+
+-- Track email reminders sent
+CREATE TABLE email_reminders_sent (
+    id SERIAL PRIMARY KEY,
+    booking_id INT NOT NULL REFERENCES professor_slot_bookings(id) ON DELETE CASCADE,
+    reminder_type VARCHAR(20) NOT NULL, -- '1hour' or '24hour'
+    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(booking_id, reminder_type)
 );

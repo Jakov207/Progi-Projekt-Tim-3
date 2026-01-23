@@ -22,6 +22,25 @@ export default function InstructorProfile() {
     const [note, setNote] = useState("");
     const [selectedInterest, setSelectedInterest] = useState("");
 
+    // Reviews state
+    const [reviews, setReviews] = useState([]);
+    const [reviewStats, setReviewStats] = useState({ average_rating: "0.0", total_reviews: 0 });
+    const [canReview, setCanReview] = useState(false);
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [reviewRating, setReviewRating] = useState(5);
+    const [reviewComment, setReviewComment] = useState("");
+    const [reviewSubmitting, setReviewSubmitting] = useState(false);
+    const [reviewMessage, setReviewMessage] = useState("");
+    const [reviewError, setReviewError] = useState("");
+
+    // Payment
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [cardNumber, setCardNumber] = useState("");
+    const [cardName, setCardName] = useState("");
+    const [cardExpiry, setCardExpiry] = useState("");
+    const [cardCvc, setCardCvc] = useState("");
+
+
     const [currentMonth, setCurrentMonth] = useState(() => {
         const now = new Date();
         return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -38,11 +57,115 @@ export default function InstructorProfile() {
         axios.get(`/instructors/${id}`).then(res => {
             setInstructor(res.data);
         });
+        fetchReviews();
     }, [id]);
 
     useEffect(() => {
         fetchSlots();
     }, [id]);
+
+    useEffect(() => {
+        if (user && !user.is_professor) {
+            checkCanReview();
+        }
+    }, [id, user]);
+
+    const formatCardNumber = (value) => {
+        return value
+            .replace(/\D/g, "")
+            .slice(0, 16)
+            .replace(/(.{4})/g, "$1 ")
+            .trim();
+    };
+
+    const formatExpiry = (value) => {
+        const cleaned = value.replace(/\D/g, "").slice(0, 4);
+        if (cleaned.length < 3) return cleaned;
+        return `${cleaned.slice(0, 2)}/${cleaned.slice(2)}`;
+    };
+
+    const isExpiryValid = (value) => {
+        if (!/^\d{2}\/\d{2}$/.test(value)) return false;
+
+        const [mm, yy] = value.split("/").map(Number);
+        if (mm < 1 || mm > 12) return false;
+
+        const now = new Date();
+        const expiry = new Date(2000 + yy, mm);
+        return expiry > now;
+    };
+
+    const fetchReviews = async () => {
+        try {
+            const res = await axios.get(`/reviews/instructor/${id}`);
+            setReviews(res.data.reviews || []);
+            setReviewStats({
+                average_rating: res.data.average_rating,
+                total_reviews: res.data.total_reviews
+            });
+        } catch (err) {
+            console.error("Error fetching reviews:", err);
+        }
+    };
+
+    const checkCanReview = async () => {
+        try {
+            const res = await axios.get(`/reviews/can-review/${id}`);
+            setCanReview(res.data.can_review && !res.data.already_reviewed);
+        } catch (err) {
+            setCanReview(false);
+        }
+    };
+
+    const handleSubmitReview = async () => {
+        setReviewSubmitting(true);
+        setReviewError("");
+
+        try {
+            await axios.post("/reviews", {
+                professor_id: parseInt(id),
+                rating: reviewRating,
+                comment: reviewComment
+            });
+
+            setReviewMessage("Recenzija uspješno dodana! ✓");
+            setShowReviewModal(false);
+            setReviewRating(5);
+            setReviewComment("");
+            setCanReview(false);
+            fetchReviews();
+            setTimeout(() => setReviewMessage(""), 4000);
+        } catch (err) {
+            setReviewError(err.response?.data?.message || "Greška kod dodavanja recenzije");
+        } finally {
+            setReviewSubmitting(false);
+        }
+    };
+
+    const formatReviewDate = (dateStr) => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString("hr-HR", {
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+        });
+    };
+
+    const renderStars = (rating, interactive = false, onSelect = null) => {
+        return (
+            <div className={styles.stars}>
+                {[1, 2, 3, 4, 5].map(star => (
+                    <span
+                        key={star}
+                        className={`${styles.star} ${star <= rating ? styles.starFilled : styles.starEmpty} ${interactive ? styles.starInteractive : ""}`}
+                        onClick={() => interactive && onSelect && onSelect(star)}
+                    >
+                        ★
+                    </span>
+                ))}
+            </div>
+        );
+    };
 
     const fetchSlots = async () => {
         try {
@@ -225,6 +348,62 @@ export default function InstructorProfile() {
 
     return (
         <div className={styles.page}>
+            {/* Review Modal */}
+            {showReviewModal && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modal}>
+                        <h3>⭐ Ocijeni instruktora</h3>
+
+                        <div className={styles.modalInfo}>
+                            <p>👨‍🏫 {instructor?.name} {instructor?.surname}</p>
+                        </div>
+
+                        <label>Ocjena</label>
+                        <div className={styles.ratingSelector}>
+                            {renderStars(reviewRating, true, setReviewRating)}
+                            <span className={styles.ratingText}>{reviewRating}/5</span>
+                        </div>
+
+                        <label>Komentar (opcionalno)</label>
+                        <textarea
+                            value={reviewComment}
+                            onChange={(e) => setReviewComment(e.target.value)}
+                            placeholder="Opišite svoje iskustvo s instruktorom..."
+                            maxLength={500}
+                        />
+                        <div className={styles.charCount}>{reviewComment.length}/500</div>
+
+                        {reviewError && (
+                            <div className={styles.modalError}>{reviewError}</div>
+                        )}
+
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.cancelBtn}
+                                onClick={() => {
+                                    setShowReviewModal(false);
+                                    setReviewError("");
+                                }}
+                            >
+                                Odustani
+                            </button>
+
+                            <button
+                                className={styles.confirmBtn}
+                                onClick={handleSubmitReview}
+                                disabled={reviewSubmitting || reviewRating === 0}
+                            >
+                                {reviewSubmitting ? (
+                                    <span className={styles.btnSpinner}></span>
+                                ) : (
+                                    "Objavi recenziju"
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {showBookingModal && selectedSlot && (
                 <div className={styles.modalOverlay}>
                     <div className={styles.modal}>
@@ -283,23 +462,126 @@ export default function InstructorProfile() {
                             <button
                                 className={styles.confirmBtn}
                                 onClick={() => {
-                                    handleBook(selectedSlot.id, note, selectedInterest);
                                     setShowBookingModal(false);
-                                    setNote("");
-                                    setSelectedInterest("");
+                                    setShowPaymentModal(true);
                                 }}
                                 disabled={!selectedInterest && selectedSlot.lesson_type === "1na1"}
                             >
-                                Rezerviraj
+                                Plati i rezerviraj
                             </button>
                         </div>
                     </div>
                 </div>
             )}
+            {showPaymentModal && selectedSlot && (
+                <div className={styles.modalOverlay}>
+                    <div className={`${styles.modal} ${styles.paymentModal}`}>
+                        <h1 className={styles.paymentName}>
+                            Kex<div>Pay</div>
+                        </h1>
+                        <h3 className={styles.paymentTitle}>
+                            Za platiti <span>{selectedSlot.price}€</span>
+                        </h3>
+
+                        <div className={styles.paymentField}>
+                            <label>Broj kartice</label>
+                            <input
+                                type="text"
+                                value={cardNumber}
+                                onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                                placeholder="1234 5678 9012 3456"
+                            />
+                            {cardNumber.replace(/\s/g, "").length > 0 &&
+                                cardNumber.replace(/\s/g, "").length !== 16 && (
+                                    <span className={styles.errorText}>
+                        Broj kartice mora imati 16 znamenki
+                    </span>
+                                )}
+                        </div>
+
+                        <div className={styles.paymentField}>
+                            <label>Ime vlasnika kartice</label>
+                            <input
+                                type="text"
+                                value={cardName}
+                                onChange={(e) => setCardName(e.target.value)}
+                                placeholder="IME PREZIME"
+                            />
+                        </div>
+
+                        <div className={styles.paymentRow}>
+                            <div className={styles.paymentField}>
+                                <label>Datum isteka</label>
+                                <input
+                                    type="text"
+                                    value={cardExpiry}
+                                    onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
+                                    placeholder="MM/YY"
+                                />
+                                {cardExpiry.length === 5 && !isExpiryValid(cardExpiry) && (
+                                    <span className={styles.errorText}>
+                            Datum isteka nije valjan
+                        </span>
+                                )}
+                            </div>
+
+                            <div className={styles.paymentField}>
+                                <label>CVC</label>
+                                <input
+                                    type="text"
+                                    value={cardCvc}
+                                    onChange={(e) =>
+                                        setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 3))
+                                    }
+                                    placeholder="123"
+                                />
+                                {cardCvc.length > 0 && cardCvc.length !== 3 && (
+                                    <span className={styles.errorText}>
+                            CVC mora imati 3 znamenke
+                        </span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.cancelBtn}
+                                onClick={() => setShowPaymentModal(false)}
+                            >
+                                Odustani
+                            </button>
+
+                            <button
+                                className={styles.confirmBtn}
+                                disabled={
+                                    cardNumber.replace(/\s/g, "").length !== 16 ||
+                                    cardCvc.length !== 3 ||
+                                    !isExpiryValid(cardExpiry) ||
+                                    !cardName
+                                }
+                                onClick={() => {
+                                    handleBook(selectedSlot.id, note, selectedInterest);
+
+                                    setShowPaymentModal(false);
+                                    setCardNumber("");
+                                    setCardName("");
+                                    setCardExpiry("");
+                                    setCardCvc("");
+                                    setNote("");
+                                    setSelectedInterest("");
+                                }}
+                            >
+                                Plati
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Success Banner */}
-            {bookingMessage && (
+            {(bookingMessage || reviewMessage) && (
                 <div className={styles.successBanner}>
-                    {bookingMessage}
+                    {bookingMessage || reviewMessage}
                 </div>
             )}
 
@@ -322,9 +604,11 @@ export default function InstructorProfile() {
                                     : "/avatar.png"}
                                 alt={`${instructor.name} ${instructor.surname}`}
                             />
-                            <div className={styles.statusBadge}>
-                                {availableSlots.length > 0 ? "🟢 Dostupan" : "🔴 Zauzet"}
-                            </div>
+                            {availableSlots.length > 0 && (
+                                <div className={styles.statusBadge}>
+                                    🟢 Dostupan
+                                </div>
+                            )}
                         </div>
                         
                         <h1>{instructor.name} {instructor.surname}</h1>
@@ -337,6 +621,14 @@ export default function InstructorProfile() {
                     </div>
 
                     <div className={styles.statsRow}>
+                        {reviewStats.total_reviews > 0 && (
+                            <div className={styles.statItem}>
+                                <span className={styles.statValue}>
+                                    ⭐ {reviewStats.average_rating}
+                                </span>
+                                <span className={styles.statLabel}>{reviewStats.total_reviews} recenzija</span>
+                            </div>
+                        )}
                         {minSlotPrice != null && (
                             <div className={styles.statItem}>
                                 <span className={styles.statValue}>Od {minSlotPrice}€</span>
@@ -396,6 +688,79 @@ export default function InstructorProfile() {
                             </div>
                         </div>
                     )}
+
+                    {/* Reviews Section */}
+                    <div className={styles.section}>
+                        <div className={styles.reviewsHeader}>
+                            <h3>⭐ Recenzije</h3>
+                            {canReview && (
+                                <button
+                                    className={styles.addReviewBtn}
+                                    onClick={() => setShowReviewModal(true)}
+                                >
+                                    + Ostavi recenziju
+                                </button>
+                            )}
+                        </div>
+
+                        {reviewStats.total_reviews > 0 && (
+                            <div className={styles.ratingOverview}>
+                                <div className={styles.ratingBig}>
+                                    {reviewStats.average_rating}
+                                </div>
+                                <div className={styles.ratingDetails}>
+                                    {renderStars(Math.round(parseFloat(reviewStats.average_rating)))}
+                                    <span className={styles.reviewCount}>
+                                        {reviewStats.total_reviews} {reviewStats.total_reviews === 1 ? "recenzija" : "recenzije"}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
+                        {reviews.length === 0 ? (
+                            <div className={styles.noReviews}>
+                                <p>Još nema recenzija za ovog instruktora.</p>
+                                {canReview && (
+                                    <p>Budite prvi koji će ostaviti recenziju!</p>
+                                )}
+                            </div>
+                        ) : (
+                            <div className={styles.reviewsList}>
+                                {reviews.map(review => (
+                                    <div key={review.id} className={styles.reviewCard}>
+                                        <div className={styles.reviewHeader}>
+                                            <img
+                                                src={review.student_picture
+                                                    ? getImageUrl(review.student_picture)
+                                                    : "/avatar.png"}
+                                                alt={`${review.student_name} ${review.student_surname}`}
+                                                className={styles.reviewAvatar}
+                                            />
+                                            <div className={styles.reviewMeta}>
+                                                <span className={styles.reviewAuthor}>
+                                                    {review.student_name} {review.student_surname}
+                                                </span>
+                                                <span className={styles.reviewSubject}>
+                                                    {review.interest_name}
+                                                </span>
+                                            </div>
+                                            <div className={styles.reviewRating}>
+                                                {renderStars(review.rating)}
+                                            </div>
+                                        </div>
+                                        {review.comment && (
+                                            <p className={styles.reviewComment}>
+                                                "{review.comment}"
+                                            </p>
+                                        )}
+                                        <span className={styles.reviewDate}>
+                                            {formatReviewDate(review.created_at)}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Right Column - Calendar & Booking */}

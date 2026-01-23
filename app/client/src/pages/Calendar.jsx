@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api";
 import { Autocomplete, useLoadScript } from "@react-google-maps/api";
 import { AuthContext } from "../context/AuthContext";
@@ -6,6 +7,7 @@ import styles from "./Calendar.module.css";
 
 export default function Calendar() {
     const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
     const [slots, setSlots] = useState([]);
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -20,6 +22,10 @@ export default function Calendar() {
     const [bookingDetailsLoading, setBookingDetailsLoading] = useState(false);
     const [noteDraft, setNoteDraft] = useState("");
     const [noteSaving, setNoteSaving] = useState(false);
+
+    // Create lesson modal state
+    const [createLessonModalOpen, setCreateLessonModalOpen] = useState(false);
+
     const [form, setForm] = useState({
         date: "",
         start: "",
@@ -171,6 +177,7 @@ export default function Calendar() {
             });
 
             showSuccess("Termin uspješno dodan! ✓");
+            setCreateLessonModalOpen(false);
             loadSlots();
         } catch (err) {
             setError(err.response?.data?.message || "Greška pri spremanju termina.");
@@ -359,7 +366,7 @@ export default function Calendar() {
         const month = String(currentMonth.getMonth() + 1).padStart(2, "0");
         const date = String(day).padStart(2, "0");
         const newDate = `${year}-${month}-${date}`;
-        
+
         if (form.date === newDate) {
             setForm(prev => ({ ...prev, date: "" }));
         } else {
@@ -396,28 +403,34 @@ export default function Calendar() {
     }
 
     const hoveredKey = getHoveredDayKey();
-    const hoveredData = user?.is_professor 
+    const hoveredData = user?.is_professor
         ? (hoveredKey && slotCountByDay[hoveredKey])
         : (hoveredKey && bookingCountByDay[hoveredKey]);
 
     const isOngoing = (start, end) => {
         const now = new Date();
-        return now >= new Date(start) && now <= new Date(end);
+        const startTime = new Date(start);
+        const endTime = new Date(end);
+
+        // Izračunaj točku kad se otvara Join (10 min prije)
+        const tenMinutesBefore = new Date(startTime.getTime() - 10 * 60 * 1000);
+
+        // LOGIKA: Sadašnje vrijeme mora biti IZMEĐU (10 min prije) i (kraja termina)
+        return now >= tenMinutesBefore && now <= endTime;
+    };
+
+    const isPastLesson = (end) => {
+        const now = new Date();
+        return now > new Date(end);
     };
 
     return (
         <div className={styles.page}>
-            <header className={styles.pageHeader}>
+            <header className={styles.pageHeaderCompact}>
                 <div className={styles.headerContent}>
                     <h1>
                         {user?.is_professor ? "📅 Moj Kalendar" : "📋 Moji Termini"}
                     </h1>
-                    <p className={styles.subtitle}>
-                        {user?.is_professor 
-                            ? "Upravljajte svojom dostupnošću i pratite rezervacije studenata"
-                            : "Pregledajte svoje rezervirane termine i upravljajte njima"
-                        }
-                    </p>
                 </div>
             </header>
 
@@ -434,7 +447,7 @@ export default function Calendar() {
                 </div>
             )}
 
-            <div className={styles.mainContent}>
+            <div className={user?.is_professor ? styles.mainContentProfessor : styles.mainContent}>
                 <div className={styles.calendarCard}>
                     <div className={styles.calendarHeader}>
                         <button
@@ -471,12 +484,18 @@ export default function Calendar() {
                             const key = day
                                 ? `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
                                 : null;
-                            
+
                             const hasSlots = key && hasSlotsOnDay(key);
                             const hasBooking = key && hasBookingsOnDay(key);
                             const dayIsPast = isPast(day);
                             const dayIsToday = isToday(day);
-                            
+
+                            // Get tooltip data for this specific day
+                            const dayData = user?.is_professor
+                                ? (key && slotCountByDay[key])
+                                : (key && bookingCountByDay[key]);
+                            const showTooltip = hoveredDay === day && dayData;
+
                             let dayClass = styles.day;
                             if (isSelectedDay(day)) dayClass += ` ${styles.selectedDay}`;
                             if (dayIsToday) dayClass += ` ${styles.today}`;
@@ -504,39 +523,39 @@ export default function Calendar() {
                                             {bookingCountByDay[key].length}
                                         </span>
                                     )}
+                                    
+                                    {/* Tooltip - positioned relative to this day */}
+                                    {showTooltip && (
+                                        <div className={styles.tooltip}>
+                                            <div className={styles.tooltipDate}>
+                                                {day}. {monthNames[currentMonth.getMonth()]}
+                                            </div>
+                                            {user?.is_professor ? (
+                                                <div className={styles.tooltipContent}>
+                                                    {dayData.slots.map((slot, i) => (
+                                                        <div key={i} className={styles.tooltipItem}>
+                                                            🕐 {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
+                                                            <span className={styles.tooltipBadge}>
+                                                                {slot.booked_count || 0}/{slot.capacity}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className={styles.tooltipContent}>
+                                                    {dayData.map((b, i) => (
+                                                        <div key={i} className={styles.tooltipItem}>
+                                                            🕐 {formatTime(b.start_time)} - {b.professor_name}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </button>
                             );
                         })}
                     </div>
-
-                    {/* Tooltip */}
-                    {hoveredDay && hoveredData && (
-                        <div className={styles.tooltip}>
-                            <div className={styles.tooltipDate}>
-                                {hoveredDay}. {monthNames[currentMonth.getMonth()]}
-                            </div>
-                            {user?.is_professor ? (
-                                <div className={styles.tooltipContent}>
-                                    {hoveredData.slots.map((slot, i) => (
-                                        <div key={i} className={styles.tooltipItem}>
-                                            🕐 {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
-                                            <span className={styles.tooltipBadge}>
-                                                {slot.booked_count || 0}/{slot.capacity}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className={styles.tooltipContent}>
-                                    {hoveredData.map((b, i) => (
-                                        <div key={i} className={styles.tooltipItem}>
-                                            🕐 {formatTime(b.start_time)} - {b.professor_name}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
 
                     <div className={styles.legend}>
                         <div className={styles.legendItem}>
@@ -555,170 +574,25 @@ export default function Calendar() {
                             </div>
                         )}
                     </div>
+
+                    {user?.is_professor && (
+                        <button
+                            className={styles.createLessonBtn}
+                            onClick={() => setCreateLessonModalOpen(true)}
+                        >
+                            ➕ Kreiraj novi termin
+                        </button>
+                    )}
                 </div>
 
                 <div className={styles.sidePanel}>
-                    {user?.is_professor && (
-                        <div className={styles.formCard}>
-                            <h3>➕ Dodaj novi termin</h3>
-                            <p className={styles.formHint}>
-                                Kliknite na dan u kalendaru ili ručno unesite datum
-                            </p>
-                            <form onSubmit={handleCreate}>
-                                <div className={styles.formGrid}>
-                                    <div className={styles.field}>
-                                        <label>📅 Datum</label>
-                                        <input
-                                            type="date"
-                                            value={form.date}
-                                            onChange={(e) => setForm(prev => ({ ...prev, date: e.target.value }))}
-                                        />
-                                    </div>
-                                    <div className={styles.fieldRow}>
-                                        <div className={styles.field}>
-                                            <label>🕐 Od</label>
-                                            <input
-                                                type="time"
-                                                value={form.start}
-                                                onChange={(e) => setForm(prev => ({ ...prev, start: e.target.value }))}
-                                            />
-                                        </div>
-                                        <div className={styles.field}>
-                                            <label>🕐 Do</label>
-                                            <input
-                                                type="time"
-                                                value={form.end}
-                                                onChange={(e) => setForm(prev => ({ ...prev, end: e.target.value }))}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className={styles.field}>
-                                        <label>💰 Cijena (€)</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
-                                            value={form.price}
-                                            onChange={(e) =>
-                                                setForm(prev => ({ ...prev, price: e.target.value }))
-                                            }
-                                        />
-                                    </div>
-                                    <div className={styles.field}>
-                                        <label>👥 Tip predavanja</label>
-                                        <select
-                                            value={form.lesson_type}
-                                            onChange={(e) =>
-                                                setForm(prev => ({
-                                                    ...prev,
-                                                    lesson_type: e.target.value,
-                                                    capacity: e.target.value === "1na1" ? 1 : 2,
-                                                    interest_id: ""
-                                                }))
-                                            }
-                                        >
-                                            <option value="1na1">1 na 1</option>
-                                            <option value="Grupno">Grupno</option>
-                                        </select>
-                                    </div>
-                                    {form.lesson_type === "Grupno" && (
-                                        <div className={styles.field}>
-                                            <label>👥 Kapacitet</label>
-                                            <input
-                                                type="number"
-                                                min="2"
-                                                value={form.capacity}
-                                                onChange={(e) =>
-                                                    setForm(prev => ({ ...prev, capacity: e.target.value }))
-                                                }
-                                            />
-                                        </div>
-                                    )}
-                                    {form.lesson_type === "Grupno" && (
-                                        <div className={styles.field}>
-                                            <label>📘 Predmet</label>
-                                            {interests.length === 0 ? (
-                                                <div className={styles.formHint}>
-                                                    Nemate dodanih predmeta
-                                                </div>
-                                            ) : (
-                                                <select
-                                                    value={form.interest_id}
-                                                    onChange={(e) =>
-                                                        setForm(prev => ({ ...prev, interest_id: e.target.value }))
-                                                    }
-                                                >
-                                                    <option value="">Odaberite predmet</option>
-                                                    {interests.map(i => (
-                                                        <option key={i.id} value={i.id}>
-                                                            {i.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            )}
-                                        </div>
-                                    )}
-                                    <div className={styles.field}>
-                                        <label>🎓 Način predavanja</label>
-                                        <select
-                                            value={form.teaching_type}
-                                            onChange={(e) =>
-                                                setForm(prev => ({ ...prev, teaching_type: e.target.value }))
-                                            }
-                                        >
-                                            <option value="Online">Online</option>
-                                            <option value="Uživo">Uživo</option>
-                                        </select>
-                                    </div>
-
-                                    {form.teaching_type === "Uživo" && (
-                                        <div className={styles.field}>
-                                            <label>📍 Lokacija</label>
-
-                                            {!isLoaded ? (
-                                                <input
-                                                    disabled
-                                                    placeholder="Učitavanje mape..."
-                                                    className={styles.inputField}
-                                                />
-                                            ) : (
-                                                <Autocomplete
-                                                    options={{
-                                                        types: ["address"],
-                                                        componentRestrictions: { country: "hr" }
-                                                    }}
-                                                    onLoad={onLoadAutocomplete}
-                                                    onPlaceChanged={onPlaceChanged}
-                                                >
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Unesite adresu"
-                                                        value={form.location}
-                                                        onChange={(e) =>
-                                                            setForm(prev => ({ ...prev, location: e.target.value }))
-                                                        }
-                                                        className={styles.inputField}
-                                                    />
-                                                </Autocomplete>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                                <button type="submit" className={styles.createBtn}>
-                                    Dodaj termin
-                                </button>
-                            </form>
-                        </div>
-                    )}
-
                     <div className={styles.listCard}>
                         <div className={styles.listHeader}>
                             <h3>
                                 {user?.is_professor ? "📋 Vaši termini" : "📋 Vaše rezervacije"}
                             </h3>
                             {form.date && (
-                                <button 
+                                <button
                                     className={styles.clearFilter}
                                     onClick={() => setForm(prev => ({ ...prev, date: "" }))}
                                 >
@@ -750,11 +624,10 @@ export default function Calendar() {
                                     selectedDaySlots.map(slot => (
                                         <div
                                             key={slot.id}
-                                            className={`${styles.slotCard} ${
-                                                isOngoing(slot.start_time, slot.end_time) ? styles.ongoing : ""
-                                            }`}
+                                            className={`${styles.slotCard} ${isOngoing(slot.start_time, slot.end_time) ? styles.ongoing : ""
+                                                }`}
                                         >
-                                        <div className={styles.slotMain}>
+                                            <div className={styles.slotMain}>
                                                 <div className={styles.slotDate}>
                                                     {formatShortDate(slot.start_time)}
                                                 </div>
@@ -777,22 +650,22 @@ export default function Calendar() {
                                                         <div className={`${styles.capacityBadge} ${Number(slot.booked_count) >= Number(slot.capacity) ? styles.full : ""}`}>
                                                             👥 {slot.booked_count || 0} / {slot.capacity}
                                                         </div>
-                                                            {Number(slot.booked_count || 0) === 0 ? (
-                                                                <button
-                                                                    className={styles.deleteBtn}
-                                                                    onClick={() => handleDelete(slot.id)}
-                                                                >
-                                                                    🗑️ Obriši
-                                                                </button>
+                                                        {Number(slot.booked_count || 0) === 0 ? (
+                                                            <button
+                                                                className={styles.deleteBtn}
+                                                                onClick={() => handleDelete(slot.id)}
+                                                            >
+                                                                🗑️ Obriši
+                                                            </button>
 
-                                                            ) : (
-                                                                <button
-                                                                    className={styles.detailsBtn}
-                                                                    onClick={() => openDetails(slot.id)}
-                                                                >
-                                                                    📋 Detalji
-                                                                </button>
-                                                            )}
+                                                        ) : (
+                                                            <button
+                                                                className={styles.detailsBtn}
+                                                                onClick={() => openDetails(slot.id)}
+                                                            >
+                                                                📋 Detalji
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </>
                                             )}
@@ -801,7 +674,13 @@ export default function Calendar() {
                                                 slot.teaching_type === "Online" && (
                                                     <button
                                                         className={styles.joinBtn}
-                                                        onClick={() => navigate(`/video/${slot.id}`)}
+                                                        onClick={() => {
+                                                            if (slot.meeting_url) {
+                                                                window.open(slot.meeting_url, '_blank');
+                                                            } else {
+                                                                alert("Link za sastanak još nije generiran.");
+                                                            }
+                                                        }}
                                                     >
                                                         🎥 Pridruži se
                                                     </button>
@@ -822,13 +701,12 @@ export default function Calendar() {
                                     selectedDayBookings.map(booking => (
                                         <div
                                             key={booking.id}
-                                            className={`${styles.slotCard} ${
-                                                isOngoing(booking.start_time, booking.end_time)
-                                                    ? styles.ongoing
-                                                    : ""
-                                            }`}
+                                            className={`${styles.slotCard} ${isOngoing(booking.start_time, booking.end_time)
+                                                ? styles.ongoing
+                                                : ""
+                                                }`}
                                         >
-                                        <div className={styles.slotMain}>
+                                            <div className={styles.slotMain}>
                                                 <div className={styles.slotDate}>
                                                     {formatShortDate(booking.start_time)}
                                                 </div>
@@ -847,29 +725,32 @@ export default function Calendar() {
                                                 </div>
                                             </div>
                                             {!isOngoing(booking.start_time, booking.end_time) && (
-                                                <>
-                                                    <div className={styles.slotMeta}>
-                                                        <button
-                                                            className={styles.cancelBtn}
-                                                            onClick={() => handleCancel(booking.slot_id)}
-                                                        >
-                                                            ❌ Otkaži
-                                                        </button>
-
-                                                        <button
-                                                            className={styles.detailsBtn}
-                                                            onClick={() => openBookingDetails(booking.id)}
-                                                        >
-                                                            📋 Detalji
-                                                        </button>
-                                                    </div>
-                                                </>
+                                                <div className={styles.slotMeta}>
+                                                    <button
+                                                        className={styles.cancelBtn}
+                                                        onClick={() => handleCancel(booking.slot_id)}
+                                                    >
+                                                        {isPastLesson(booking.end_time) ? "🗑️ Obriši" : "❌ Otkaži"}
+                                                    </button>
+                                                    <button
+                                                        className={styles.detailsBtn}
+                                                        onClick={() => openBookingDetails(booking.id)}
+                                                    >
+                                                        📋 Detalji
+                                                    </button>
+                                                </div>
                                             )}
                                             {isOngoing(booking.start_time, booking.end_time) &&
                                                 booking.teaching_type === "Online" && (
                                                     <button
                                                         className={styles.joinBtn}
-                                                        onClick={() => navigate(`/video/${booking.slot_id}`)}
+                                                        onClick={() => {
+                                                            if (booking.meeting_url) {
+                                                                window.open(booking.meeting_url, '_blank');
+                                                            } else {
+                                                                alert("Link za sastanak još nije generiran.");
+                                                            }
+                                                        }}
                                                     >
                                                         🎥 Pridruži se
                                                     </button>
@@ -1016,6 +897,154 @@ export default function Calendar() {
                                 </button>
                             </>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* Create Lesson Modal */}
+            {createLessonModalOpen && (
+                <div className={styles.modalOverlay} onClick={() => setCreateLessonModalOpen(false)}>
+                    <div className={styles.createLessonModal} onClick={e => e.stopPropagation()}>
+                        <h2>➕ Kreiraj novi termin</h2>
+                        <p className={styles.formHint}>Ispunite detalje za novi termin</p>
+
+                        <form onSubmit={handleCreate}>
+                            <div className={styles.formGrid}>
+                                <div className={styles.field}>
+                                    <label>📅 Datum</label>
+                                    <input
+                                        type="date"
+                                        value={form.date}
+                                        onChange={(e) => setForm(prev => ({ ...prev, date: e.target.value }))}
+                                    />
+                                </div>
+                                <div className={styles.fieldRow}>
+                                    <div className={styles.field}>
+                                        <label>🕐 Od</label>
+                                        <input
+                                            type="time"
+                                            value={form.start}
+                                            onChange={(e) => setForm(prev => ({ ...prev, start: e.target.value }))}
+                                        />
+                                    </div>
+                                    <div className={styles.field}>
+                                        <label>🕐 Do</label>
+                                        <input
+                                            type="time"
+                                            value={form.end}
+                                            onChange={(e) => setForm(prev => ({ ...prev, end: e.target.value }))}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className={styles.field}>
+                                    <label>💰 Cijena (€)</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={form.price}
+                                        onChange={(e) => setForm(prev => ({ ...prev, price: e.target.value }))}
+                                    />
+                                </div>
+
+                                <div className={styles.field}>
+                                    <label>👥 Tip predavanja</label>
+                                    <select
+                                        value={form.lesson_type}
+                                        onChange={(e) =>
+                                            setForm(prev => ({
+                                                ...prev,
+                                                lesson_type: e.target.value,
+                                                capacity: e.target.value === "1na1" ? 1 : 2,
+                                                interest_id: ""
+                                            }))
+                                        }
+                                    >
+                                        <option value="1na1">1 na 1</option>
+                                        <option value="Grupno">Grupno</option>
+                                    </select>
+                                </div>
+
+                                {form.lesson_type === "Grupno" && (
+                                    <div className={styles.field}>
+                                        <label>👥 Kapacitet</label>
+                                        <input
+                                            type="number"
+                                            min="2"
+                                            value={form.capacity}
+                                            onChange={(e) => setForm(prev => ({ ...prev, capacity: e.target.value }))}
+                                        />
+                                    </div>
+                                )}
+
+                                {form.lesson_type === "Grupno" && (
+                                    <div className={styles.field}>
+                                        <label>📘 Predmet</label>
+                                        {interests.length === 0 ? (
+                                            <div className={styles.formHint}>Nemate dodanih predmeta</div>
+                                        ) : (
+                                            <select
+                                                value={form.interest_id}
+                                                onChange={(e) => setForm(prev => ({ ...prev, interest_id: e.target.value }))}
+                                            >
+                                                <option value="">Odaberite predmet</option>
+                                                {interests.map(i => (
+                                                    <option key={i.id} value={i.id}>{i.name}</option>
+                                                ))}
+                                            </select>
+                                        )}
+                                    </div>
+                                )}
+
+                                <div className={styles.field}>
+                                    <label>🎓 Način predavanja</label>
+                                    <select
+                                        value={form.teaching_type}
+                                        onChange={(e) => setForm(prev => ({ ...prev, teaching_type: e.target.value }))}
+                                    >
+                                        <option value="Online">Online</option>
+                                        <option value="Uživo">Uživo</option>
+                                    </select>
+                                </div>
+
+                                {form.teaching_type === "Uživo" && (
+                                    <div className={styles.field}>
+                                        <label>📍 Lokacija</label>
+                                        {!isLoaded ? (
+                                            <input disabled placeholder="Učitavanje mape..." className={styles.inputField} />
+                                        ) : (
+                                            <Autocomplete
+                                                options={{ types: ["address"], componentRestrictions: { country: "hr" } }}
+                                                onLoad={onLoadAutocomplete}
+                                                onPlaceChanged={onPlaceChanged}
+                                            >
+                                                <input
+                                                    type="text"
+                                                    placeholder="Unesite adresu"
+                                                    value={form.location}
+                                                    onChange={(e) => setForm(prev => ({ ...prev, location: e.target.value }))}
+                                                    className={styles.inputField}
+                                                />
+                                            </Autocomplete>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className={styles.modalActions}>
+                                <button
+                                    type="button"
+                                    className={styles.cancelReviewBtn}
+                                    onClick={() => setCreateLessonModalOpen(false)}
+                                >
+                                    Odustani
+                                </button>
+                                <button type="submit" className={styles.createLessonSubmitBtn}>
+                                    ✓ Kreiraj termin
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

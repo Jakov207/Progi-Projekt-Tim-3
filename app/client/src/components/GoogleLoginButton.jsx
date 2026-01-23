@@ -4,7 +4,7 @@ import api from "../api";
 import { AuthContext } from "../context/AuthContext";
 
 export default function GoogleLoginButton() {
-    const { setUser } = useContext(AuthContext);
+    const { refreshUser } = useContext(AuthContext);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -38,7 +38,7 @@ export default function GoogleLoginButton() {
                 return;
             }
 
-            setUser(res.data.user);
+            await refreshUser();
             navigate("/");
         } catch (err) {
             console.error(err.response?.data?.message || "Google login error");

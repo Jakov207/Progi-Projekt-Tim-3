@@ -96,10 +96,10 @@
 
 /* Grid Layout */
 .profileGrid {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 1fr 450px;
+    grid-template-columns: 1fr 1fr;
     gap: 30px;
     align-items: start;
 }
@@ -474,6 +474,250 @@
     border-radius: 8px;
     font-size: 0.7rem;
 }
+
+.slotMeta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.slotType {
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 4px 10px;
+    border-radius: 10px;
+}
+
+.slotPrice {
+    background: #dcfce7;
+    color: #166534;
+    padding: 4px 10px;
+    border-radius: 10px;
+}
+
+/* ===== Booking Modal ===== */
+
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal {
+    background: #fff;
+    border-radius: 20px;
+    padding: 24px;
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+    animation: modalIn 0.25s ease;
+}
+
+@keyframes modalIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal h3 {
+    margin: 0 0 6px 0;
+    font-size: 1.2rem;
+    color: #1a4a5e;
+}
+
+/* Info block */
+.modalInfo {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+
+.modalInfo p {
+    margin: 4px 0;
+    font-weight: 500;
+    color: #334155;
+    font-size: 0.9rem;
+}
+
+/* Form */
+.modal label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: #475569;
+    font-weight: 600;
+}
+
+.modal select,
+.modal textarea {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    padding: 8px 10px;
+    font-size: 0.85rem;
+    font-family: inherit;
+}
+
+.modal textarea {
+    resize: vertical;
+    min-height: 70px;
+}
+
+.modal select:focus,
+.modal textarea:focus {
+    outline: none;
+    border-color: #22c55e;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.15);
+}
+
+/* Actions */
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.cancelBtn {
+    background: #e2e8f0;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.cancelBtn:hover {
+    background: #cbd5f5;
+}
+
+.confirmBtn {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.confirmBtn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(34, 197, 94, 0.4);
+}
+
+.confirmBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.paymentName{
+    display: flex;
+    align-items: center;
+    font-style: italic;
+}
+
+.paymentName div{
+    color: blue;
+}
+
+.paymentModal {
+    max-width: 420px;
+}
+
+.paymentTitle {
+    font-size: 1.4rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.paymentTitle span {
+    color: #2ecc71;
+    font-weight: 700;
+}
+
+.paymentField {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.paymentField label {
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+}
+
+.paymentField input {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.paymentField input:focus {
+    outline: none;
+    border-color: #2ecc71;
+}
+
+.paymentRow {
+    display: flex;
+    gap: 12px;
+}
+
+.errorText {
+    color: #e74c3c;
+    font-size: 0.75rem;
+    margin-top: 4px;
+}
+
+.slotLocation {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    width: fit-content;
+}
+
+
+.slotLessonType {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 4px 10px;
+    border-radius: 10px;
+}
+
+
+.slotInterest {
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateX(-50%) translateY(10px); }
@@ -857,6 +1101,211 @@
 .confirmBtn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+/* ===== Reviews Section ===== */
+
+.reviewsHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.reviewsHeader h3 {
+    margin: 0;
+}
+
+.addReviewBtn {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.addReviewBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+.ratingOverview {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.ratingBig {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #92400e;
+}
+
+.ratingDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.reviewCount {
+    font-size: 0.85rem;
+    color: #92400e;
+}
+
+.stars {
+    display: flex;
+    gap: 2px;
+}
+
+.star {
+    font-size: 1.2rem;
+    transition: transform 0.15s ease;
+}
+
+.starFilled {
+    color: #f59e0b;
+}
+
+.starEmpty {
+    color: #d1d5db;
+}
+
+.starInteractive {
+    cursor: pointer;
+}
+
+.starInteractive:hover {
+    transform: scale(1.2);
+}
+
+.ratingSelector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+}
+
+.ratingSelector .star {
+    font-size: 1.8rem;
+}
+
+.ratingText {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.noReviews {
+    text-align: center;
+    padding: 30px;
+    background: #f8fafc;
+    border-radius: 12px;
+    color: #64748b;
+}
+
+.noReviews p {
+    margin: 6px 0;
+}
+
+.reviewsList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.reviewCard {
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.reviewCard:hover {
+    border-color: #f59e0b;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
+}
+
+.reviewHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.reviewAvatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.reviewMeta {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.reviewAuthor {
+    font-weight: 600;
+    color: #1a4a5e;
+    font-size: 0.95rem;
+}
+
+.reviewSubject {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.reviewRating {
+    display: flex;
+}
+
+.reviewRating .star {
+    font-size: 1rem;
+}
+
+.reviewComment {
+    color: #475569;
+    line-height: 1.6;
+    font-style: italic;
+    margin: 0 0 10px 0;
+    padding-left: 12px;
+    border-left: 3px solid #f59e0b;
+}
+
+.reviewDate {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.charCount {
+    text-align: right;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: -8px;
+    margin-bottom: 8px;
+}
+
+.modalError {
+    background: #fef2f2;
+    color: #dc2626;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
 }
 
 /* Responsive */

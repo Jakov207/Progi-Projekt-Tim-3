@@ -28,38 +28,45 @@ function MainLayout() {
                 <nav className={styles.navLinks}>
                     <Link to="/">Početna</Link>
 
-                    {/* Instruktori/Kvizovi: prikazujemo i gostima i studentima */}
-                    {(!user || (user && !user.is_professor)) && (
+                    {/* Only show for NON-professors */}
+                    {user && !user.is_professor && (
                         <>
                             <Link to="/instructors">Instruktori</Link>
-                            <Link to="/quizzes">Kvizovi</Link>
                         </>
                     )}
 
-                    {user && <Link to="/profile">Profil</Link>}
+                    {/* Optional: show for guests (not logged in) */}
+                    {!user && (
+                        <>
+                            <Link to="/instructors">Instruktori</Link>
+                        </>
+                    )}
+
+                    <Link to="/quizzes">Kvizovi</Link>
 
                     {user && (
                         <Link to="/calendar">
                             {user.is_professor ? "Moj kalendar" : "Moji termini"}
                         </Link>
                     )}
+                    {user && <Link to="/profile">Profil</Link>}
                 </nav>
+
 
                 <div className={styles.rightSide}>
                     {!user ? (
                         <>
-                            <Link to="/register" className={styles.registerBtn}>
-                                Registracija
-                            </Link>
-                            <Link to="/login" className={styles.loginBtn}>
-                                Prijava
-                            </Link>
+                            <Link to="/register" className={styles.registerBtn}>Registracija</Link>
+                            <Link to="/login" className={styles.loginBtn}>Prijava</Link>
                         </>
                     ) : (
                         <>
-                            <span className={styles.userName}>{user.name}</span>
-                            <span className={styles.separator}>|</span>
-
+                            <span className={styles.userName}>
+                                {user.name}
+                            </span>
+                            <span className={styles.separator}>
+                                |
+                            </span>
                             <div className={styles.userInfo}>
                                 <div className={styles.avatarWrapper}>
                                     {user.profile_picture ? (
@@ -69,7 +76,7 @@ function MainLayout() {
                                             className={styles.avatar}
                                         />
                                     ) : (
-                                        <div className={styles.avatarPlaceholder}>{initials}</div>
+                                        <i className="fa-solid fa-user"></i>
                                     )}
                                 </div>
                             </div>
@@ -82,14 +89,11 @@ function MainLayout() {
                 </div>
             </header>
 
-            {/* Content */}
+            {/* GLAVNI SADRŽAJ STRANICE */}
             <main className={styles.pageContent}>
-                <Outlet />
+                <Outlet /> {/* <-- React Router ovdje ubacuje Home, Profile itd */}
             </main>
-
-            {/* Global Footer */}
-            <Footer />
-        </div>
+        </>
     );
 }
 

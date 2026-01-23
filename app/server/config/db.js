@@ -1,6 +1,6 @@
 const dotenv = require('dotenv');
 dotenv.config();
-const {Pool} = require('pg');
+const { Pool } = require('pg');
 
 const pool = new Pool({
     host: process.env.DB_HOST,
@@ -11,7 +11,8 @@ const pool = new Pool({
     //ssl: { rejectUnauthorized: false }
 })
 
-pool.on('connect', () => {
+pool.on('connect', (client) => {
+    client.query("SET TIME ZONE 'Europe/Zagreb'").catch(err => console.error('Error setting time zone', err));
     console.log('Connected to the database');
 })
 

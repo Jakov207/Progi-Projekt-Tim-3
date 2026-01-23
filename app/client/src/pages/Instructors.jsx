@@ -6,7 +6,6 @@ import styles from "./Instructors.module.css";
 
 export default function Instructors() {
     const navigate = useNavigate();
-
     const [instructors, setInstructors] = useState([]);
     const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -53,7 +52,6 @@ export default function Instructors() {
             max_price: filters.max_price,
             interests: filters.interests.join(",")
         };
-
         const res = await axios.get("/instructors", { params });
         setInstructors(res.data || []);
     };
@@ -214,7 +212,6 @@ export default function Instructors() {
                 </div>
             </div>
 
-            {/* GRID */}
             <div className={styles.grid}>
                 {displayedInstructors.map((i) => (
                     <div
