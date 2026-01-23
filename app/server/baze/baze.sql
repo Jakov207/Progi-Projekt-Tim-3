@@ -171,3 +171,18 @@ CREATE TABLE quiz_attempt_answers (
     points_earned INT DEFAULT 0,
     UNIQUE(attempt_id, question_id)
 );
+
+-- Reviews: students can rate instructors after attending a lesson
+CREATE TABLE reviews (
+    id SERIAL PRIMARY KEY,
+    professor_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    booking_id INT NOT NULL REFERENCES professor_slot_bookings(id) ON DELETE CASCADE,
+    rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    comment VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(booking_id) -- One review per booking
+);
+
+CREATE INDEX idx_reviews_professor ON reviews(professor_id);
+CREATE INDEX idx_reviews_student ON reviews(student_id);

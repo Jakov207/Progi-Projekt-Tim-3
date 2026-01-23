@@ -22,6 +22,18 @@ export default function InstructorProfile() {
     const [note, setNote] = useState("");
     const [selectedInterest, setSelectedInterest] = useState("");
 
+    // Reviews state
+    const [reviews, setReviews] = useState([]);
+    const [reviewStats, setReviewStats] = useState({ average_rating: "0.0", total_reviews: 0 });
+    const [canReview, setCanReview] = useState(false);
+    const [reviewBooking, setReviewBooking] = useState(null);
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [reviewRating, setReviewRating] = useState(5);
+    const [reviewComment, setReviewComment] = useState("");
+    const [reviewSubmitting, setReviewSubmitting] = useState(false);
+    const [reviewMessage, setReviewMessage] = useState("");
+    const [reviewError, setReviewError] = useState("");
+
     const [currentMonth, setCurrentMonth] = useState(() => {
         const now = new Date();
         return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -38,11 +50,93 @@ export default function InstructorProfile() {
         axios.get(`/instructors/${id}`).then(res => {
             setInstructor(res.data);
         });
+        fetchReviews();
     }, [id]);
 
     useEffect(() => {
         fetchSlots();
     }, [id]);
+
+    useEffect(() => {
+        if (user && !user.is_professor) {
+            checkCanReview();
+        }
+    }, [id, user]);
+
+    const fetchReviews = async () => {
+        try {
+            const res = await axios.get(`/reviews/instructor/${id}`);
+            setReviews(res.data.reviews || []);
+            setReviewStats({
+                average_rating: res.data.average_rating,
+                total_reviews: res.data.total_reviews
+            });
+        } catch (err) {
+            console.error("Error fetching reviews:", err);
+        }
+    };
+
+    const checkCanReview = async () => {
+        try {
+            const res = await axios.get(`/reviews/can-review/${id}`);
+            setCanReview(res.data.can_review);
+            setReviewBooking(res.data.booking);
+        } catch (err) {
+            setCanReview(false);
+        }
+    };
+
+    const handleSubmitReview = async () => {
+        if (!reviewBooking) return;
+
+        setReviewSubmitting(true);
+        setReviewError("");
+
+        try {
+            await axios.post("/reviews", {
+                booking_id: reviewBooking.booking_id,
+                rating: reviewRating,
+                comment: reviewComment
+            });
+
+            setReviewMessage("Recenzija uspješno dodana! ✓");
+            setShowReviewModal(false);
+            setReviewRating(5);
+            setReviewComment("");
+            fetchReviews();
+            checkCanReview();
+            setTimeout(() => setReviewMessage(""), 4000);
+        } catch (err) {
+            setReviewError(err.response?.data?.message || "Greška kod dodavanja recenzije");
+        } finally {
+            setReviewSubmitting(false);
+        }
+    };
+
+    const formatReviewDate = (dateStr) => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString("hr-HR", {
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+        });
+    };
+
+    const renderStars = (rating, interactive = false, onSelect = null) => {
+        return (
+            <div className={styles.stars}>
+                {[1, 2, 3, 4, 5].map(star => (
+                    <span
+                        key={star}
+                        className={`${styles.star} ${star <= rating ? styles.starFilled : styles.starEmpty} ${interactive ? styles.starInteractive : ""}`}
+                        onClick={() => interactive && onSelect && onSelect(star)}
+                    >
+                        ★
+                    </span>
+                ))}
+            </div>
+        );
+    };
 
     const fetchSlots = async () => {
         try {
@@ -225,6 +319,63 @@ export default function InstructorProfile() {
 
     return (
         <div className={styles.page}>
+            {/* Review Modal */}
+            {showReviewModal && reviewBooking && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modal}>
+                        <h3>Ostavi recenziju</h3>
+
+                        <div className={styles.modalInfo}>
+                            <p>📘 {reviewBooking.interest_name}</p>
+                            <p>📅 {formatReviewDate(reviewBooking.end_time)}</p>
+                        </div>
+
+                        <label>Ocjena</label>
+                        <div className={styles.ratingSelector}>
+                            {renderStars(reviewRating, true, setReviewRating)}
+                            <span className={styles.ratingText}>{reviewRating}/5</span>
+                        </div>
+
+                        <label>Komentar (opcionalno)</label>
+                        <textarea
+                            value={reviewComment}
+                            onChange={(e) => setReviewComment(e.target.value)}
+                            placeholder="Opišite svoje iskustvo s instruktorom..."
+                            maxLength={500}
+                        />
+                        <div className={styles.charCount}>{reviewComment.length}/500</div>
+
+                        {reviewError && (
+                            <div className={styles.modalError}>{reviewError}</div>
+                        )}
+
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.cancelBtn}
+                                onClick={() => {
+                                    setShowReviewModal(false);
+                                    setReviewError("");
+                                }}
+                            >
+                                Odustani
+                            </button>
+
+                            <button
+                                className={styles.confirmBtn}
+                                onClick={handleSubmitReview}
+                                disabled={reviewSubmitting}
+                            >
+                                {reviewSubmitting ? (
+                                    <span className={styles.btnSpinner}></span>
+                                ) : (
+                                    "Objavi recenziju"
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {showBookingModal && selectedSlot && (
                 <div className={styles.modalOverlay}>
                     <div className={styles.modal}>
@@ -297,9 +448,9 @@ export default function InstructorProfile() {
                 </div>
             )}
             {/* Success Banner */}
-            {bookingMessage && (
+            {(bookingMessage || reviewMessage) && (
                 <div className={styles.successBanner}>
-                    {bookingMessage}
+                    {bookingMessage || reviewMessage}
                 </div>
             )}
 
@@ -337,6 +488,14 @@ export default function InstructorProfile() {
                     </div>
 
                     <div className={styles.statsRow}>
+                        {reviewStats.total_reviews > 0 && (
+                            <div className={styles.statItem}>
+                                <span className={styles.statValue}>
+                                    ⭐ {reviewStats.average_rating}
+                                </span>
+                                <span className={styles.statLabel}>{reviewStats.total_reviews} recenzija</span>
+                            </div>
+                        )}
                         {minSlotPrice != null && (
                             <div className={styles.statItem}>
                                 <span className={styles.statValue}>Od {minSlotPrice}€</span>
@@ -396,6 +555,79 @@ export default function InstructorProfile() {
                             </div>
                         </div>
                     )}
+
+                    {/* Reviews Section */}
+                    <div className={styles.section}>
+                        <div className={styles.reviewsHeader}>
+                            <h3>⭐ Recenzije</h3>
+                            {canReview && (
+                                <button
+                                    className={styles.addReviewBtn}
+                                    onClick={() => setShowReviewModal(true)}
+                                >
+                                    + Ostavi recenziju
+                                </button>
+                            )}
+                        </div>
+
+                        {reviewStats.total_reviews > 0 && (
+                            <div className={styles.ratingOverview}>
+                                <div className={styles.ratingBig}>
+                                    {reviewStats.average_rating}
+                                </div>
+                                <div className={styles.ratingDetails}>
+                                    {renderStars(Math.round(parseFloat(reviewStats.average_rating)))}
+                                    <span className={styles.reviewCount}>
+                                        {reviewStats.total_reviews} {reviewStats.total_reviews === 1 ? "recenzija" : "recenzije"}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
+                        {reviews.length === 0 ? (
+                            <div className={styles.noReviews}>
+                                <p>Još nema recenzija za ovog instruktora.</p>
+                                {canReview && (
+                                    <p>Budite prvi koji će ostaviti recenziju!</p>
+                                )}
+                            </div>
+                        ) : (
+                            <div className={styles.reviewsList}>
+                                {reviews.map(review => (
+                                    <div key={review.id} className={styles.reviewCard}>
+                                        <div className={styles.reviewHeader}>
+                                            <img
+                                                src={review.student_picture
+                                                    ? getImageUrl(review.student_picture)
+                                                    : "/avatar.png"}
+                                                alt={`${review.student_name} ${review.student_surname}`}
+                                                className={styles.reviewAvatar}
+                                            />
+                                            <div className={styles.reviewMeta}>
+                                                <span className={styles.reviewAuthor}>
+                                                    {review.student_name} {review.student_surname}
+                                                </span>
+                                                <span className={styles.reviewSubject}>
+                                                    {review.interest_name}
+                                                </span>
+                                            </div>
+                                            <div className={styles.reviewRating}>
+                                                {renderStars(review.rating)}
+                                            </div>
+                                        </div>
+                                        {review.comment && (
+                                            <p className={styles.reviewComment}>
+                                                "{review.comment}"
+                                            </p>
+                                        )}
+                                        <span className={styles.reviewDate}>
+                                            {formatReviewDate(review.created_at)}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Right Column - Calendar & Booking */}
