@@ -276,6 +276,11 @@ router.post('/login', async (req, res) => {
         return res.status(400).json({message: 'Krivi podaci za login'});
     }
 
+    // Check if user is suspended
+    if (userData.is_suspended) {
+        return res.status(403).json({message: 'Vaš račun je suspendiran. Kontaktirajte administratora.'});
+    }
+
     //generiramo token da user ostane loginan
     const token = generateLoginToken(userData.id);
     if (rememberLogin) {
@@ -292,6 +297,7 @@ router.post('/login', async (req, res) => {
             name: userData.name,
             surname: userData.surname,
             is_professor: userData.is_professor,
+            is_admin: userData.is_admin,
             profile_picture: userData.profile_picture
         }
     });
@@ -311,8 +317,15 @@ router.post('/logout',  (req, res) => {
 //me
 router.get('/me', verifyToken, async (req, res) => {
     try {
-        const user = await pool.query('SELECT id, email, name, surname, is_professor, profile_picture FROM users WHERE id = $1', [req.user.id]);
+        const user = await pool.query('SELECT id, email, name, surname, is_professor, is_admin, is_suspended, profile_picture FROM users WHERE id = $1', [req.user.id]);
         if (user.rows.length === 0) return res.status(404).json({ message: 'Korisnik nije pronađen' });
+        
+        // Check if user is suspended
+        if (user.rows[0].is_suspended) {
+            res.clearCookie('token');
+            return res.status(403).json({ message: 'Vaš račun je suspendiran.' });
+        }
+        
         res.json({ user: user.rows[0] });
     } catch (err) {
         res.status(500).json({ message: 'Greška na serveru' });
@@ -453,6 +466,11 @@ router.post('/google-login', async (req, res) => {
         //dohvacamo podatke o useru
         const userData = user.rows[0];
 
+        // Check if user is suspended
+        if (userData.is_suspended) {
+            return res.status(403).json({message: 'Vaš račun je suspendiran. Kontaktirajte administratora.'});
+        }
+
         //generiramo token za login
         const token = generateLoginToken(userData.id);
         res.cookie('token', token, cookieOptionsNoRemember);
@@ -463,7 +481,8 @@ router.post('/google-login', async (req, res) => {
                 email: userData.email,
                 name: userData.name,
                 surname: userData.surname,
-                is_professor: userData.is_professor
+                is_professor: userData.is_professor,
+                is_admin: userData.is_admin
             }
         });
 

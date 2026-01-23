@@ -35,6 +35,7 @@ app.use("/api/instructors", require("./routes/instructors"));
 app.use("/api/calendar", require("./routes/calendar"));
 app.use("/api/quizzes", require("./routes/quizzes"));
 app.use("/api/reviews", require("./routes/reviews"));
+app.use("/api/admin", require("./routes/admin"));
 
 const PORT = process.env.PORT || 8080;
 
