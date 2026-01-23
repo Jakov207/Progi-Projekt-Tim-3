@@ -2,7 +2,7 @@
 
 .page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #f8fafc 0%, #e8f4f8 100%);
+    background: #5EA2AF; /* ISTA POZADINA KAO PROFIL */
     padding-bottom: 60px;
 }
 
@@ -95,13 +95,14 @@
 
 /* Calendar Card */
 .calendarCard {
-    background: #fff;
+    background: #90DDF0;   /* ISTA BOJA KAO PROFIL PANEL */
     border-radius: 20px;
     padding: 28px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
     position: relative;
 }
 
+/* Header kalendara ostaje isti */
 .calendarHeader {
     display: flex;
     align-items: center;
@@ -160,7 +161,7 @@
 .day {
     aspect-ratio: 1;
     border: 2px solid transparent;
-    background: #f8fafc;
+    background: #ffffff;
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -357,7 +358,7 @@
 
 /* Form Card */
 .formCard {
-    background: #fff;
+    background: #90DDF0;   /* ISTA BOJA KAO PROFIL */
     border-radius: 20px;
     padding: 24px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
@@ -436,18 +437,18 @@
 
 /* List Card */
 .listCard {
-    background: #fff;
+    background: #90DDF0;   /* ISTA BOJA KAO PROFIL */
     border-radius: 20px;
     padding: 24px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
 }
 
-.listHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
+.listHeader h3 {
+    font-size: 1.1rem;
+    color: #1a4a5e;
+    margin: 0;
 }
+
 
 .listHeader h3 {
     font-size: 1.1rem;
@@ -496,7 +497,7 @@
     align-items: center;
     padding: 16px;
     border-radius: 14px;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    background: #ffffff;
     border: 1px solid #e2e8f0;
     transition: all 0.2s ease;
 }
@@ -647,99 +648,6 @@
     border-color: #1a4a5e;
     background: #fff;
     box-shadow: 0 0 0 4px rgba(26, 74, 94, 0.1);
-}
-
-.detailsBtn {
-    background: #eef2ff;
-    border: none;
-    padding: 6px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.modalOverlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-}
-
-.modal {
-    background: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    max-width: 500px;
-    width: 100%;
-    max-height: 80vh;
-    overflow-y: auto;
-}
-
-.modalSection {
-    margin-top: 15px;
-}
-
-.studentItem {
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
-}
-
-.note {
-    margin-top: 4px;
-    font-size: 0.9em;
-    color: #555;
-}
-
-.closeBtn {
-    margin-top: 15px;
-    width: 100%;
-}
-
-.noteTextarea {
-    width: 100%;
-    min-height: 80px;
-    resize: vertical;
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-family: inherit;
-}
-
-.saveBtn {
-    margin-top: 8px;
-    padding: 6px 10px;
-    border: none;
-    border-radius: 6px;
-    background: #4f46e5;
-    color: white;
-    cursor: pointer;
-}
-
-.saveBtn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.ongoing {
-    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
-    border-left: 6px solid #0097a7;
-}
-
-.joinBtn {
-    background: #1976d2;
-    color: white;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background 0.2s ease;
-}
-
-.joinBtn:hover {
-    background: #0d47a1;
 }
 
 /* Loading State */

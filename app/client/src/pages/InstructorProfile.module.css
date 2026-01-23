@@ -2,7 +2,7 @@
 
 .page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #f8fafc 0%, #e8f4f8 100%);
+    background: #5EA2AF;                 /* ✅ kao ostale stranice */
     padding: 30px 20px 60px;
 }
 
@@ -19,7 +19,7 @@
 .spinner {
     width: 50px;
     height: 50px;
-    border: 4px solid #e2e8f0;
+    border: 4px solid rgba(255,255,255,0.6);
     border-top-color: #1a4a5e;
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -28,7 +28,7 @@
 .spinnerSmall {
     width: 30px;
     height: 30px;
-    border: 3px solid #e2e8f0;
+    border: 3px solid rgba(255,255,255,0.6);
     border-top-color: #1a4a5e;
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -106,12 +106,23 @@
 
 /* Profile Card */
 .profileCard {
-    background: #fff;
+    background: #90DDF0;                 /* ✅ kartica kao ostale */
     border-radius: 24px;
     padding: 32px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
 }
 
+/* Booking Card */
+.bookingCard {
+    background: #90DDF0;                 /* ✅ kartica kao ostale */
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+    position: sticky;
+    top: 100px;
+}
+
+/* Avatar */
 .avatarSection {
     text-align: center;
     margin-bottom: 24px;
@@ -128,8 +139,9 @@
     height: 150px;
     border-radius: 50%;
     object-fit: cover;
-    border: 4px solid #fff;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    border: 4px solid rgba(255,255,255,0.9);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    background: #fff;
 }
 
 .statusBadge {
@@ -137,25 +149,26 @@
     bottom: 8px;
     left: 50%;
     transform: translateX(-50%);
-    background: #fff;
+    background: rgba(255,255,255,0.9);
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 0.75rem;
-    font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     white-space: nowrap;
 }
 
 .avatarSection h1 {
     font-size: 1.8rem;
-    color: #1a4a5e;
+    color: #0A090C;                     /* tamnije da se vidi na #90DDF0 */
     margin: 0 0 8px 0;
 }
 
 .location {
-    color: #64748b;
+    color: #07393C;
     font-size: 1rem;
     margin: 0;
+    opacity: 0.9;
 }
 
 /* Stats Row */
@@ -164,8 +177,8 @@
     justify-content: center;
     gap: 32px;
     padding: 20px 0;
-    border-top: 1px solid #e2e8f0;
-    border-bottom: 1px solid #e2e8f0;
+    border-top: 1px solid rgba(7,57,60,0.22);
+    border-bottom: 1px solid rgba(7,57,60,0.22);
     margin-bottom: 24px;
 }
 
@@ -176,13 +189,14 @@
 .statValue {
     display: block;
     font-size: 1.5rem;
-    font-weight: 700;
-    color: #1a4a5e;
+    font-weight: 800;
+    color: #0A090C;
 }
 
 .statLabel {
     font-size: 0.8rem;
-    color: #64748b;
+    color: #07393C;
+    opacity: 0.85;
 }
 
 /* Sections */
@@ -192,12 +206,12 @@
 
 .section h3 {
     font-size: 1.1rem;
-    color: #1a4a5e;
+    color: #0A090C;
     margin: 0 0 12px 0;
 }
 
 .bioText {
-    color: #475569;
+    color: #07393C;
     line-height: 1.7;
     margin: 0;
 }
@@ -210,12 +224,12 @@
 }
 
 .tag {
-    background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-    color: #0369a1;
+    background: rgba(255,255,255,0.75);
+    color: #07393C;
     padding: 8px 16px;
     border-radius: 20px;
     font-size: 0.85rem;
-    font-weight: 500;
+    font-weight: 700;
 }
 
 /* Video */
@@ -223,6 +237,7 @@
     aspect-ratio: 16 / 9;
     border-radius: 16px;
     overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.10);
 }
 
 .video iframe {
@@ -230,28 +245,20 @@
     height: 100%;
 }
 
-/* Booking Card */
-.bookingCard {
-    background: #fff;
-    border-radius: 24px;
-    padding: 28px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-    position: sticky;
-    top: 100px;
-}
-
+/* Booking Header */
 .bookingHeader {
     margin-bottom: 24px;
 }
 
 .bookingHeader h2 {
     font-size: 1.4rem;
-    color: #1a4a5e;
+    color: #0A090C;
     margin: 0 0 6px 0;
 }
 
 .bookingHeader p {
-    color: #64748b;
+    color: #07393C;
+    opacity: 0.85;
     font-size: 0.9rem;
     margin: 0;
 }
@@ -262,13 +269,14 @@
 }
 
 .loadingSlots p {
-    color: #64748b;
+    color: #07393C;
+    opacity: 0.85;
     margin-top: 12px;
 }
 
 /* Calendar Section */
 .calendarSection {
-    background: #f8fafc;
+    background: rgba(255,255,255,0.55);   /* ✅ u tonu, ne skroz bijelo */
     border-radius: 16px;
     padding: 20px;
     margin-bottom: 24px;
@@ -285,13 +293,13 @@
 .navBtn {
     width: 40px;
     height: 40px;
-    border: 2px solid #e2e8f0;
-    background: #fff;
-    color: #1a4a5e;
+    border: 2px solid rgba(7,57,60,0.18);
+    background: rgba(255,255,255,0.85);
+    color: #07393C;
     border-radius: 10px;
     cursor: pointer;
     font-size: 1.1rem;
-    font-weight: 700;
+    font-weight: 800;
     transition: all 0.2s ease;
 }
 
@@ -303,8 +311,8 @@
 
 .monthLabel {
     font-size: 1.1rem;
-    font-weight: 700;
-    color: #1a4a5e;
+    font-weight: 800;
+    color: #0A090C;
 }
 
 .weekdays {
@@ -316,8 +324,9 @@
 }
 
 .weekdays span {
-    font-weight: 600;
-    color: #64748b;
+    font-weight: 700;
+    color: #07393C;
+    opacity: 0.85;
     font-size: 0.75rem;
     padding: 6px 0;
 }
@@ -332,7 +341,7 @@
 .day {
     aspect-ratio: 1;
     border: 2px solid transparent;
-    background: #fff;
+    background: rgba(255,255,255,0.9);
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -345,12 +354,12 @@
 
 .dayNumber {
     font-size: 0.9rem;
-    font-weight: 500;
-    color: #334155;
+    font-weight: 600;
+    color: #0A090C;
 }
 
 .day:hover:not(:disabled) {
-    background: #e2e8f0;
+    background: rgba(255,255,255,1);
     transform: scale(1.08);
     z-index: 1;
 }
@@ -377,7 +386,7 @@
 
 .today .dayNumber {
     color: #d97706;
-    font-weight: 700;
+    font-weight: 800;
 }
 
 .pastDay {
@@ -403,7 +412,7 @@
     font-size: 0.55rem;
     padding: 2px 4px;
     border-radius: 6px;
-    font-weight: 700;
+    font-weight: 800;
     min-width: 14px;
     text-align: center;
 }
@@ -436,7 +445,7 @@
 }
 
 .tooltipDate {
-    font-weight: 700;
+    font-weight: 800;
     margin-bottom: 10px;
     padding-bottom: 10px;
     border-bottom: 1px solid rgba(255,255,255,0.2);
@@ -466,190 +475,6 @@
     font-size: 0.7rem;
 }
 
-.slotMeta {
-    display: flex;
-    gap: 12px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #475569;
-}
-
-.slotType {
-    background: #e0f2fe;
-    color: #0369a1;
-    padding: 4px 10px;
-    border-radius: 10px;
-}
-
-.slotPrice {
-    background: #dcfce7;
-    color: #166534;
-    padding: 4px 10px;
-    border-radius: 10px;
-}
-
-/* ===== Booking Modal ===== */
-
-.modalOverlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-}
-
-.modal {
-    background: #fff;
-    border-radius: 20px;
-    padding: 24px;
-    width: 100%;
-    max-width: 420px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
-    animation: modalIn 0.25s ease;
-}
-
-@keyframes modalIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px) scale(0.96);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-.modal h3 {
-    margin: 0 0 6px 0;
-    font-size: 1.2rem;
-    color: #1a4a5e;
-}
-
-/* Info block */
-.modalInfo {
-    background: #f8fafc;
-    border-radius: 12px;
-    padding: 12px 14px;
-}
-
-.modalInfo p {
-    margin: 4px 0;
-    font-weight: 500;
-    color: #334155;
-    font-size: 0.9rem;
-}
-
-/* Form */
-.modal label {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    font-size: 0.85rem;
-    color: #475569;
-    font-weight: 600;
-}
-
-.modal select,
-.modal textarea {
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    padding: 8px 10px;
-    font-size: 0.85rem;
-    font-family: inherit;
-}
-
-.modal textarea {
-    resize: vertical;
-    min-height: 70px;
-}
-
-.modal select:focus,
-.modal textarea:focus {
-    outline: none;
-    border-color: #22c55e;
-    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.15);
-}
-
-/* Actions */
-.modalActions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 6px;
-}
-
-.cancelBtn {
-    background: #e2e8f0;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #475569;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.cancelBtn:hover {
-    background: #cbd5f5;
-}
-
-.confirmBtn {
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-    color: #fff;
-    border: none;
-    padding: 8px 18px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.confirmBtn:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(34, 197, 94, 0.4);
-}
-
-.confirmBtn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.slotLocation {
-    background: #fef3c7;
-    color: #92400e;
-    padding: 4px 10px;
-    border-radius: 10px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    width: fit-content;
-}
-
-
-.slotLessonType {
-    background: #fef3c7;
-    color: #92400e;
-    padding: 4px 10px;
-    border-radius: 10px;
-}
-
-
-.slotInterest {
-    background: #e0f2fe;
-    color: #0369a1;
-    padding: 4px 10px;
-    border-radius: 10px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-
 @keyframes fadeIn {
     from { opacity: 0; transform: translateX(-50%) translateY(10px); }
     to { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -661,7 +486,7 @@
     gap: 16px;
     margin-top: 14px;
     padding-top: 14px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid rgba(7,57,60,0.18);
     justify-content: center;
 }
 
@@ -670,7 +495,9 @@
     align-items: center;
     gap: 6px;
     font-size: 0.75rem;
-    color: #64748b;
+    color: #07393C;
+    opacity: 0.9;
+    font-weight: 600;
 }
 
 .legendDot {
@@ -702,31 +529,31 @@
 
 .slotHeader h3 {
     font-size: 1rem;
-    color: #1a4a5e;
+    color: #0A090C;
     margin: 0;
 }
 
 .clearFilter {
-    background: #f1f5f9;
+    background: rgba(255,255,255,0.75);
     border: none;
     padding: 6px 12px;
     border-radius: 8px;
     font-size: 0.8rem;
-    color: #64748b;
+    color: #07393C;
     cursor: pointer;
     transition: all 0.2s;
+    font-weight: 700;
 }
 
 .clearFilter:hover {
-    background: #e2e8f0;
-    color: #1a4a5e;
+    background: rgba(255,255,255,0.95);
 }
 
 /* Empty Slots */
 .emptySlots {
     text-align: center;
     padding: 30px;
-    background: #f8fafc;
+    background: rgba(255,255,255,0.55);
     border-radius: 14px;
 }
 
@@ -736,13 +563,14 @@
 }
 
 .emptySlots p {
-    color: #475569;
-    font-weight: 500;
+    color: #07393C;
+    font-weight: 700;
     margin: 0 0 6px 0;
 }
 
 .emptySlots span {
-    color: #94a3b8;
+    color: #07393C;
+    opacity: 0.75;
     font-size: 0.85rem;
 }
 
@@ -761,14 +589,15 @@
     align-items: center;
     padding: 14px 16px;
     border-radius: 14px;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    border: 1px solid #e2e8f0;
+    background: rgba(255,255,255,0.75);
+    border: 1px solid rgba(7,57,60,0.18);
     transition: all 0.2s ease;
 }
 
 .slotCard:hover {
     border-color: #22c55e;
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.12);
+    background: rgba(255,255,255,0.9);
 }
 
 .slotInfo {
@@ -779,20 +608,62 @@
 
 .slotDate {
     font-size: 0.8rem;
-    color: #64748b;
+    color: #07393C;
+    opacity: 0.85;
+    font-weight: 600;
 }
 
 .slotTime {
     font-size: 1rem;
+    font-weight: 800;
+    color: #0A090C;
+}
+
+.slotMeta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.8rem;
     font-weight: 700;
-    color: #1a4a5e;
+    color: #07393C;
+}
+
+.slotType {
+    background: rgba(255,255,255,0.85);
+    color: #07393C;
+    padding: 4px 10px;
+    border-radius: 10px;
+}
+
+.slotPrice {
+    background: #dcfce7;
+    color: #166534;
+    padding: 4px 10px;
+    border-radius: 10px;
+}
+
+.slotLessonType {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 4px 10px;
+    border-radius: 10px;
+}
+
+.slotInterest {
+    background: rgba(255,255,255,0.85);
+    color: #07393C;
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
 }
 
 .slotCapacity {
     font-size: 0.8rem;
-    color: #22c55e;
+    color: #166534;
+    font-weight: 700;
 }
 
+/* Book Button */
 .bookBtn {
     padding: 12px 20px;
     border: none;
@@ -800,7 +671,7 @@
     background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
     color: #fff;
     font-size: 0.9rem;
-    font-weight: 600;
+    font-weight: 800;
     cursor: pointer;
     transition: all 0.2s ease;
     min-width: 110px;
@@ -840,7 +711,7 @@
 .loginPrompt p {
     margin: 0 0 12px 0;
     color: #92400e;
-    font-weight: 500;
+    font-weight: 700;
 }
 
 .loginBtn {
@@ -849,7 +720,7 @@
     border-radius: 10px;
     background: linear-gradient(135deg, #1a4a5e 0%, #2d6a7a 100%);
     color: #fff;
-    font-weight: 600;
+    font-weight: 800;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -857,6 +728,135 @@
 .loginBtn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(26, 74, 94, 0.3);
+}
+
+/* ===== Booking Modal ===== */
+
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal {
+    background: #90DDF0;                 /* ✅ da je u tonu */
+    border-radius: 20px;
+    padding: 24px;
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+    animation: modalIn 0.25s ease;
+}
+
+@keyframes modalIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal h3 {
+    margin: 0 0 6px 0;
+    font-size: 1.2rem;
+    color: #0A090C;
+    font-weight: 800;
+}
+
+/* Info block */
+.modalInfo {
+    background: rgba(255,255,255,0.7);
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+
+.modalInfo p {
+    margin: 4px 0;
+    font-weight: 700;
+    color: #07393C;
+    font-size: 0.9rem;
+}
+
+/* Form */
+.modal label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: #07393C;
+    font-weight: 800;
+}
+
+.modal select,
+.modal textarea {
+    border-radius: 10px;
+    border: 1px solid rgba(7,57,60,0.22);
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    background: rgba(255,255,255,0.9);
+}
+
+.modal textarea {
+    resize: vertical;
+    min-height: 70px;
+}
+
+.modal select:focus,
+.modal textarea:focus {
+    outline: none;
+    border-color: #22c55e;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.15);
+}
+
+/* Actions */
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.cancelBtn {
+    background: rgba(255,255,255,0.75);
+    border: none;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #07393C;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.cancelBtn:hover {
+    background: rgba(255,255,255,0.95);
+}
+
+.confirmBtn {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.confirmBtn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(34, 197, 94, 0.4);
+}
+
+.confirmBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* Responsive */
