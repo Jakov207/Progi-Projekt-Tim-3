@@ -118,20 +118,35 @@ async function sendReminderEmail(session, recipientType) {
         .replace('{{year}}', new Date().getFullYear());
 
     // Handle conditionals (manual replacement)
+    // Determine if we should show the meeting button/password
+    // Only show if it IS online AND recipient is NOT a student (so purely for professor)
+    // OR if we change requirements later. For now: Students don't get button.
+    const showJoinButton = isOnline && !isStudent;
+
+    // Handle conditionals (manual replacement)
+    // The template has two {{#if isOnline}} blocks.
+
+    // 1. Location Block (First occurrence) - Show "Online" for everyone if session is online
     if (isOnline) {
         html = html.replace('{{#if isOnline}}', '')
             .replace('{{else}}', '<!--')
-            .replace('{{/if}}', '-->')
-            .replace('{{#if isOnline}}', '') // second block
-            .replace('{{/if}}', '')
-            .replace('{{meetingUrl}}', meetingUrlWithPassword)
-            .replace('{{meetingPassword}}', session.meeting_password);
+            .replace('{{/if}}', '-->');
     } else {
         html = html.replace('{{#if isOnline}}', '<!--')
             .replace('{{else}}', '-->')
             .replace('{{/if}}', '')
-            .replace('{{location}}', session.location)
-            .replace('{{#if isOnline}}', '<!--') // second block
+            .replace('{{location}}', session.location);
+    }
+
+    // 2. Button/Password Block (Second occurrence) - Show only if showJoinButton is true
+    if (showJoinButton) {
+        html = html.replace('{{#if isOnline}}', '')
+            .replace('{{/if}}', '')
+            .replace('{{meetingUrl}}', meetingUrlWithPassword)
+            .replace('{{meetingPassword}}', session.meeting_password);
+    } else {
+        // Hide the button block
+        html = html.replace('{{#if isOnline}}', '<!--')
             .replace('{{/if}}', '-->');
     }
 
