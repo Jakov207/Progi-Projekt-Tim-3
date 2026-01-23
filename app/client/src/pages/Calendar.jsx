@@ -22,7 +22,7 @@ export default function Calendar() {
     const [bookingDetailsLoading, setBookingDetailsLoading] = useState(false);
     const [noteDraft, setNoteDraft] = useState("");
     const [noteSaving, setNoteSaving] = useState(false);
-    
+
     // Review modal state
     const [reviewModalOpen, setReviewModalOpen] = useState(false);
     const [reviewBooking, setReviewBooking] = useState(null);
@@ -30,10 +30,10 @@ export default function Calendar() {
     const [reviewComment, setReviewComment] = useState("");
     const [reviewSubmitting, setReviewSubmitting] = useState(false);
     const [reviewError, setReviewError] = useState("");
-    
+
     // Create lesson modal state
     const [createLessonModalOpen, setCreateLessonModalOpen] = useState(false);
-    
+
     const [form, setForm] = useState({
         date: "",
         start: "",
@@ -374,7 +374,7 @@ export default function Calendar() {
         const month = String(currentMonth.getMonth() + 1).padStart(2, "0");
         const date = String(day).padStart(2, "0");
         const newDate = `${year}-${month}-${date}`;
-        
+
         if (form.date === newDate) {
             setForm(prev => ({ ...prev, date: "" }));
         } else {
@@ -411,7 +411,7 @@ export default function Calendar() {
     }
 
     const hoveredKey = getHoveredDayKey();
-    const hoveredData = user?.is_professor 
+    const hoveredData = user?.is_professor
         ? (hoveredKey && slotCountByDay[hoveredKey])
         : (hoveredKey && bookingCountByDay[hoveredKey]);
 
@@ -533,12 +533,12 @@ export default function Calendar() {
                             const key = day
                                 ? `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
                                 : null;
-                            
+
                             const hasSlots = key && hasSlotsOnDay(key);
                             const hasBooking = key && hasBookingsOnDay(key);
                             const dayIsPast = isPast(day);
                             const dayIsToday = isToday(day);
-                            
+
                             let dayClass = styles.day;
                             if (isSelectedDay(day)) dayClass += ` ${styles.selectedDay}`;
                             if (dayIsToday) dayClass += ` ${styles.today}`;
@@ -619,7 +619,7 @@ export default function Calendar() {
                     </div>
 
                     {user?.is_professor && (
-                        <button 
+                        <button
                             className={styles.createLessonBtn}
                             onClick={() => setCreateLessonModalOpen(true)}
                         >
@@ -635,7 +635,7 @@ export default function Calendar() {
                                 {user?.is_professor ? "📋 Vaši termini" : "📋 Vaše rezervacije"}
                             </h3>
                             {form.date && (
-                                <button 
+                                <button
                                     className={styles.clearFilter}
                                     onClick={() => setForm(prev => ({ ...prev, date: "" }))}
                                 >
@@ -667,11 +667,10 @@ export default function Calendar() {
                                     selectedDaySlots.map(slot => (
                                         <div
                                             key={slot.id}
-                                            className={`${styles.slotCard} ${
-                                                isOngoing(slot.start_time, slot.end_time) ? styles.ongoing : ""
-                                            }`}
+                                            className={`${styles.slotCard} ${isOngoing(slot.start_time, slot.end_time) ? styles.ongoing : ""
+                                                }`}
                                         >
-                                        <div className={styles.slotMain}>
+                                            <div className={styles.slotMain}>
                                                 <div className={styles.slotDate}>
                                                     {formatShortDate(slot.start_time)}
                                                 </div>
@@ -694,22 +693,22 @@ export default function Calendar() {
                                                         <div className={`${styles.capacityBadge} ${Number(slot.booked_count) >= Number(slot.capacity) ? styles.full : ""}`}>
                                                             👥 {slot.booked_count || 0} / {slot.capacity}
                                                         </div>
-                                                            {Number(slot.booked_count || 0) === 0 ? (
-                                                                <button
-                                                                    className={styles.deleteBtn}
-                                                                    onClick={() => handleDelete(slot.id)}
-                                                                >
-                                                                    🗑️ Obriši
-                                                                </button>
+                                                        {Number(slot.booked_count || 0) === 0 ? (
+                                                            <button
+                                                                className={styles.deleteBtn}
+                                                                onClick={() => handleDelete(slot.id)}
+                                                            >
+                                                                🗑️ Obriši
+                                                            </button>
 
-                                                            ) : (
-                                                                <button
-                                                                    className={styles.detailsBtn}
-                                                                    onClick={() => openDetails(slot.id)}
-                                                                >
-                                                                    📋 Detalji
-                                                                </button>
-                                                            )}
+                                                        ) : (
+                                                            <button
+                                                                className={styles.detailsBtn}
+                                                                onClick={() => openDetails(slot.id)}
+                                                            >
+                                                                📋 Detalji
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </>
                                             )}
@@ -718,7 +717,13 @@ export default function Calendar() {
                                                 slot.teaching_type === "Online" && (
                                                     <button
                                                         className={styles.joinBtn}
-                                                        onClick={() => navigate(`/video/${slot.id}`)}
+                                                        onClick={() => {
+                                                            if (slot.meeting_url) {
+                                                                window.open(slot.meeting_url, '_blank');
+                                                            } else {
+                                                                alert("Link za sastanak još nije generiran.");
+                                                            }
+                                                        }}
                                                     >
                                                         🎥 Pridruži se
                                                     </button>
@@ -739,13 +744,12 @@ export default function Calendar() {
                                     selectedDayBookings.map(booking => (
                                         <div
                                             key={booking.id}
-                                            className={`${styles.slotCard} ${
-                                                isOngoing(booking.start_time, booking.end_time)
-                                                    ? styles.ongoing
-                                                    : ""
-                                            }`}
+                                            className={`${styles.slotCard} ${isOngoing(booking.start_time, booking.end_time)
+                                                ? styles.ongoing
+                                                : ""
+                                                }`}
                                         >
-                                        <div className={styles.slotMain}>
+                                            <div className={styles.slotMain}>
                                                 <div className={styles.slotDate}>
                                                     {formatShortDate(booking.start_time)}
                                                 </div>
@@ -795,7 +799,13 @@ export default function Calendar() {
                                                 booking.teaching_type === "Online" && (
                                                     <button
                                                         className={styles.joinBtn}
-                                                        onClick={() => navigate(`/video/${booking.slot_id}`)}
+                                                        onClick={() => {
+                                                            if (booking.meeting_url) {
+                                                                window.open(booking.meeting_url, '_blank');
+                                                            } else {
+                                                                alert("Link za sastanak još nije generiran.");
+                                                            }
+                                                        }}
                                                     >
                                                         🎥 Pridruži se
                                                     </button>
@@ -951,7 +961,7 @@ export default function Calendar() {
                 <div className={styles.modalOverlay} onClick={() => setReviewModalOpen(false)}>
                     <div className={styles.reviewModal} onClick={e => e.stopPropagation()}>
                         <h2>⭐ Ocijeni instruktora</h2>
-                        
+
                         <div className={styles.reviewInstructorInfo}>
                             <p><strong>👨‍🏫 Instruktor:</strong> {reviewBooking.professor_name} {reviewBooking.professor_surname}</p>
                             <p><strong>📅 Datum:</strong> {formatFullDate(reviewBooking.start_time)}</p>
@@ -1012,7 +1022,7 @@ export default function Calendar() {
                     <div className={styles.createLessonModal} onClick={e => e.stopPropagation()}>
                         <h2>➕ Kreiraj novi termin</h2>
                         <p className={styles.formHint}>Ispunite detalje za novi termin</p>
-                        
+
                         <form onSubmit={handleCreate}>
                             <div className={styles.formGrid}>
                                 <div className={styles.field}>
@@ -1052,7 +1062,7 @@ export default function Calendar() {
                                         onChange={(e) => setForm(prev => ({ ...prev, price: e.target.value }))}
                                     />
                                 </div>
-                                
+
                                 <div className={styles.field}>
                                     <label>👥 Tip predavanja</label>
                                     <select
@@ -1070,7 +1080,7 @@ export default function Calendar() {
                                         <option value="Grupno">Grupno</option>
                                     </select>
                                 </div>
-                                
+
                                 {form.lesson_type === "Grupno" && (
                                     <div className={styles.field}>
                                         <label>👥 Kapacitet</label>
@@ -1082,7 +1092,7 @@ export default function Calendar() {
                                         />
                                     </div>
                                 )}
-                                
+
                                 {form.lesson_type === "Grupno" && (
                                     <div className={styles.field}>
                                         <label>📘 Predmet</label>
@@ -1101,7 +1111,7 @@ export default function Calendar() {
                                         )}
                                     </div>
                                 )}
-                                
+
                                 <div className={styles.field}>
                                     <label>🎓 Način predavanja</label>
                                     <select
@@ -1136,10 +1146,10 @@ export default function Calendar() {
                                     </div>
                                 )}
                             </div>
-                            
+
                             <div className={styles.modalActions}>
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     className={styles.cancelReviewBtn}
                                     onClick={() => setCreateLessonModalOpen(false)}
                                 >
