@@ -1,8 +1,17 @@
 const express = require("express");
 const router = express.Router();
+const crypto = require("crypto");
 const pool = require("../config/db");
 const verifyToken = require("../middleware/verifyToken");
 const verifyTokenOptional = require("../middleware/verifyTokenOptional");
+
+// Generate unique Jitsi meeting URL and password
+const generateMeetingCredentials = (slotId) => {
+    const roomId = crypto.randomBytes(8).toString('hex');
+    const password = crypto.randomBytes(3).toString('hex'); // 6 char password
+    const meetingUrl = `https://meet.jit.si/fertutor-${slotId}-${roomId}`;
+    return { meetingUrl, password };
+};
 
 const requireProfessor = async (userId) => {
     const result = await pool.query(
@@ -207,8 +216,11 @@ router.get("/my-slots", verifyToken, async (req, res) => {
                  s.lesson_type,
                  s.price,
                  s.location,
+                 s.meeting_url,
+                 s.meeting_password,
                  i.name AS interest_name,
-                 COUNT(b.id) AS booked_count
+                 COUNT(b.id) AS booked_count,
+                 MAX(b.id) AS latest_booking_id
              FROM professor_slots s
                       LEFT JOIN professor_slot_bookings b ON b.slot_id = s.id
                       LEFT JOIN interests i ON i.id = s.interest_id
@@ -270,7 +282,8 @@ router.post("/book/:slotId", verifyToken, async (req, res) => {
         }
 
         const slotResult = await pool.query(
-            `SELECT s.capacity, COUNT(b.id) AS booked_count, s.lesson_type, s.interest_id AS slot_interest_id
+            `SELECT s.capacity, COUNT(b.id) AS booked_count, s.lesson_type, s.interest_id AS slot_interest_id,
+                    s.teaching_type, s.meeting_url
              FROM professor_slots s
              LEFT JOIN professor_slot_bookings b ON b.slot_id = s.id
              WHERE s.id = $1
@@ -282,7 +295,7 @@ router.post("/book/:slotId", verifyToken, async (req, res) => {
             return res.status(404).json({ message: "Termin nije pronađen." });
         }
 
-        const { capacity, booked_count, lesson_type, slot_interest_id } = slotResult.rows[0];
+        const { capacity, booked_count, lesson_type, slot_interest_id, teaching_type, meeting_url } = slotResult.rows[0];
         if (Number(booked_count) >= Number(capacity)) {
             return res.status(409).json({ message: "Termin je popunjen." });
         }
@@ -294,6 +307,20 @@ router.post("/book/:slotId", verifyToken, async (req, res) => {
             return res.status(400).json({ message: "Predmet je obavezan." });
         }
 
+        // Generate Jitsi meeting URL for Online sessions (only on first booking)
+        let finalMeetingUrl = meeting_url;
+        let finalMeetingPassword = null;
+        if (teaching_type === "Online" && !meeting_url) {
+            const credentials = generateMeetingCredentials(slotId);
+            finalMeetingUrl = credentials.meetingUrl;
+            finalMeetingPassword = credentials.password;
+
+            await pool.query(
+                `UPDATE professor_slots SET meeting_url = $1, meeting_password = $2 WHERE id = $3`,
+                [finalMeetingUrl, finalMeetingPassword, slotId]
+            );
+        }
+
         await pool.query(
             `INSERT INTO professor_slot_bookings (slot_id, student_id, note, interest_id)
              VALUES ($1, $2, $3, $4)
@@ -301,7 +328,11 @@ router.post("/book/:slotId", verifyToken, async (req, res) => {
             [slotId, userId, note || null, finalInterestId]
         );
 
-        res.json({ message: "Termin rezerviran." });
+        res.json({
+            message: "Termin rezerviran.",
+            meeting_url: finalMeetingUrl,
+            meeting_password: finalMeetingPassword
+        });
     } catch (err) {
         console.error("Error booking slot:", err);
         res.status(500).json({ message: "Greška pri rezervaciji termina." });
@@ -356,6 +387,8 @@ router.get("/my-bookings", verifyToken, async (req, res) => {
                  s.lesson_type,
                  s.price,
                  s.location,
+                 s.meeting_url,
+                 s.meeting_password,
                  u.name AS professor_name,
                  u.surname AS professor_surname,
                  i.id AS interest_id,
@@ -395,6 +428,120 @@ router.get("/my-interests", verifyToken, async (req, res) => {
     } catch (err) {
         console.error("Error fetching user interests:", err);
         res.status(500).json({ message: "Greška pri dohvaćanju predmeta." });
+    }
+});
+
+// ==================== SESSION RECORDS (Notes, Summary, Homework) ====================
+
+// Get session record for a booking
+router.get("/session/:bookingId", verifyToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { bookingId } = req.params;
+
+        // Verify user is part of this booking (student or professor)
+        const bookingCheck = await pool.query(
+            `SELECT b.id, b.student_id, s.professor_id
+             FROM professor_slot_bookings b
+             JOIN professor_slots s ON s.id = b.slot_id
+             WHERE b.id = $1`,
+            [bookingId]
+        );
+
+        if (bookingCheck.rows.length === 0) {
+            return res.status(404).json({ message: "Rezervacija nije pronađena." });
+        }
+
+        const booking = bookingCheck.rows[0];
+        if (booking.student_id !== userId && booking.professor_id !== userId) {
+            return res.status(403).json({ message: "Nemate pristup ovoj rezervaciji." });
+        }
+
+        const result = await pool.query(
+            `SELECT student_notes, instructor_summary, homework, updated_at
+             FROM session_records WHERE booking_id = $1`,
+            [bookingId]
+        );
+
+        res.json({ record: result.rows[0] || null });
+    } catch (err) {
+        console.error("Error fetching session record:", err);
+        res.status(500).json({ message: "Greška pri dohvaćanju bilješki." });
+    }
+});
+
+// Update student notes
+router.put("/session/:bookingId/notes", verifyToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { bookingId } = req.params;
+        const { notes } = req.body;
+
+        // Verify user is the student
+        const bookingCheck = await pool.query(
+            `SELECT student_id FROM professor_slot_bookings WHERE id = $1`,
+            [bookingId]
+        );
+
+        if (bookingCheck.rows.length === 0) {
+            return res.status(404).json({ message: "Rezervacija nije pronađena." });
+        }
+
+        if (bookingCheck.rows[0].student_id !== userId) {
+            return res.status(403).json({ message: "Samo učenik može uređivati bilješke." });
+        }
+
+        await pool.query(
+            `INSERT INTO session_records (booking_id, student_notes, updated_at)
+             VALUES ($1, $2, NOW())
+             ON CONFLICT (booking_id) 
+             DO UPDATE SET student_notes = $2, updated_at = NOW()`,
+            [bookingId, notes]
+        );
+
+        res.json({ message: "Bilješke spremljene." });
+    } catch (err) {
+        console.error("Error saving notes:", err);
+        res.status(500).json({ message: "Greška pri spremanju bilješki." });
+    }
+});
+
+// Update instructor summary and homework
+router.put("/session/:bookingId/summary", verifyToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { bookingId } = req.params;
+        const { summary, homework } = req.body;
+
+        // Verify user is the professor
+        const bookingCheck = await pool.query(
+            `SELECT s.professor_id 
+             FROM professor_slot_bookings b
+             JOIN professor_slots s ON s.id = b.slot_id
+             WHERE b.id = $1`,
+            [bookingId]
+        );
+
+        if (bookingCheck.rows.length === 0) {
+            return res.status(404).json({ message: "Rezervacija nije pronađena." });
+        }
+
+        if (bookingCheck.rows[0].professor_id !== userId) {
+            return res.status(403).json({ message: "Samo instruktor može pisati sažetak." });
+        }
+
+        await pool.query(
+            `INSERT INTO session_records (booking_id, instructor_summary, homework, updated_at)
+             VALUES ($1, $2, $3, NOW())
+             ON CONFLICT (booking_id) 
+             DO UPDATE SET instructor_summary = $2, homework = $3, updated_at = NOW()`,
+            [bookingId, summary, homework]
+        );
+
+        res.json({ message: "Sažetak i zadaća spremljeni." });
+    } catch (err) {
+        console.error("Error saving summary:", err);
+        res.status(500).json({ message: "Greška pri spremanju sažetka." });
     }
 });
 

@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import api from "../api";
 import { Autocomplete, useLoadScript } from "@react-google-maps/api";
 import { AuthContext } from "../context/AuthContext";
+import SessionModal from "../components/SessionModal"; // [IMPORTED]
 import styles from "./Calendar.module.css";
 
 export default function Calendar() {
@@ -12,6 +13,8 @@ export default function Calendar() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [interests, setInterests] = useState([]);
+    const [selectedSession, setSelectedSession] = useState(null); // [NEW STATE]
+
     const [form, setForm] = useState({
         date: "",
         start: "",
@@ -296,7 +299,7 @@ export default function Calendar() {
         const month = String(currentMonth.getMonth() + 1).padStart(2, "0");
         const date = String(day).padStart(2, "0");
         const newDate = `${year}-${month}-${date}`;
-        
+
         if (form.date === newDate) {
             setForm(prev => ({ ...prev, date: "" }));
         } else {
@@ -316,7 +319,7 @@ export default function Calendar() {
 
     const getHoveredDayKey = () => {
         if (!hoveredDay) return null;
-        return `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}-${String(hoveredDay).padStart(2, "0")}`;
+        return `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     };
 
     const hasBookingsOnDay = (key) => bookingCountByDay[key] && bookingCountByDay[key].length > 0;
@@ -333,7 +336,7 @@ export default function Calendar() {
     }
 
     const hoveredKey = getHoveredDayKey();
-    const hoveredData = user?.is_professor 
+    const hoveredData = user?.is_professor
         ? (hoveredKey && slotCountByDay[hoveredKey])
         : (hoveredKey && bookingCountByDay[hoveredKey]);
 
@@ -345,7 +348,7 @@ export default function Calendar() {
                         {user?.is_professor ? "📅 Moj Kalendar" : "📋 Moji Termini"}
                     </h1>
                     <p className={styles.subtitle}>
-                        {user?.is_professor 
+                        {user?.is_professor
                             ? "Upravljajte svojom dostupnošću i pratite rezervacije studenata"
                             : "Pregledajte svoje rezervirane termine i upravljajte njima"
                         }
@@ -403,12 +406,12 @@ export default function Calendar() {
                             const key = day
                                 ? `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
                                 : null;
-                            
+
                             const hasSlots = key && hasSlotsOnDay(key);
                             const hasBooking = key && hasBookingsOnDay(key);
                             const dayIsPast = isPast(day);
                             const dayIsToday = isToday(day);
-                            
+
                             let dayClass = styles.day;
                             if (isSelectedDay(day)) dayClass += ` ${styles.selectedDay}`;
                             if (dayIsToday) dayClass += ` ${styles.today}`;
@@ -422,8 +425,8 @@ export default function Calendar() {
                                     className={dayClass}
                                     disabled={!day}
                                     onClick={() => handleDaySelect(day)}
-                                    onMouseEnter={() => setHoveredDay(day)}
-                                    onMouseLeave={() => setHoveredDay(null)}
+                                // onMouseEnter={() => setHoveredDay(day)}
+                                // onMouseLeave={() => setHoveredDay(null)}
                                 >
                                     <span className={styles.dayNumber}>{day || ""}</span>
                                     {day && user?.is_professor && slotCountByDay[key] && (
@@ -440,53 +443,7 @@ export default function Calendar() {
                             );
                         })}
                     </div>
-
-                    {/* Tooltip */}
-                    {hoveredDay && hoveredData && (
-                        <div className={styles.tooltip}>
-                            <div className={styles.tooltipDate}>
-                                {hoveredDay}. {monthNames[currentMonth.getMonth()]}
-                            </div>
-                            {user?.is_professor ? (
-                                <div className={styles.tooltipContent}>
-                                    {hoveredData.slots.map((slot, i) => (
-                                        <div key={i} className={styles.tooltipItem}>
-                                            🕐 {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
-                                            <span className={styles.tooltipBadge}>
-                                                {slot.booked_count || 0}/{slot.capacity}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className={styles.tooltipContent}>
-                                    {hoveredData.map((b, i) => (
-                                        <div key={i} className={styles.tooltipItem}>
-                                            🕐 {formatTime(b.start_time)} - {b.professor_name}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    <div className={styles.legend}>
-                        <div className={styles.legendItem}>
-                            <span className={`${styles.legendDot} ${styles.legendToday}`}></span>
-                            Danas
-                        </div>
-                        {user?.is_professor ? (
-                            <div className={styles.legendItem}>
-                                <span className={`${styles.legendDot} ${styles.legendSlot}`}></span>
-                                Postavljeni termini
-                            </div>
-                        ) : (
-                            <div className={styles.legendItem}>
-                                <span className={`${styles.legendDot} ${styles.legendBooking}`}></span>
-                                Rezervirani termini
-                            </div>
-                        )}
-                    </div>
+                    {/* Tooltip removed intentionally for cleaner UI */}
                 </div>
 
                 <div className={styles.sidePanel}>
@@ -650,7 +607,7 @@ export default function Calendar() {
                                 {user?.is_professor ? "📋 Vaši termini" : "📋 Vaše rezervacije"}
                             </h3>
                             {form.date && (
-                                <button 
+                                <button
                                     className={styles.clearFilter}
                                     onClick={() => setForm(prev => ({ ...prev, date: "" }))}
                                 >
@@ -702,6 +659,34 @@ export default function Calendar() {
                                                 <div className={`${styles.capacityBadge} ${Number(slot.booked_count) >= Number(slot.capacity) ? styles.full : ""}`}>
                                                     👥 {slot.booked_count || 0} / {slot.capacity}
                                                 </div>
+                                                {/* Show meeting link for Online slots with bookings */}
+                                                {slot.teaching_type === "Online" && Number(slot.booked_count || 0) > 0 && slot.meeting_url && (
+                                                    <a
+                                                        href={`${slot.meeting_url}#config.password="${slot.meeting_password}"`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className={styles.joinBtn}
+                                                    >
+                                                        🎥 Pridruži se
+                                                    </a>
+                                                )}
+                                                {slot.meeting_password && Number(slot.booked_count || 0) > 0 && (
+                                                    <div className={styles.meetingPassword}>
+                                                        🔑 {slot.meeting_password}
+                                                    </div>
+                                                )}
+
+                                                {/* [BUTTON: PROFESSOR SUMMARY] */}
+                                                {Number(slot.booked_count || 0) > 0 && slot.latest_booking_id && (
+                                                    <button
+                                                        className={styles.notesBtn}
+                                                        style={{ margin: '5px 0', padding: '6px 12px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                                                        onClick={() => setSelectedSession(slot.latest_booking_id)}
+                                                    >
+                                                        📝 Sažetak
+                                                    </button>
+                                                )}
+
                                                 {Number(slot.booked_count || 0) === 0 ? (
                                                     <button
                                                         className={styles.deleteBtn}
@@ -747,6 +732,32 @@ export default function Calendar() {
                                                 </div>
                                             </div>
                                             <div className={styles.slotMeta}>
+                                                {/* Show Join Session button for Online bookings */}
+                                                {booking.teaching_type === "Online" && booking.meeting_url && (
+                                                    <a
+                                                        href={`${booking.meeting_url}#config.password="${booking.meeting_password}"`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className={styles.joinBtn}
+                                                    >
+                                                        🎥 Pridruži se sesiji
+                                                    </a>
+                                                )}
+                                                {booking.meeting_password && (
+                                                    <div className={styles.meetingPassword}>
+                                                        🔑 Lozinka: {booking.meeting_password}
+                                                    </div>
+                                                )}
+
+                                                {/* [NEW BUTTON: STUDENT NOTES] */}
+                                                <button
+                                                    className={styles.notesBtn}
+                                                    style={{ margin: '5px 0', padding: '6px 12px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                                                    onClick={() => setSelectedSession(booking.id)}
+                                                >
+                                                    📝 Bilješke
+                                                </button>
+
                                                 <button
                                                     className={styles.cancelBtn}
                                                     onClick={() => handleCancel(booking.slot_id)}
@@ -762,6 +773,16 @@ export default function Calendar() {
                     </div>
                 </div>
             </div>
+
+            {/* Render Modal */}
+            {selectedSession && (
+                <SessionModal
+                    bookingId={selectedSession}
+                    userRole={user?.is_professor ? "professor" : "student"}
+                    onClose={() => setSelectedSession(null)}
+                />
+            )}
         </div>
     );
 }
+

@@ -14,7 +14,7 @@ VALUES
 INSERT INTO professors (
     user_id, sex, city, teaching, date_of_birth,
     biography, video_url, reference,
-    teaching_type, price, location
+    teaching_type, is_published
 )
 SELECT
     u.id,
@@ -26,25 +26,24 @@ SELECT
     data.video_url,
     data.reference,
     data.teaching_type::teaching_type_enum,
-    data.price::NUMERIC,
-    data.location
+    true
 FROM users u
          JOIN (
     VALUES
-        ('ivan.horvat@test.hr','M','Zagreb','Matematika','1988-04-12','Profesor matematike s 10 godina iskustva.',NULL,'Rad u gimnaziji','Uživo i Online',20,'Zagreb'),
-        ('ana.kovac@test.hr','F','Split','Fizika','1990-06-18','Instruktorica fizike za osnovnu i srednju školu.',NULL,'Individualni rad','Online',18,NULL),
-        ('marko.babic@test.hr','M','Rijeka','Informatika','1985-09-03','Programer i instruktor informatike.',NULL,'IT sektor','Uživo',25,'Rijeka'),
-        ('petra.maric@test.hr','F','Osijek','Matematika','1993-01-22','Strpljiva i jasna instruktorica matematike.',NULL,'Rad s djecom','Uživo i Online',17,'Osijek'),
-        ('luka.peric@test.hr','M','Zadar','Fizika','1987-11-11','Fizika bez stresa.',NULL,'Pripreme za maturu','Online',19,NULL),
-        ('ivana.novak@test.hr','F','Zagreb','Informatika','1991-05-30','Instrukcije iz informatike i programiranja.',NULL,'Rad u školi','Uživo i Online',22,'Zagreb'),
-        ('domagoj.kralj@test.hr','M','Varaždin','Matematika','1984-03-07','Iskusan profesor matematike.',NULL,'Dugogodišnje iskustvo','Uživo',21,'Varaždin'),
-        ('maja.juric@test.hr','F','Karlovac','Fizika','1995-08-14','Mladi pristup učenju fizike.',NULL,'Rad sa srednjoškolcima','Online',16,NULL),
-        ('nikola.tomic@test.hr','M','Zagreb','Informatika','1989-12-02','Backend i frontend instrukcije.',NULL,'Rad u IT firmi','Uživo i Online',30,'Zagreb'),
-        ('tea.pavic@test.hr','F','Pula','Matematika','1992-07-19','Matematika prilagođena svakom učeniku.',NULL,'Individualni pristup','Uživo',18,'Pula')
+        ('ivan.horvat@test.hr','M','Zagreb','Matematika','1988-04-12','Profesor matematike s 10 godina iskustva.',NULL,'Rad u gimnaziji','Uživo i Online'),
+        ('ana.kovac@test.hr','F','Split','Fizika','1990-06-18','Instruktorica fizike za osnovnu i srednju školu.',NULL,'Individualni rad','Online'),
+        ('marko.babic@test.hr','M','Rijeka','Informatika','1985-09-03','Programer i instruktor informatike.',NULL,'IT sektor','Uživo'),
+        ('petra.maric@test.hr','F','Osijek','Matematika','1993-01-22','Strpljiva i jasna instruktorica matematike.',NULL,'Rad s djecom','Uživo i Online'),
+        ('luka.peric@test.hr','M','Zadar','Fizika','1987-11-11','Fizika bez stresa.',NULL,'Pripreme za maturu','Online'),
+        ('ivana.novak@test.hr','F','Zagreb','Informatika','1991-05-30','Instrukcije iz informatike i programiranja.',NULL,'Rad u školi','Uživo i Online'),
+        ('domagoj.kralj@test.hr','M','Varaždin','Matematika','1984-03-07','Iskusan profesor matematike.',NULL,'Dugogodišnje iskustvo','Uživo'),
+        ('maja.juric@test.hr','F','Karlovac','Fizika','1995-08-14','Mladi pristup učenju fizike.',NULL,'Rad sa srednjoškolcima','Online'),
+        ('nikola.tomic@test.hr','M','Zagreb','Informatika','1989-12-02','Backend i frontend instrukcije.',NULL,'Rad u IT firmi','Uživo i Online'),
+        ('tea.pavic@test.hr','F','Pula','Matematika','1992-07-19','Matematika prilagođena svakom učeniku.',NULL,'Individualni pristup','Uživo')
 ) AS data(
           email, sex, city, teaching, date_of_birth,
           biography, video_url, reference,
-          teaching_type, price, location
+          teaching_type
     )
               ON u.email = data.email;
 

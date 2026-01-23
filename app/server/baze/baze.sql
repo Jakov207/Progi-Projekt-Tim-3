@@ -110,3 +110,30 @@ CREATE TABLE professor_slot_bookings (
 
 CREATE INDEX idx_slot_bookings_slot ON professor_slot_bookings(slot_id);
 CREATE INDEX idx_slot_bookings_student ON professor_slot_bookings(student_id);
+
+-- Video conferencing: add meeting URL and password to slots
+ALTER TABLE professor_slots ADD COLUMN meeting_url VARCHAR(255);
+ALTER TABLE professor_slots ADD COLUMN meeting_password VARCHAR(20);
+
+-- Session records: notes, summary, homework after sessions
+CREATE TABLE session_records (
+    id SERIAL PRIMARY KEY,
+    booking_id INT NOT NULL REFERENCES professor_slot_bookings(id) ON DELETE CASCADE,
+    student_notes TEXT,
+    instructor_summary TEXT,
+    homework TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(booking_id)
+);
+
+CREATE INDEX idx_session_records_booking ON session_records(booking_id);
+
+-- Track email reminders sent
+CREATE TABLE email_reminders_sent (
+    id SERIAL PRIMARY KEY,
+    booking_id INT NOT NULL REFERENCES professor_slot_bookings(id) ON DELETE CASCADE,
+    reminder_type VARCHAR(20) NOT NULL, -- '1hour' or '24hour'
+    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(booking_id, reminder_type)
+);
