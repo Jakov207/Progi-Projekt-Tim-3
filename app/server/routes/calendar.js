@@ -339,7 +339,8 @@ router.post("/book/:slotId", verifyToken, async (req, res) => {
         }
 
         const slotResult = await pool.query(
-            `SELECT s.capacity, COUNT(b.id) AS booked_count, s.lesson_type, s.interest_id AS slot_interest_id
+            `SELECT s.capacity, COUNT(b.id) AS booked_count, s.lesson_type, s.interest_id AS slot_interest_id,
+                    s.teaching_type, s.meeting_url
              FROM professor_slots s
              LEFT JOIN professor_slot_bookings b ON b.slot_id = s.id
              WHERE s.id = $1
@@ -351,7 +352,7 @@ router.post("/book/:slotId", verifyToken, async (req, res) => {
             return res.status(404).json({ message: "Termin nije pronađen." });
         }
 
-        const { capacity, booked_count, lesson_type, slot_interest_id } = slotResult.rows[0];
+        const { capacity, booked_count, lesson_type, slot_interest_id, teaching_type, meeting_url } = slotResult.rows[0];
         if (Number(booked_count) >= Number(capacity)) {
             return res.status(409).json({ message: "Termin je popunjen." });
         }
@@ -363,6 +364,20 @@ router.post("/book/:slotId", verifyToken, async (req, res) => {
             return res.status(400).json({ message: "Predmet je obavezan." });
         }
 
+        // Generate Jitsi meeting URL for Online sessions (only on first booking)
+        let finalMeetingUrl = meeting_url;
+        let finalMeetingPassword = null;
+        if (teaching_type === "Online" && !meeting_url) {
+            const credentials = generateMeetingCredentials(slotId);
+            finalMeetingUrl = credentials.meetingUrl;
+            finalMeetingPassword = credentials.password;
+
+            await pool.query(
+                `UPDATE professor_slots SET meeting_url = $1, meeting_password = $2 WHERE id = $3`,
+                [finalMeetingUrl, finalMeetingPassword, slotId]
+            );
+        }
+
         await pool.query(
             `INSERT INTO professor_slot_bookings (slot_id, student_id, note, interest_id)
              VALUES ($1, $2, $3, $4)
@@ -370,7 +385,11 @@ router.post("/book/:slotId", verifyToken, async (req, res) => {
             [slotId, userId, note || null, finalInterestId]
         );
 
-        res.json({ message: "Termin rezerviran." });
+        res.json({
+            message: "Termin rezerviran.",
+            meeting_url: finalMeetingUrl,
+            meeting_password: finalMeetingPassword
+        });
     } catch (err) {
         console.error("Error booking slot:", err);
         res.status(500).json({ message: "Greška pri rezervaciji termina." });
