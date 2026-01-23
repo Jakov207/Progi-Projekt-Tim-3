@@ -3,6 +3,8 @@ CREATE TABLE users (
         email VARCHAR(255) UNIQUE NOT NULL,
         password_hash VARCHAR(255) NOT NULL,
         is_professor BOOLEAN NOT NULL,
+        is_admin BOOLEAN DEFAULT FALSE,
+        is_suspended BOOLEAN DEFAULT FALSE,
         name VARCHAR(100) NOT NULL,
         surname VARCHAR(100) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -37,6 +39,7 @@ CREATE TABLE professors (
         reference VARCHAR(500),
         teaching_type teaching_type_enum,
         is_published BOOLEAN DEFAULT FALSE,
+        is_verified BOOLEAN DEFAULT FALSE,
         CHECK (sex IN ('M', 'F', 'X')),
         CHECK (date_of_birth <= CURRENT_DATE)
 );
@@ -175,7 +178,7 @@ CREATE TABLE quiz_attempt_answers (
     UNIQUE(attempt_id, question_id)
 );
 
--- Reviews: students can rate instructors after attending a lesson
+-- Reviews: students can rate instructors after attending a lesson (1 review per student per professor)
 CREATE TABLE reviews (
     id SERIAL PRIMARY KEY,
     professor_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -183,7 +186,7 @@ CREATE TABLE reviews (
     rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
     comment VARCHAR(500),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(booking_id) -- One review per booking
+    UNIQUE(professor_id, student_id) -- One review per student per professor
 );
 
 CREATE INDEX idx_reviews_professor ON reviews(professor_id);

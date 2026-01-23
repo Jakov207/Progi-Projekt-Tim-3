@@ -604,14 +604,14 @@ export default function InstructorProfile() {
                                     : "/avatar.png"}
                                 alt={`${instructor.name} ${instructor.surname}`}
                             />
-                            {availableSlots.length > 0 && (
-                                <div className={styles.statusBadge}>
-                                    🟢 Dostupan
-                                </div>
-                            )}
                         </div>
                         
-                        <h1>{instructor.name} {instructor.surname}</h1>
+                        <h1>
+                            {instructor.name} {instructor.surname}
+                            {instructor.is_verified && (
+                                <span className={styles.verifiedBadge} title="Verificirani instruktor">✓</span>
+                            )}
+                        </h1>
                         
                         {instructor.city && (
                             <p className={styles.location}>

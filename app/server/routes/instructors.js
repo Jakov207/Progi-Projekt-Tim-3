@@ -64,6 +64,7 @@ router.get("/", async (req, res) => {
                 p.teaching_type,
                 p.city,
                 p.biography,
+                p.is_verified,
                 MIN(
                         CASE
                             WHEN ps.start_time >= NOW()
@@ -85,7 +86,7 @@ router.get("/", async (req, res) => {
                      JOIN professors p ON p.user_id = u.id
                      LEFT JOIN professor_slots ps ON ps.professor_id = u.id
             WHERE ${where.join(" AND ")}
-            GROUP BY u.id, p.teaching_type, p.city, p.biography
+            GROUP BY u.id, p.teaching_type, p.city, p.biography, p.is_verified
             ORDER BY u.surname
         `;
 
@@ -114,6 +115,7 @@ router.get("/:id", async (req, res) => {
                 p.biography,
                 p.reference,
                 p.video_url,
+                p.is_verified,
                 ARRAY_AGG(
                         json_build_object(
                                 'id', i.id,

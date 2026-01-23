@@ -41,6 +41,10 @@ function MainLayout() {
                     )}
 
                     {user && <Link to="/profile">Profil</Link>}
+                    
+                    {user && user.is_admin && (
+                        <Link to="/admin" className={styles.adminLink}>🛡️ Admin</Link>
+                    )}
                 </nav>
 
                 <div className={styles.rightSide}>

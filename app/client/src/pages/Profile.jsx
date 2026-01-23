@@ -231,9 +231,7 @@ export function Profile() {
         ...(form.is_professor ? [
             { id: "javni", icon: "🌍", label: "Javni profil", desc: "Vidljivo drugima" },
             { id: "recenzije", icon: "📝", label: "Recenzije", desc: "Ocjene studenata" }
-        ] : []),
-        { id: "sigurnost", icon: "🔒", label: "Sigurnost", desc: "Lozinka i pristup" },
-        { id: "privatnost", icon: "🛡️", label: "Privatnost", desc: "Postavke privatnosti" }
+        ] : [])
     ];
 
     if (loading) {
@@ -621,37 +619,6 @@ export function Profile() {
                         </div>
                     )}
 
-                    {/* Sigurnost */}
-                    {activeTab === "sigurnost" && (
-                        <div className={styles.section}>
-                            <div className={styles.sectionHeader}>
-                                <h1>🔒 Sigurnost</h1>
-                                <p>Upravljajte pristupom svom računu</p>
-                            </div>
-
-                            <div className={styles.comingSoon}>
-                                <div className={styles.comingSoonIcon}>🔐</div>
-                                <h3>Uskoro dostupno</h3>
-                                <p>Promjena lozinke i dvofaktorska autentikacija bit će dostupne u sljedećoj verziji.</p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Privatnost */}
-                    {activeTab === "privatnost" && (
-                        <div className={styles.section}>
-                            <div className={styles.sectionHeader}>
-                                <h1>🛡️ Privatnost</h1>
-                                <p>Kontrolirajte vidljivost svojih podataka</p>
-                            </div>
-
-                            <div className={styles.comingSoon}>
-                                <div className={styles.comingSoonIcon}>🛡️</div>
-                                <h3>Uskoro dostupno</h3>
-                                <p>Postavke privatnosti i upravljanje podacima bit će dostupni u sljedećoj verziji.</p>
-                            </div>
-                        </div>
-                    )}
                 </main>
             </div>
 
