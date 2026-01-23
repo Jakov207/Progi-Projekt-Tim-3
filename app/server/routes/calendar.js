@@ -1,8 +1,17 @@
 const express = require("express");
 const router = express.Router();
+const crypto = require("crypto");
 const pool = require("../config/db");
 const verifyToken = require("../middleware/verifyToken");
 const verifyTokenOptional = require("../middleware/verifyTokenOptional");
+
+// Generate unique Jitsi meeting URL and password
+const generateMeetingCredentials = (slotId) => {
+    const roomId = crypto.randomBytes(8).toString('hex');
+    const password = crypto.randomBytes(3).toString('hex'); // 6 char password
+    const meetingUrl = `https://meet.jit.si/fertutor-${slotId}-${roomId}`;
+    return { meetingUrl, password };
+};
 
 const requireProfessor = async (userId) => {
     const result = await pool.query(
