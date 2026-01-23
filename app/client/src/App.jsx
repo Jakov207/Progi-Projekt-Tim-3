@@ -21,6 +21,7 @@ import Quizzes from "./pages/Quizzes.jsx";
 import CreateQuiz from "./pages/CreateQuiz.jsx";
 import TakeQuiz from "./pages/TakeQuiz.jsx";
 import Gugugaga from "./pages/GuguGaga.jsx";
+import Admin from "./pages/Admin.jsx";
 
 
 
@@ -45,6 +46,7 @@ function App() {
                 <Route path="/instructors/:id" element={<InstructorProfile />} />
                 <Route path="/quizzes" element={<Quizzes />} />
                 <Route path="/quizzes/create" element={<CreateQuiz />} />
+                <Route path="/admin" element={<Admin />} />
                 {/* ... stavi ovdje sve ostale rute koje trebaju header ... */}
             </Route>
 

@@ -2,7 +2,7 @@
 
 .page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #f8fafc 0%, #e8f4f8 100%);
+    background: #5EA2AF; /* ISTA POZADINA KAO PROFIL */
     padding-bottom: 60px;
 }
 
@@ -120,13 +120,14 @@
 
 /* Calendar Card */
 .calendarCard {
-    background: #fff;
+    background: #90DDF0;   /* ISTA BOJA KAO PROFIL PANEL */
     border-radius: 20px;
     padding: 28px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
     position: relative;
 }
 
+/* Header kalendara ostaje isti */
 .calendarHeader {
     display: flex;
     align-items: center;
@@ -185,7 +186,7 @@
 .day {
     aspect-ratio: 1;
     border: 2px solid transparent;
-    background: #f8fafc;
+    background: #ffffff;
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -280,10 +281,10 @@
     font-weight: 700;
 }
 
-/* Tooltip */
+/* Tooltip - positioned relative to day button */
 .tooltip {
     position: absolute;
-    bottom: 100%;
+    bottom: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
     background: #1e293b;
@@ -292,10 +293,10 @@
     border-radius: 12px;
     font-size: 0.85rem;
     white-space: nowrap;
-    z-index: 100;
+    z-index: 1000;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     animation: fadeIn 0.2s ease;
-    margin-bottom: 10px;
+    pointer-events: none;
 }
 
 .tooltip::after {
@@ -446,7 +447,7 @@
 
 /* Form Card */
 .formCard {
-    background: #fff;
+    background: #90DDF0;   /* ISTA BOJA KAO PROFIL */
     border-radius: 20px;
     padding: 24px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
@@ -504,6 +505,14 @@
     box-shadow: 0 0 0 4px rgba(26, 74, 94, 0.1);
 }
 
+.field select {
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+    background: #f8fafc;
+    font-size: 0.95rem;
+}
+
 .createBtn {
     width: 100%;
     padding: 14px 20px;
@@ -525,7 +534,7 @@
 
 /* List Card */
 .listCard {
-    background: #fff;
+    background: #90DDF0;   /* ISTA BOJA KAO PROFIL */
     border-radius: 20px;
     padding: 24px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
@@ -539,7 +548,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 16px;
+    gap: 12px;
+    margin-bottom: 10px;
 }
 
 .listHeader h3 {
@@ -565,12 +575,12 @@
 }
 
 .filterInfo {
-    background: #f0f9ff;
-    border: 1px solid #bae6fd;
+    background: rgba(255,255,255,0.65);
+    border: 1px solid rgba(26, 74, 94, 0.18);
     padding: 10px 14px;
     border-radius: 10px;
     font-size: 0.85rem;
-    color: #0369a1;
+    color: #1a4a5e;
     margin-bottom: 16px;
 }
 
@@ -590,9 +600,15 @@
     align-items: center;
     padding: 16px;
     border-radius: 14px;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    background: #ffffff;
     border: 1px solid #e2e8f0;
     transition: all 0.2s ease;
+    gap: 12px;
+}
+
+.ongoing {
+    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+    border-left: 6px solid #0097a7;
 }
 
 .slotCard:hover {
@@ -604,6 +620,7 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-width: 0;
 }
 
 .slotDate {
@@ -624,11 +641,20 @@
     margin-top: 4px;
 }
 
+.slotMetaInfo {
+    font-size: 0.9rem;
+    color: #475569;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
 .slotMeta {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     gap: 8px;
+    flex-shrink: 0;
 }
 
 .capacityBadge {
@@ -683,6 +709,39 @@
     border-color: #dc2626;
 }
 
+.detailsBtn {
+    padding: 8px 14px;
+    border: 1px solid rgba(26, 74, 94, 0.35);
+    background: rgba(26, 74, 94, 0.08);
+    color: #1a4a5e;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.detailsBtn:hover {
+    background: rgba(26, 74, 94, 0.16);
+    border-color: rgba(26, 74, 94, 0.55);
+}
+
+.joinBtn {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #1a4a5e 0%, #2d6a7a 100%);
+    color: #fff;
+    cursor: pointer;
+    font-weight: 700;
+    transition: all 0.2s;
+}
+
+.joinBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(26, 74, 94, 0.25);
+}
+
 .reviewBtn {
     padding: 8px 14px;
     border: 1px solid #fde68a;
@@ -698,6 +757,15 @@
 .reviewBtn:hover {
     background: #fef3c7;
     border-color: #f59e0b;
+}
+
+.reviewedBadge {
+    padding: 8px 14px;
+    background: #dcfce7;
+    color: #15803d;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
 }
 
 /* Empty States */
@@ -760,44 +828,95 @@
     box-shadow: 0 0 0 4px rgba(26, 74, 94, 0.1);
 }
 
-.detailsBtn {
-    background: #eef2ff;
-    border: none;
-    padding: 6px 10px;
-    border-radius: 6px;
-    cursor: pointer;
+/* Loading State */
+.loadingState {
+    text-align: center;
+    padding: 40px;
 }
 
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e2e8f0;
+    border-top-color: #1a4a5e;
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ================= MODAL (DETALJI) ================= */
+/* ✅ GAP lijevo/desno + boje na temu */
 .modalOverlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(10, 20, 25, 0.55);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 999;
+
+    /* ovaj padding je "gap" od ruba ekrana (lijevo/desno i gore/dolje) */
+    padding: 24px;
+    z-index: 1;
 }
 
 .modal {
-    background: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    max-width: 500px;
-    width: 100%;
-    max-height: 80vh;
-    overflow-y: auto;
+    width: min(680px, 100%);
+    background: #90DDF0;
+    border-radius: 18px;
+    box-shadow: 0 18px 70px rgba(0,0,0,0.35);
+    border: 1px solid rgba(26, 74, 94, 0.22);
+    padding: 22px;
+    position: relative;
+}
+
+.modal h2 {
+    margin: 0 0 14px 0;
+    color: #0b2b33;
+    font-size: 1.35rem;
+    font-weight: 800;
 }
 
 .modalSection {
-    margin-top: 15px;
+    background: rgba(255,255,255,0.7);
+    border: 1px solid rgba(26, 74, 94, 0.16);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
 }
 
+.modalSection h3 {
+    margin: 0 0 10px 0;
+    color: #1a4a5e;
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+
+.modalSection p {
+    margin: 6px 0;
+    color: #0b2b33;
+}
+
+/* Studenti + napomena (profesor modal) */
 .studentItem {
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.65);
+    border: 1px solid rgba(26, 74, 94, 0.14);
+    margin-bottom: 10px;
 }
 
 .note {
+    margin-top: 8px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(26, 74, 94, 0.08);
+    border: 1px solid rgba(26, 74, 94, 0.18);
+    color: #1a4a5e;
+    font-weight: 600;
     margin-top: 4px;
     font-size: 0.9em;
     color: #555;
@@ -822,77 +941,69 @@
     box-shadow: 0 4px 12px rgba(26, 74, 94, 0.3);
 }
 
+/* textarea (student modal) */
 .noteTextarea {
     width: 100%;
-    min-height: 80px;
+    box-sizing: border-box;
+    min-height: 110px;
     resize: vertical;
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-family: inherit;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 2px solid rgba(26, 74, 94, 0.18);
+    background: rgba(255,255,255,0.9);
+    font-size: 0.95rem;
+    color: #0b2b33;
+}
+
+.noteTextarea:focus {
+    outline: none;
+    border-color: #1a4a5e;
+    box-shadow: 0 0 0 4px rgba(26, 74, 94, 0.12);
+    background: #fff;
 }
 
 .saveBtn {
-    margin-top: 8px;
-    padding: 6px 10px;
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px 14px;
     border: none;
-    border-radius: 6px;
-    background: #4f46e5;
-    color: white;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1a4a5e 0%, #2d6a7a 100%);
+    color: #fff;
+    font-weight: 800;
     cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.saveBtn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 26px rgba(26, 74, 94, 0.25);
 }
 
 .saveBtn:disabled {
-    opacity: 0.6;
+    opacity: 0.65;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
-.ongoing {
-    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
-    border-left: 6px solid #0097a7;
-}
-
-.joinBtn {
-    background: #1976d2;
-    color: white;
+/* ✅ Zatvori - isti stil */
+.closeBtn {
+    width: 100%;
+    padding: 14px 16px;
     border: none;
-    padding: 8px 14px;
-    border-radius: 8px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1a4a5e 0%, #2d6a7a 100%);
+    color: #fff;
+    font-weight: 900;
+    font-size: 1rem;
     cursor: pointer;
-    font-weight: 600;
-    transition: background 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.joinBtn:hover {
-    background: #0d47a1;
-}
-
-/* Loading State */
-.loadingState {
-    text-align: center;
-    padding: 40px;
-}
-
-.spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #e2e8f0;
-    border-top-color: #1a4a5e;
-    border-radius: 50%;
-    margin: 0 auto 16px;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-.field select {
-    padding: 12px 14px;
-    border-radius: 10px;
-    border: 2px solid #e2e8f0;
-    background: #f8fafc;
-    font-size: 0.95rem;
+.closeBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 26px rgba(26, 74, 94, 0.25);
 }
 
 /* Review Modal */
@@ -1103,4 +1214,17 @@
     .fieldRow {
         grid-template-columns: 1fr;
     }
+
+    /* još malo "gapa" na mobitelu */
+    .modalOverlay {
+        padding: 16px;
+    }
+
+    .modal {
+        padding: 16px;
+    }
+}
+
+.pac-container {
+    z-index: 10 !important;
 }

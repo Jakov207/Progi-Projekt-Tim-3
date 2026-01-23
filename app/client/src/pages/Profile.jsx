@@ -14,6 +14,8 @@ export function Profile() {
 
     const [interests, setInterests] = useState([]);
     const [instructorRating, setInstructorRating] = useState({ average: "0.0", count: 0 });
+    const [myReviews, setMyReviews] = useState([]);
+    const [reviewsLoading, setReviewsLoading] = useState(false);
 
     const interestMap = {
         mat_os: "Matematika Osnovna Škola",
@@ -90,6 +92,23 @@ export function Profile() {
     useEffect(() => {
         loadProfile();
     }, []);
+
+    // Fetch reviews when recenzije tab is active (for professors)
+    useEffect(() => {
+        if (activeTab === "recenzije" && form.is_professor) {
+            setReviewsLoading(true);
+            axios.get("/reviews/my-reviews")
+                .then(res => {
+                    setMyReviews(res.data.reviews || []);
+                    setInstructorRating({
+                        average: res.data.average_rating,
+                        count: res.data.total_reviews
+                    });
+                })
+                .catch(() => setMyReviews([]))
+                .finally(() => setReviewsLoading(false));
+        }
+    }, [activeTab, form.is_professor]);
 
     // Fetch instructor rating when profile loads (for professors)
     useEffect(() => {
@@ -209,9 +228,10 @@ export function Profile() {
     const tabs = [
         { id: "osobni", icon: "👤", label: "Osobni podaci", desc: "Osnovne informacije" },
         { id: "interesi", icon: "⭐", label: "Interesi", desc: "Područja učenja" },
-        ...(form.is_professor ? [{ id: "javni", icon: "🌍", label: "Javni profil", desc: "Vidljivo drugima" }] : []),
-        { id: "sigurnost", icon: "🔒", label: "Sigurnost", desc: "Lozinka i pristup" },
-        { id: "privatnost", icon: "🛡️", label: "Privatnost", desc: "Postavke privatnosti" }
+        ...(form.is_professor ? [
+            { id: "javni", icon: "🌍", label: "Javni profil", desc: "Vidljivo drugima" },
+            { id: "recenzije", icon: "📝", label: "Recenzije", desc: "Ocjene studenata" }
+        ] : [])
     ];
 
     if (loading) {
@@ -517,37 +537,88 @@ export function Profile() {
                         </div>
                     )}
 
-                    {/* Sigurnost */}
-                    {activeTab === "sigurnost" && (
+                    {/* Recenzije (for professors) */}
+                    {activeTab === "recenzije" && (
                         <div className={styles.section}>
                             <div className={styles.sectionHeader}>
-                                <h1>🔒 Sigurnost</h1>
-                                <p>Upravljajte pristupom svom računu</p>
+                                <h1>📝 Moje recenzije</h1>
+                                <p>Ocjene i komentari od vaših studenata</p>
                             </div>
 
-                            <div className={styles.comingSoon}>
-                                <div className={styles.comingSoonIcon}>🔐</div>
-                                <h3>Uskoro dostupno</h3>
-                                <p>Promjena lozinke i dvofaktorska autentikacija bit će dostupne u sljedećoj verziji.</p>
-                            </div>
+                            {reviewsLoading ? (
+                                <div className={styles.loadingPage}>
+                                    <div className={styles.spinner}></div>
+                                    <p>Učitavanje recenzija...</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className={styles.reviewsOverview}>
+                                        <div className={styles.ratingBig}>
+                                            <span className={styles.ratingNumber}>{instructorRating.average}</span>
+                                            <span className={styles.ratingStar}>⭐</span>
+                                        </div>
+                                        <div className={styles.reviewCount}>
+                                            {instructorRating.count} {instructorRating.count === 1 ? "recenzija" : "recenzija"}
+                                        </div>
+                                    </div>
+
+                                    {myReviews.length === 0 ? (
+                                        <div className={styles.comingSoon}>
+                                            <div className={styles.comingSoonIcon}>📭</div>
+                                            <h3>Još nemate recenzija</h3>
+                                            <p>Kad studenti ocijene vaše usluge, recenzije će se prikazati ovdje.</p>
+                                        </div>
+                                    ) : (
+                                        <div className={styles.reviewsList}>
+                                            {myReviews.map(review => (
+                                                <div key={review.id} className={styles.reviewCard}>
+                                                    <div className={styles.reviewHeader}>
+                                                        <div className={styles.reviewStudent}>
+                                                            {review.student_picture ? (
+                                                                <img 
+                                                                    src={getImageUrl(review.student_picture)} 
+                                                                    alt="" 
+                                                                    className={styles.reviewAvatar}
+                                                                />
+                                                            ) : (
+                                                                <div className={styles.reviewAvatarPlaceholder}>
+                                                                    {review.student_name?.[0]}{review.student_surname?.[0]}
+                                                                </div>
+                                                            )}
+                                                            <span className={styles.reviewName}>
+                                                                {review.student_name} {review.student_surname}
+                                                            </span>
+                                                        </div>
+                                                        <div className={styles.reviewRating}>
+                                                            {[1, 2, 3, 4, 5].map(star => (
+                                                                <span 
+                                                                    key={star} 
+                                                                    className={star <= review.rating ? styles.starFilled : styles.starEmpty}
+                                                                >
+                                                                    ★
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                    {review.comment && (
+                                                        <p className={styles.reviewComment}>{review.comment}</p>
+                                                    )}
+                                                    <div className={styles.reviewDate}>
+                                                        {new Date(review.created_at).toLocaleDateString("hr-HR", {
+                                                            day: "numeric",
+                                                            month: "long",
+                                                            year: "numeric"
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
+                            )}
                         </div>
                     )}
 
-                    {/* Privatnost */}
-                    {activeTab === "privatnost" && (
-                        <div className={styles.section}>
-                            <div className={styles.sectionHeader}>
-                                <h1>🛡️ Privatnost</h1>
-                                <p>Kontrolirajte vidljivost svojih podataka</p>
-                            </div>
-
-                            <div className={styles.comingSoon}>
-                                <div className={styles.comingSoonIcon}>🛡️</div>
-                                <h3>Uskoro dostupno</h3>
-                                <p>Postavke privatnosti i upravljanje podacima bit će dostupni u sljedećoj verziji.</p>
-                            </div>
-                        </div>
-                    )}
                 </main>
             </div>
 

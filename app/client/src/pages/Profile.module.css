@@ -2,7 +2,7 @@
 
 .page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #f8fafc 0%, #e8f4f8 100%);
+    background: #5EA2AF; /* zadnja boja */
 }
 
 /* Loading */
@@ -97,7 +97,7 @@
 
 /* Sidebar */
 .sidebar {
-    background: #fff;
+    background: #90DDF0;   /* predzadnja boja – LIJEVI VELIKI KVADRAT */
     border-radius: 20px;
     padding: 24px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
@@ -252,11 +252,12 @@
 
 /* Content */
 .content {
-    background: #fff;
+    background: #90DDF0;   /* predzadnja boja */
     border-radius: 20px;
     padding: 32px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
 }
+
 
 .section {
     animation: fadeIn 0.3s ease;
@@ -511,6 +512,122 @@
     color: #64748b;
     max-width: 400px;
     margin: 0 auto;
+}
+
+/* Reviews Section (for instructors) */
+.reviewsOverview {
+    text-align: center;
+    padding: 30px;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-radius: 16px;
+    margin-bottom: 24px;
+}
+
+.ratingBig {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.ratingNumber {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #1a4a5e;
+}
+
+.ratingStar {
+    font-size: 2.5rem;
+}
+
+.reviewCount {
+    color: #64748b;
+    font-size: 1rem;
+}
+
+.reviewsList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.reviewCard {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 20px;
+    transition: all 0.2s ease;
+}
+
+.reviewCard:hover {
+    border-color: #1a4a5e;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.reviewHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.reviewStudent {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.reviewAvatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.reviewAvatarPlaceholder {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a4a5e 0%, #2d6a7a 100%);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.reviewName {
+    font-weight: 600;
+    color: #1a4a5e;
+}
+
+.reviewRating {
+    display: flex;
+    gap: 2px;
+}
+
+.reviewRating .starFilled {
+    color: #f59e0b;
+    font-size: 1.2rem;
+}
+
+.reviewRating .starEmpty {
+    color: #e2e8f0;
+    font-size: 1.2rem;
+}
+
+.reviewComment {
+    color: #475569;
+    line-height: 1.6;
+    margin: 0 0 12px 0;
+    white-space: pre-wrap;
+}
+
+.reviewDate {
+    font-size: 0.85rem;
+    color: #94a3b8;
 }
 
 /* Responsive */
