@@ -280,10 +280,10 @@
     font-weight: 700;
 }
 
-/* Tooltip */
+/* Tooltip - positioned relative to day button */
 .tooltip {
     position: absolute;
-    bottom: 100%;
+    bottom: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
     background: #1e293b;
@@ -292,10 +292,10 @@
     border-radius: 12px;
     font-size: 0.85rem;
     white-space: nowrap;
-    z-index: 100;
+    z-index: 1000;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     animation: fadeIn 0.2s ease;
-    margin-bottom: 10px;
+    pointer-events: none;
 }
 
 .tooltip::after {
@@ -698,6 +698,15 @@
 .reviewBtn:hover {
     background: #fef3c7;
     border-color: #f59e0b;
+}
+
+.reviewedBadge {
+    padding: 8px 14px;
+    background: #dcfce7;
+    color: #15803d;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
 }
 
 /* Empty States */

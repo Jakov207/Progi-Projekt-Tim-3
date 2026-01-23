@@ -224,6 +224,7 @@ router.get("/my-slots", verifyToken, async (req, res) => {
                       LEFT JOIN professor_slot_bookings b ON b.slot_id = s.id
                       LEFT JOIN interests i ON i.id = s.interest_id
              WHERE s.professor_id = $1
+               AND s.end_time > NOW()
              GROUP BY s.id, i.name
              ORDER BY s.start_time`,
             [userId]

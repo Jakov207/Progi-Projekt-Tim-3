@@ -30,6 +30,7 @@ export default function Calendar() {
     const [reviewComment, setReviewComment] = useState("");
     const [reviewSubmitting, setReviewSubmitting] = useState(false);
     const [reviewError, setReviewError] = useState("");
+    const [reviewedProfessors, setReviewedProfessors] = useState(new Set());
 
     // Create lesson modal state
     const [createLessonModalOpen, setCreateLessonModalOpen] = useState(false);
@@ -123,7 +124,24 @@ export default function Calendar() {
     const loadBookings = async () => {
         try {
             const res = await api.get("/calendar/my-bookings");
-            setBookings(res.data.bookings || []);
+            const bookingsData = res.data.bookings || [];
+            setBookings(bookingsData);
+            
+            // Check which professors have already been reviewed
+            const uniqueProfessorIds = [...new Set(bookingsData.map(b => b.professor_id))];
+            const reviewed = new Set();
+            
+            for (const profId of uniqueProfessorIds) {
+                try {
+                    const canReviewRes = await api.get(`/reviews/can-review/${profId}`);
+                    if (canReviewRes.data.already_reviewed) {
+                        reviewed.add(profId);
+                    }
+                } catch (err) {
+                    console.error("Error checking review status:", err);
+                }
+            }
+            setReviewedProfessors(reviewed);
         } catch (err) {
             setError(err.response?.data?.message || "Greška pri dohvaćanju rezervacija.");
         } finally {
@@ -452,15 +470,15 @@ export default function Calendar() {
 
         try {
             await api.post("/reviews", {
-                booking_id: reviewBooking.id,
+                professor_id: reviewBooking.professor_id,
                 rating: reviewRating,
                 comment: reviewComment.trim() || null
             });
 
             setReviewModalOpen(false);
             showSuccess("Recenzija uspješno dodana!");
-            // Reload bookings to reflect the change
-            loadBookings();
+            // Mark this professor as reviewed
+            setReviewedProfessors(prev => new Set([...prev, reviewBooking.professor_id]));
         } catch (err) {
             setReviewError(err.response?.data?.message || "Greška pri dodavanju recenzije");
         } finally {
@@ -546,6 +564,12 @@ export default function Calendar() {
                             const dayIsPast = isPast(day);
                             const dayIsToday = isToday(day);
 
+                            // Get tooltip data for this specific day
+                            const dayData = user?.is_professor
+                                ? (key && slotCountByDay[key])
+                                : (key && bookingCountByDay[key]);
+                            const showTooltip = hoveredDay === day && dayData;
+
                             let dayClass = styles.day;
                             if (isSelectedDay(day)) dayClass += ` ${styles.selectedDay}`;
                             if (dayIsToday) dayClass += ` ${styles.today}`;
@@ -573,39 +597,39 @@ export default function Calendar() {
                                             {bookingCountByDay[key].length}
                                         </span>
                                     )}
+                                    
+                                    {/* Tooltip - positioned relative to this day */}
+                                    {showTooltip && (
+                                        <div className={styles.tooltip}>
+                                            <div className={styles.tooltipDate}>
+                                                {day}. {monthNames[currentMonth.getMonth()]}
+                                            </div>
+                                            {user?.is_professor ? (
+                                                <div className={styles.tooltipContent}>
+                                                    {dayData.slots.map((slot, i) => (
+                                                        <div key={i} className={styles.tooltipItem}>
+                                                            🕐 {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
+                                                            <span className={styles.tooltipBadge}>
+                                                                {slot.booked_count || 0}/{slot.capacity}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className={styles.tooltipContent}>
+                                                    {dayData.map((b, i) => (
+                                                        <div key={i} className={styles.tooltipItem}>
+                                                            🕐 {formatTime(b.start_time)} - {b.professor_name}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </button>
                             );
                         })}
                     </div>
-
-                    {/* Tooltip */}
-                    {hoveredDay && hoveredData && (
-                        <div className={styles.tooltip}>
-                            <div className={styles.tooltipDate}>
-                                {hoveredDay}. {monthNames[currentMonth.getMonth()]}
-                            </div>
-                            {user?.is_professor ? (
-                                <div className={styles.tooltipContent}>
-                                    {hoveredData.slots.map((slot, i) => (
-                                        <div key={i} className={styles.tooltipItem}>
-                                            🕐 {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
-                                            <span className={styles.tooltipBadge}>
-                                                {slot.booked_count || 0}/{slot.capacity}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className={styles.tooltipContent}>
-                                    {hoveredData.map((b, i) => (
-                                        <div key={i} className={styles.tooltipItem}>
-                                            🕐 {formatTime(b.start_time)} - {b.professor_name}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
 
                     <div className={styles.legend}>
                         <div className={styles.legendItem}>
@@ -784,13 +808,16 @@ export default function Calendar() {
                                                             {isPastLesson(booking.end_time) ? "🗑️ Obriši" : "❌ Otkaži"}
                                                         </button>
 
-                                                        {isPastLesson(booking.end_time) && (
+                                                        {isPastLesson(booking.end_time) && !reviewedProfessors.has(booking.professor_id) && (
                                                             <button
                                                                 className={styles.reviewBtn}
                                                                 onClick={() => openReviewModal(booking)}
                                                             >
                                                                 ⭐ Recenzija
                                                             </button>
+                                                        )}
+                                                        {isPastLesson(booking.end_time) && reviewedProfessors.has(booking.professor_id) && (
+                                                            <span className={styles.reviewedBadge}>✅ Ocijenjeno</span>
                                                         )}
 
                                                         <button
