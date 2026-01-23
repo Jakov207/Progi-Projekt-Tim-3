@@ -151,6 +151,7 @@ export default function CreateQuiz() {
 
     return (
         <div className={styles.page}>
+            <div className={styles.container}>
             <div className={styles.header}>
                 <h1>Kreiraj novi kviz</h1>
                 <button className={styles.backBtn} onClick={() => navigate("/quizzes")}>
@@ -300,6 +301,7 @@ export default function CreateQuiz() {
                     </p>
                 </div>
             </form>
+        </div>
         </div>
     );
 }
