@@ -417,7 +417,14 @@ export default function Calendar() {
 
     const isOngoing = (start, end) => {
         const now = new Date();
-        return now >= new Date(start) && now <= new Date(end);
+        const startTime = new Date(start);
+        const endTime = new Date(end);
+
+        // Izračunaj točku kad se otvara Join (10 min prije)
+        const tenMinutesBefore = new Date(startTime.getTime() - 10 * 60 * 1000);
+
+        // LOGIKA: Sadašnje vrijeme mora biti IZMEĐU (10 min prije) i (kraja termina)
+        return now >= tenMinutesBefore && now <= endTime;
     };
 
     const isPastLesson = (end) => {
